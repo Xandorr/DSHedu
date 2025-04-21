@@ -1,0 +1,285 @@
+<%- include('./layouts/main', { 
+  title: '로그인', 
+  description: 'DSH에듀에 로그인하여 회원 전용 서비스를 이용하세요', 
+  body: `
+  <!-- Login Hero Section -->
+  <section class="login-hero py-5 bg-light">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-6">
+          <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-3"><span class="text-primary">LOGIN</span></h1>
+            <p class="lead text-muted">DSH에듀에 로그인하여 회원 전용 서비스를 이용하세요</p>
+          </div>
+          
+          <!-- Login Form Card -->
+          <div class="card shadow-sm rounded-4 border-0">
+            <div class="card-body p-4 p-md-5">
+              <form id="loginForm" action="/auth/login" method="POST">
+                <div class="mb-3">
+                  <label for="loginEmail" class="form-label">이메일</label>
+                  <input type="email" class="form-control" id="loginEmail" name="email" required>
+                </div>
+                <div class="mb-3">
+                  <label for="loginPassword" class="form-label">비밀번호</label>
+                  <input type="password" class="form-control" id="loginPassword" name="password" required>
+                </div>
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe">
+                  <label class="form-check-label" for="rememberMe">로그인 상태 유지</label>
+                </div>
+                <div class="d-grid mb-4">
+                  <button type="submit" class="btn btn-primary btn-lg">로그인</button>
+                </div>
+                
+                <div class="text-center mb-4">
+                  <a href="#" data-bs-toggle="modal" data-bs-target="#registerModal" class="text-decoration-none">회원가입</a>
+                  <span class="mx-2">|</span>
+                  <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" class="text-decoration-none">비밀번호 찾기</a>
+                </div>
+                
+                <!-- Social Login -->
+                <div class="text-center mb-3">
+                  <p class="text-muted">소셜 계정으로 로그인</p>
+                </div>
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                  <a href="/auth/kakao" class="social-login-btn">
+                    <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" alt="카카오 로그인" class="social-icon-img">
+                  </a>
+                  <a href="/auth/naver" class="social-login-btn">
+                    <img src="images/naver.png" alt="네이버 로그인" class="social-icon-img">
+                  </a>
+                  <a href="/auth/google" class="social-login-btn">
+                    <img src="https://developers.google.com/identity/images/g-logo.png" alt="구글 로그인" class="social-icon-img">
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 회원가입 모달 -->
+  <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="registerModalLabel">회원가입</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="registerForm" action="/auth/register" method="POST">
+            <div class="mb-3">
+              <label for="registerName" class="form-label">이름</label>
+              <input type="text" class="form-control" id="registerName" name="name" required>
+            </div>
+            <div class="mb-3">
+              <label for="registerEmail" class="form-label">이메일</label>
+              <input type="email" class="form-control" id="registerEmail" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="registerPassword" class="form-label">비밀번호</label>
+              <input type="password" class="form-control" id="registerPassword" name="password" required>
+              <div class="form-text">비밀번호는 8자 이상, 영문, 숫자, 특수문자를 포함해야 합니다.</div>
+            </div>
+            <div class="mb-3">
+              <label for="registerPasswordConfirm" class="form-label">비밀번호 확인</label>
+              <input type="password" class="form-control" id="registerPasswordConfirm" name="passwordConfirm" required>
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="termsAgreement" name="termsAgreement" required>
+              <label class="form-check-label" for="termsAgreement">
+                <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" data-bs-dismiss="modal">이용약관</a> 및 <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal" data-bs-dismiss="modal">개인정보 처리방침</a>에 동의합니다
+              </label>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">회원가입</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비밀번호 찾기 모달 -->
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="forgotPasswordModalLabel">비밀번호 찾기</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="forgotPasswordForm" action="/auth/forgot-password" method="POST">
+            <div class="mb-4">
+              <p class="text-muted">가입한 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.</p>
+            </div>
+            <div class="mb-4">
+              <label for="forgotEmail" class="form-label">이메일</label>
+              <input type="email" class="form-control" id="forgotEmail" name="email" required>
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">비밀번호 재설정 링크 받기</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이용약관 모달 -->
+  <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="termsModalLabel">이용약관</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>1. 서비스 이용약관</h6>
+          <p>DSH에듀(이하 "회사")는 회원에게 다음과 같은 서비스를 제공합니다:</p>
+          <ul>
+            <li>미국 캠프 프로그램 정보 제공</li>
+            <li>프로그램 신청 및 관리</li>
+            <li>회원 전용 컨텐츠 제공</li>
+            <li>기타 회사가 추가 개발하거나 제휴를 통해 제공하는 서비스</li>
+          </ul>
+
+          <h6>2. 회원의 의무</h6>
+          <p>회원은 다음 사항을 준수해야 합니다:</p>
+          <ul>
+            <li>회원 정보의 정확성 유지</li>
+            <li>비밀번호 관리 및 보안</li>
+            <li>서비스 이용 시 관련 법령 및 약관 준수</li>
+          </ul>
+
+          <h6>3. 서비스 이용 제한</h6>
+          <p>회사는 다음과 같은 경우 서비스 이용을 제한할 수 있습니다:</p>
+          <ul>
+            <li>회원이 약관을 위반한 경우</li>
+            <li>서비스 이용 중 불법 행위를 하는 경우</li>
+            <li>다른 회원의 서비스 이용을 방해하는 경우</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 개인정보 처리방침 모달 -->
+  <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="privacyModalLabel">개인정보 처리방침</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h6>1. 수집하는 개인정보 항목</h6>
+          <p>회사는 회원가입 및 서비스 이용을 위해 다음과 같은 개인정보를 수집합니다:</p>
+          <ul>
+            <li>필수항목: 이름, 이메일 주소, 비밀번호</li>
+            <li>선택항목: 전화번호, 생년월일</li>
+            <li>소셜 로그인 시 수집되는 정보: 소셜 계정 정보</li>
+          </ul>
+
+          <h6>2. 개인정보의 수집 및 이용목적</h6>
+          <p>회사는 수집한 개인정보를 다음의 목적을 위해 이용합니다:</p>
+          <ul>
+            <li>회원 관리 및 서비스 제공</li>
+            <li>프로그램 신청 및 관리</li>
+            <li>마케팅 및 광고 활용</li>
+          </ul>
+
+          <h6>3. 개인정보의 보유 및 이용기간</h6>
+          <p>회사는 원칙적으로 개인정보의 수집 및 이용목적이 달성되면 지체 없이 파기합니다. 다만, 관련 법령에 따라 보존할 필요가 있는 경우 해당 기간 동안 보관합니다.</p>
+
+          <h6>4. 동의 거부권 및 거부 시 불이익</h6>
+          <p>개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있습니다. 다만, 동의를 거부할 경우 회원가입 및 서비스 이용이 제한됩니다.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 소셜 로그인 버튼 스타일
+    const socialLoginBtns = document.querySelectorAll('.social-login-btn');
+    socialLoginBtns.forEach(btn => {
+      btn.addEventListener('mouseover', function() {
+        this.classList.add('shadow-sm');
+      });
+      btn.addEventListener('mouseout', function() {
+        this.classList.remove('shadow-sm');
+      });
+    });
+    
+    // 회원가입 폼 검증
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+      registerForm.addEventListener('submit', function(e) {
+        const password = document.getElementById('registerPassword').value;
+        const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+        
+        if (password !== passwordConfirm) {
+          e.preventDefault();
+          alert('비밀번호가 일치하지 않습니다.');
+          return false;
+        }
+        
+        // 비밀번호 복잡성 검증
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+          e.preventDefault();
+          alert('비밀번호는 8자 이상, 영문, 숫자, 특수문자를 포함해야 합니다.');
+          return false;
+        }
+      });
+    }
+  });
+  </script>
+  
+  <style>
+    /* 소셜 로그인 버튼 스타일 */
+    .social-login-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      border: none;
+      background: none;
+      padding: 0;
+    }
+    
+    .social-icon-img {
+      height: 40px;
+      width: auto;
+      transition: all 0.3s ease;
+    }
+    
+    .social-login-btn:hover {
+      transform: translateY(-3px);
+    }
+    
+    .social-login-btn:hover .social-icon-img {
+      filter: brightness(1.1);
+    }
+    
+    /* 폼 스타일 */
+    .form-control {
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+    }
+    
+    .form-control:focus {
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+  </style>
+`}) %> 

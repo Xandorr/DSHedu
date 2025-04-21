@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | DSH에듀</title>
+  <meta name="description" content="<%= description %>">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <% if (title === '홈' || title === 'Home') { %>
+  <!-- 홈페이지 전용 스타일 -->
+  <style>
+    /* 홈페이지에서 헤더 스타일 */
+    body.home-page header .navbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1050; /* 비디오보다 높은 z-index 값 */
+      background-color: transparent !important;
+      box-shadow: none !important;
+    }
+    
+    body.home-page header .navbar-light .navbar-nav .nav-link,
+    body.home-page header .navbar-light .navbar-nav .nav-link.active {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    body.home-page header .navbar-light .navbar-nav .nav-link:hover {
+      color: white;
+    }
+    
+    body.home-page header .navbar-brand .text-primary,
+    body.home-page header .navbar-brand .text-secondary {
+      color: white !important;
+    }
+    
+    body.home-page header .navbar-light .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 1%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
+    
+    body.home-page header .navbar-light .navbar-toggler {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    body.home-page .btn-outline-primary {
+      color: white;
+      border-color: white;
+    }
+    
+    body.home-page .btn-outline-primary:hover {
+      background-color: white;
+      color: #0d6efd;
+    }
+    
+    /* 헤더 뒤 반투명 배경 추가 - 가시성 향상 */
+    body.home-page header .navbar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+      z-index: -1;
+    }
+  </style>
+  <% } else { %>
+  <!-- 다른 페이지 헤더 스타일 -->
+  <style>
+    header .navbar {
+      background-color: white !important;
+      box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+      z-index: 1030;
+    }
+  </style>
+  <% } %>
+</head>
+<body class="<%= title === '홈' || title === 'Home' ? 'home-page' : '' %>">
+  <!-- Header -->
+  <%- include('../partials/header') %>
+  
+  <!-- Main Content -->
+  <main>
+    <%- body %>
+  </main>
+  
+  <!-- Footer -->
+  <%- include('../partials/footer') %>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <!-- GSAP Animation Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.3/ScrollTrigger.min.js"></script>
+  
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+  
+  <!-- Translations JS -->
+  <script src="/js/translations.js"></script>
+  
+  <!-- Custom JS -->
+  <script src="/js/main.js"></script>
+  
+  <!-- Initialize AOS -->
+  <script>
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
+  </script>
+</body>
+</html> 

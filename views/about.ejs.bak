@@ -1,0 +1,5 @@
+<%- include("./layouts/main", { 
+  title: "소개", 
+  description: "간단한 설명", 
+  body: `<p>테스트</p>` 
+}) %>

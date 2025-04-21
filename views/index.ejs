@@ -1,0 +1,865 @@
+<%- include('./layouts/main', { 
+  title: title, 
+  description: description, 
+  body: `
+  <!-- Hero Section -->
+  <section class="hero-section position-relative vh-100 d-flex align-items-center text-white overflow-hidden">
+    <div class="hero-bg position-absolute top-0 start-0 w-100 h-100">
+      <!-- 배경 이미지 -->
+      <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849129/main-background_unhnax.jpg" alt="Happy Students" class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
+      <div class="overlay position-absolute top-0 start-0 w-100 h-100 bg-dark" style="opacity: 0.3;"></div>
+    </div>
+    <div class="container position-relative z-index-1">
+      <div class="row">
+        <div class="col-lg-8 col-md-10">
+          <h1 class="display-3 fw-bold mb-4 hero-title" data-aos="fade-up" data-aos-delay="100">
+            <span class="text-primary">DSH에듀</span>
+          </h1>
+          <div class="d-flex gap-3 hero-buttons" data-aos="fade-up" data-aos-delay="300">
+            <a href="/programs" class="btn btn-primary btn-lg" data-i18n="explorePrograms">프로그램 살펴보기</a>
+            <a href="/contact" class="btn btn-outline-light btn-lg" data-i18n="contactUs">문의하기</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-scroll-indicator position-absolute bottom-0 start-50 translate-middle-x mb-4">
+      <a href="#experience-gallery" class="text-white">
+        <i class="fas fa-chevron-down fa-2x bounce"></i>
+      </a>
+    </div>
+  </section>
+
+  <!-- 배경 관련 스타일 -->
+  <style>
+    .hero-section {
+      margin-top: 0; /* 마진 제거 */
+      height: 100vh; /* 전체 화면 높이로 설정 */
+      overflow: hidden; /* 넘치는 부분 숨김 */
+      position: relative; /* 상대 위치 설정 */
+    }
+    
+    .hero-bg {
+      z-index: 0; /* 배경의 z-index 설정 */
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .overlay {
+      z-index: 1; /* 오버레이 z-index */
+    }
+    
+    .container.position-relative.z-index-1 {
+      z-index: 2; /* 컨텐츠 z-index */
+    }
+    
+    .hero-scroll-indicator {
+      z-index: 2; /* 스크롤 인디케이터 z-index */
+    }
+    
+    /* 애니메이션 효과 */
+    .hero-title span {
+      animation: fadeInUp 1s ease-out forwards;
+      opacity: 0;
+    }
+    
+    .hero-title span:nth-child(1) {
+      animation-delay: 0.3s;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* 스크롤 아이콘 애니메이션 */
+    .bounce {
+      animation: bounce 2s infinite;
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-10px);
+      }
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+  </style>
+
+  <!-- Experience Gallery Section -->
+  <section id="experience-gallery" class="py-5 mt-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold display-5 mb-3" data-aos="fade-up" data-i18n="campExperiences">캠프 경험(준비중)</h2>
+        <p class="lead text-muted" data-aos="fade-up" data-aos-delay="100" data-i18n="realPhotosShared">캠프 중 학생들이 경험한 실제 사진</p>
+      </div>
+      
+      <div class="row g-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="gallery-item rounded overflow-hidden shadow-sm">
+            <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849467/camp-1_e7ywaj.jpg" alt="Engineering Lab Experience" class="img-fluid">
+            <div class="gallery-caption p-3 bg-white">
+              <p class="mb-1 small text-muted">PRIVATE SCHOOL 캠프, 2025년 여름</p>
+              <p class="mb-0 small">엔지니어링 랩에서 로봇을 만드는 학생들</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="gallery-item rounded overflow-hidden shadow-sm">
+            <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849467/camp-1_e7ywaj.jpg" alt="Science Lab Experience" class="img-fluid">
+            <div class="gallery-caption p-3 bg-white">
+              <p class="mb-1 small text-muted">PRIVATE SCHOOL 캠프, 2025년 여름</p>
+              <p class="mb-0 small">과학 실험실에서 실험하는 학생들</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="gallery-item rounded overflow-hidden shadow-sm">
+            <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849467/camp-1_e7ywaj.jpg" alt="Art Class Experience" class="img-fluid">
+            <div class="gallery-caption p-3 bg-white">
+              <p class="mb-1 small text-muted">PRIVATE SCHOOL 캠프, 2025년 여름</p>
+              <p class="mb-0 small">미술 수업에서 창의력을 발휘하는 학생들</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="gallery-item rounded overflow-hidden shadow-sm">
+            <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849475/camp-4_jnufkf.jpg" alt="Technology Workshop" class="img-fluid">
+            <div class="gallery-caption p-3 bg-white">
+              <p class="mb-1 small text-muted">PRIVATE SCHOOL 캠프, 2025년 여름</p>
+              <p class="mb-0 small">최신 기술을 배우는 워크샵</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="gallery-item rounded overflow-hidden shadow-sm">
+            <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849475/camp-4_jnufkf.jpg" alt="Campus Life" class="img-fluid">
+            <div class="gallery-caption p-3 bg-white">
+              <p class="mb-1 small text-muted">PRIVATE SCHOOL 캠프, 2025년 여름</p>
+              <p class="mb-0 small">캠퍼스에서의 즐거운 일상</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="gallery-item rounded overflow-hidden shadow-sm">
+            <img src="https://res.cloudinary.com/dnry0kzyv/image/upload/v1744849475/camp-4_jnufkf.jpg" alt="Outdoor Activities" class="img-fluid">
+            <div class="gallery-caption p-3 bg-white">
+              <p class="mb-1 small text-muted">PRIVATE SCHOOL 캠프, 2025년 여름</p>
+              <p class="mb-0 small">야외 활동을 통한 팀워크 향상</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="py-5 mt-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold display-5 mb-3" data-aos="fade-up" data-i18n="whyChooseOur">왜 DSH에듀인가?</h2>
+        <p class="lead text-muted" data-aos="fade-up" data-aos-delay="100" data-i18n="experienceBest">합리적인 가격으로 최고의 교육 캠프를 경험하세요</p>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-card p-4 shadow-sm rounded-3 h-100 border-top border-primary border-5">
+            <div class="feature-icon mb-4 d-inline-flex align-items-center justify-content-center bg-primary bg-gradient text-white rounded-circle" style="width: 65px; height: 65px;">
+              <i class="fas fa-graduation-cap fa-2x"></i>
+            </div>
+            <h3 class="h4 mb-3" data-i18n="academicExcellence">학문적 탁월성</h3>
+            <p class="text-muted" data-i18n="academicExcellenceDesc">우리 프로그램은 검증된 미국 교육 기관에서 진행되어 양질의 학습 경험을 보장합니다.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-card p-4 shadow-sm rounded-3 h-100 border-top border-success border-5">
+            <div class="feature-icon mb-4 d-inline-flex align-items-center justify-content-center bg-success bg-gradient text-white rounded-circle" style="width: 65px; height: 65px;">
+              <i class="fas fa-language fa-2x"></i>
+            </div>
+            <h3 class="h4 mb-3" data-i18n="englishImmersion">영어 몰입</h3>
+            <p class="text-muted" data-i18n="englishImmersionDesc">소수 정예로 선발된 학생들이 100% 영어를 사용하는 환경에 지속적으로 노출되어 영어에 완벽히 몰입할 수 있습니다.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-card p-4 shadow-sm rounded-3 h-100 border-top border-info border-5">
+            <div class="feature-icon mb-4 d-inline-flex align-items-center justify-content-center bg-info bg-gradient text-white rounded-circle" style="width: 65px; height: 65px;">
+              <i class="fas fa-globe-americas fa-2x"></i>
+            </div>
+            <h3 class="h4 mb-3" data-i18n="culturalExchange">문화 교류</h3>
+            <p class="text-muted" data-i18n="culturalExchangeDesc">현지 학생들과 함께 생활하며 미국 문화를 직접 경험하고 글로벌 시각을 키웁니다.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="feature-card p-4 shadow-sm rounded-3 h-100 border-top border-warning border-5">
+            <div class="feature-icon mb-4 d-inline-flex align-items-center justify-content-center bg-warning bg-gradient text-white rounded-circle" style="width: 65px; height: 65px;">
+              <i class="fas fa-users fa-2x"></i>
+            </div>
+            <h3 class="h4 mb-3" data-i18n="socialDevelopment">사회성 발달</h3>
+            <p class="text-muted" data-i18n="socialDevelopmentDesc">단체 활동을 통해 협동심을 기르고 필수적인 리더십 능력을 배양합니다.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="500">
+          <div class="feature-card p-4 shadow-sm rounded-3 h-100 border-top border-danger border-5">
+            <div class="feature-icon mb-4 d-inline-flex align-items-center justify-content-center bg-danger bg-gradient text-white rounded-circle" style="width: 65px; height: 65px;">
+              <i class="fas fa-shield-alt fa-2x"></i>
+            </div>
+            <h3 class="h4 mb-3" data-i18n="safetySupport">안전 및 지원</h3>
+            <p class="text-muted" data-i18n="safetySupportDesc">안전성이 검증된 지역에서 진행되며, 100% 부모 동반 숙소로 제공되어 아이들이 안정된 환경에서 생활할 수 있도록 지원합니다.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="600">
+          <div class="feature-card p-4 shadow-sm rounded-3 h-100 border-top border-purple border-5">
+            <div class="feature-icon mb-4 d-inline-flex align-items-center justify-content-center bg-purple bg-gradient text-white rounded-circle" style="width: 65px; height: 65px;">
+              <i class="fas fa-dollar-sign fa-2x"></i>
+            </div>
+            <h3 class="h4 mb-3" data-i18n="reasonablePrice">합리적인 가격</h3>
+            <p class="text-muted" data-i18n="reasonablePriceDesc">최고의 교육 경험을 합리적인 가격으로 제공하며, 예산에 맞게 프로그램을 직접 구성하여 참여할 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Programs Section -->
+  <section class="featured-programs py-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <span class="badge bg-primary mb-2">OUR PROGRAMS</span>
+        <h2 class="display-5 fw-bold" data-i18n="featuredPrograms">주요 프로그램</h2>
+        <p class="lead text-muted" data-i18n="featuredProgramsDesc">다양한 교육 프로그램을 통해 글로벌 리더로 성장하세요</p>
+      </div>
+      
+      <div class="swiper program-swiper">
+        <div class="swiper-wrapper">
+          <!-- Summer Program 1 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="summer" data-aos="fade-up" data-aos-delay="100">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="MIT STEM 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-primary m-3">여름</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">MIT 여름 STEM 캠프</h5>
+                  <p class="card-text text-muted">세계적으로 유명한 MIT 캠퍼스에서 과학, 기술, 공학, 수학 관련 활동에 참여하세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>매사추세츠 캠브리지</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 7월 10일 - 8월 5일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 13-17세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$3,500</span>
+                    <a href="/programs/1" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summer Program 2 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="summer" data-aos="fade-up" data-aos-delay="200">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="예일 여름 아카데믹 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-primary m-3">여름</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">예일 여름 아카데믹 캠프</h5>
+                  <p class="card-text text-muted">예일 대학의 역사적인 캠퍼스에서 인문학, 사회과학, 예술 등 다양한 학문을 탐구하세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>코네티컷 뉴헤이븐</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 6월 15일 - 7월 20일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 15-18세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,200</span>
+                    <a href="/programs/2" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summer Program 3 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="summer" data-aos="fade-up" data-aos-delay="300">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="스탠포드 여름 리더십 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-primary m-3">여름</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">스탠포드 여름 리더십 캠프</h5>
+                  <p class="card-text text-muted">스탠포드 대학에서 리더십, 기업가 정신, 혁신적 사고를 배우고 실천하세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>캘리포니아 팔로알토</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 7월 1일 - 7월 25일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 16-18세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,800</span>
+                    <a href="/programs/3" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summer Program 4 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="summer" data-aos="fade-up" data-aos-delay="300">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="스탠포드 여름 리더십 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-primary m-3">여름</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">스탠포드 여름 리더십 캠프</h5>
+                  <p class="card-text text-muted">스탠포드 대학에서 리더십, 기업가 정신, 혁신적 사고를 배우고 실천하세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>캘리포니아 팔로알토</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 7월 1일 - 7월 25일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 16-18세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,800</span>
+                    <a href="/programs/4" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summer Program 5 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="summer" data-aos="fade-up" data-aos-delay="300">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="스탠포드 여름 리더십 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-primary m-3">여름</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">스탠포드 여름 리더십 캠프</h5>
+                  <p class="card-text text-muted">스탠포드 대학에서 리더십, 기업가 정신, 혁신적 사고를 배우고 실천하세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>캘리포니아 팔로알토</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 7월 1일 - 7월 25일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 16-18세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,800</span>
+                    <a href="/programs/5" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Winter Program 1 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="winter" data-aos="fade-up" data-aos-delay="400">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1551966775-a4ddc8df052b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="콜로라도 겨울 스키 & 영어 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-info m-3">겨울</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">콜로라도 겨울 스키 & 영어 캠프</h5>
+                  <p class="card-text text-muted">아름다운 로키 산맥에서 스키나 스노보드를 배우면서 영어 실력을 향상시키세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>콜로라도 아스펜</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 12월 20일 - 2026년 1월 10일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 10-16세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,200</span>
+                    <a href="/programs/6" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Winter Program 2 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="winter" data-aos="fade-up" data-aos-delay="400">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1551966775-a4ddc8df052b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="콜로라도 겨울 스키 & 영어 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-info m-3">겨울</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">콜로라도 겨울 스키 & 영어 캠프</h5>
+                  <p class="card-text text-muted">아름다운 로키 산맥에서 스키나 스노보드를 배우면서 영어 실력을 향상시키세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>콜로라도 아스펜</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 12월 20일 - 2026년 1월 10일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 10-16세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,200</span>
+                    <a href="/programs/7" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Winter Program 3 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="winter" data-aos="fade-up" data-aos-delay="400">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1551966775-a4ddc8df052b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="콜로라도 겨울 스키 & 영어 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-info m-3">겨울</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">콜로라도 겨울 스키 & 영어 캠프</h5>
+                  <p class="card-text text-muted">아름다운 로키 산맥에서 스키나 스노보드를 배우면서 영어 실력을 향상시키세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>콜로라도 아스펜</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 12월 20일 - 2026년 1월 10일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 10-16세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$4,200</span>
+                    <a href="/programs/8" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Special Program 1 -->
+          <div class="swiper-slide">
+            <div class="program-item" data-category="special" data-aos="fade-up" data-aos-delay="500">
+              <div class="card h-100 border-0 shadow-sm program-card">
+                <div class="position-relative">
+                  <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" class="card-img-top" alt="NASA 특별 과학 캠프">
+                  <span class="position-absolute top-0 end-0 badge bg-warning m-3">특별</span>
+                </div>
+                <div class="card-body">
+                  <h5 class="card-title fw-bold">NASA 특별 과학 캠프</h5>
+                  <p class="card-text text-muted">NASA 연구소를 방문하여 우주 탐사, 로켓 과학, 천체 물리학 등에 대해 배우세요.</p>
+                  <div class="program-details my-3">
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                      <span>플로리다 케네디 우주센터</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                      <i class="fas fa-calendar-alt text-primary me-2"></i>
+                      <span>2025년 8월 5일 - 8월 20일</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-user-friends text-primary me-2"></i>
+                      <span>연령: 14-17세</span>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                    <span class="fw-bold text-primary">$5,000</span>
+                    <a href="/programs/9" class="btn btn-outline-primary">상세 보기</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+      </div>
+      
+      <div class="text-center mt-5">
+        <a href="/programs" class="btn btn-primary btn-lg">모든 프로그램 보기</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section id="testimonials" class="py-5 mt-5">
+    <div class="container">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold display-5 mb-3" data-aos="fade-up">학부모와 학생들의 이야기</h2>
+        <p class="lead text-muted" data-aos="fade-up" data-aos-delay="100">우리 프로그램을 경험한 가족들의 소리를 들어보세요</p>
+      </div>
+      
+      <div class="swiper testimonial-slider" data-aos="fade-up" data-aos-delay="200">
+        <div class="swiper-wrapper pb-5">
+          <!-- Testimonial 1 -->
+          <div class="swiper-slide">
+            <div class="testimonial-card p-4 shadow rounded-4 h-100">
+              <div class="testimonial-stars text-warning mb-3">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <h5 class="mb-2">김O지</h5>
+              <p class="mb-3 text-muted small">어머니</p>
+              <p class="testimonial-text">"제 아들은 MIT STEM 캠프에서 단 3주 만에 영어 실력이 크게 향상되었습니다. 프로그램은 잘 조직되어 있었고, 직원들은 사진과 보고서로 우리에게 업데이트를 계속 제공했습니다. 아들은 전 세계 친구들을 사귀었고 내년에 다시 참가하기를 간절히 기다리고 있습니다!"</p>
+            </div>
+          </div>
+          
+          <!-- Testimonial 2 -->
+          <div class="swiper-slide">
+            <div class="testimonial-card p-4 shadow rounded-4 h-100">
+              <div class="testimonial-stars text-warning mb-3">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+              <h5 class="mb-2">박O성</h5>
+              <p class="mb-3 text-muted small">학생, 16세</p>
+              <p class="testimonial-text">"콜로라도 겨울 스키 캠프는 제 인생에서 최고의 경험이었습니다! 저는 그렇게 많은 눈을 본 적이 없었습니다. 강사들은 인내심을 가지고 제가 빨리 스키를 배울 수 있도록 도와주었습니다. 또한 많은 미국 친구들을 사귀고 매일 영어를 연습했습니다. 정말 멋진 경험이었습니다!"</p>
+            </div>
+          </div>
+          
+          <!-- Testimonial 3 -->
+          <div class="swiper-slide">
+            <div class="testimonial-card p-4 shadow rounded-4 h-100">
+              <div class="testimonial-stars text-warning mb-3">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star-half-alt"></i>
+              </div>
+              <h5 class="mb-2">이O진</h5>
+              <p class="mb-3 text-muted small">어머니</p>
+              <p class="testimonial-text">"제 딸은 뉴욕 예술 및 드라마 캠프에 참가하여 자신감을 가득 안고 돌아왔습니다! 실제 브로드웨이 스타일의 쇼에서 공연하고 영어 발음도 향상시켰습니다. 직원들은 배려심이 많고 전문적이어서 딸의 안전을 항상 보장해주었습니다."</p>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to Action Section -->
+  <section id="cta" class="py-5 mt-5">
+    <div class="container">
+      <div class="cta-container rounded-4 position-relative overflow-hidden">
+        <div class="cta-background"></div>
+        <div class="cta-overlay"></div>
+        <div class="row align-items-center position-relative py-5 px-4">
+          <div class="col-lg-7 mb-4 mb-lg-0" data-aos="fade-right">
+            <span class="badge bg-white text-primary px-3 py-2 fs-6 rounded-pill mb-3">2025 PROGRAM</span>
+            <h2 class="fw-bold display-5 mb-3 text-white">TRANSFORM YOUR CHILD'S FUTURE TODAY</h2>
+            <p class="lead mb-4 text-white opacity-90">우수한 미국 교육 프로그램으로 글로벌 인재의 성장을 도와드립니다</p>
+            <div class="d-flex flex-wrap gap-3">
+              <a href="/programs" class="btn btn-outline-light btn-lg px-4">프로그램 둘러보기</a>
+            </div>
+          </div>
+          <div class="col-lg-5" data-aos="fade-left">
+            <div class="cta-card bg-white rounded-4 p-4 shadow">
+              <h4 class="fw-bold mb-3">맞춤형 상담 신청</h4>
+              <p class="text-muted mb-4">프로그램 선택이 어렵다면, 전문 상담사와 1:1 상담을 통해 최적의 프로그램을 찾아보세요.</p>
+              <form class="cta-form">
+                <div class="mb-3">
+                  <input type="text" class="form-control form-control-lg" placeholder="이름">
+                </div>
+                <div class="mb-3">
+                  <input type="email" class="form-control form-control-lg" placeholder="이메일">
+                </div>
+                <div class="d-grid">
+                  <button type="submit" class="btn btn-primary btn-lg">상담 신청하기</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .cta-container {
+      position: relative;
+      padding: 0;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+    
+    .cta-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://res.cloudinary.com/dnry0kzyv/image/upload/v1744854576/sean-pollock-PhYq704ffdA-unsplash_a3scse.jpg') no-repeat center center;
+      background-size: cover;
+      z-index: 1;
+    }
+    
+    .cta-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+      opacity: 0.85;
+      z-index: 2;
+    }
+    
+    .cta-container .row {
+      z-index: 3;
+    }
+    
+    .btn-outline-light {
+      border-width: 2px;
+    }
+    
+    .cta-card {
+      transform: translateY(-10px);
+      backdrop-filter: blur(10px);
+    }
+    
+    .opacity-90 {
+      opacity: 0.9;
+    }
+    
+    @media (max-width: 991.98px) {
+      .cta-card {
+        transform: translateY(0);
+        margin-top: 2rem;
+      }
+    }
+    
+    /* 보라색 테두리 색상 추가 */
+    .border-purple {
+      border-color: #6f42c1 !important;
+    }
+    
+    /* 보라색 배경 색상 추가 */
+    .bg-purple {
+      background-color: #6f42c1 !important;
+    }
+    
+    /* 보라색 텍스트 색상 추가 */
+    .text-purple {
+      color: #6f42c1 !important;
+    }
+
+    /* 프로그램 카드 스타일 */
+    .program-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+    }
+    
+    .program-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .program-card .card-img-top {
+      height: 200px;
+      object-fit: cover;
+    }
+    
+    .program-details {
+      margin: 1rem 0;
+    }
+    
+    .program-details p {
+      margin-bottom: 0.5rem;
+      color: #666;
+    }
+    
+    @media (max-width: 768px) {
+      .program-card .card-img-top {
+        height: 180px;
+      }
+    }
+    
+    /* Swiper 스타일 */
+    .featured-programs .container {
+      position: relative;
+      padding: 0 20px;
+    }
+    
+    .program-swiper {
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .swiper-slide {
+      height: auto;
+    }
+    
+    .swiper-button-next,
+    .swiper-button-prev {
+      color: #4361ee;
+      background: rgba(255, 255, 255, 0.9);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .swiper-button-next:after,
+    .swiper-button-prev:after {
+      font-size: 1.2rem;
+    }
+    
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .swiper-pagination-bullet {
+      background: #4361ee;
+    }
+    
+    .swiper-pagination-bullet-active {
+      background: #3a0ca3;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      new Swiper('.program-swiper', {
+        slidesPerView: 1,
+        spaceBetween: 20,
+        loop: true,
+        loopFillGroupWithBlank: true,
+        loopAdditionalSlides: 50,
+        speed: 500,
+        autoplay: {
+          delay: 5000,
+          disableOnInteraction: false,
+        },
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+        breakpoints: {
+          640: {
+            slidesPerView: 1,
+          },
+          768: {
+            slidesPerView: 2,
+          },
+          992: {
+            slidesPerView: 3,
+          }
+        },
+        on: {
+          init: function() {
+            this.update();
+          },
+          reachEnd: function() {
+            setTimeout(() => {
+              this.slideToLoop(0, 800);
+            }, 100);
+          },
+          slideNextTransitionEnd: function() {
+            if (this.isEnd) {
+              this.slideToLoop(0, 0);
+            }
+          }
+        }
+      });
+    });
+  </script>
+  `
+}) %> 

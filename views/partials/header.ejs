@@ -1,0 +1,158 @@
+<header class="header">
+  <nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+      <a class="navbar-brand" href="/">
+        <img src="/images/logo.png" alt="DSH에듀 로고" class="logo-img" height="60">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item mx-2">
+            <a class="nav-link nav-hover-effect" href="/about" data-i18n="about">소개</a>
+          </li>
+          <li class="nav-item dropdown mx-2">
+            <a class="nav-link dropdown-toggle nav-hover-effect" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false" data-i18n="programs">
+              프로그램
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" href="/programs?category=summer" data-i18n="summerCamps">여름 캠프</a></li>
+              <li><a class="dropdown-item" href="/programs?category=winter" data-i18n="winterCamps">겨울 캠프</a></li>
+              <li><a class="dropdown-item" href="/programs?category=special" data-i18n="specialPrograms">특별 프로그램</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/programs" data-i18n="allPrograms">모든 프로그램</a></li>
+            </ul>
+          </li>
+          <li class="nav-item mx-2">
+            <a class="nav-link nav-hover-effect" href="/contact" data-i18n="contact">문의하기</a>
+          </li>
+          <!-- If user is logged in -->
+          <% if (locals.user) { %>
+            <li class="nav-item dropdown mx-2">
+              <a class="nav-link dropdown-toggle nav-hover-effect" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-user-circle me-1"></i> <%= user.name %>
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item" href="/dashboard" data-i18n="dashboard">대시보드</a></li>
+                <li><a class="dropdown-item" href="/dashboard/profile" data-i18n="myProfile">내 프로필</a></li>
+                <li><a class="dropdown-item" href="/dashboard/enrollments" data-i18n="myEnrollments">내 등록 현황</a></li>
+                <% if (user.role === 'admin') { %>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="/admin" data-i18n="adminPanel">관리자 패널</a></li>
+                <% } %>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" id="logout" data-i18n="logout">로그아웃</a></li>
+              </ul>
+            </li>
+          <% } else { %>
+            <!-- If user is not logged in -->
+            <li class="nav-item mx-2">
+              <a class="nav-link nav-hover-effect" href="/login" data-i18n="login">로그인</a>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- 네비게이션 애니메이션을 위한 CSS 추가 -->
+<style>
+  .nav-hover-effect {
+    position: relative;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-hover-effect:before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background-color: #0d6efd;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-hover-effect:hover {
+    color: #0d6efd;
+  }
+  
+  .nav-hover-effect:hover:before {
+    visibility: visible;
+    width: 100%;
+  }
+  
+  .nav-btn-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .nav-btn-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 드롭다운 메뉴 항목 애니메이션 */
+  .dropdown-item {
+    transition: all 0.2s ease;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+  }
+  
+  /* 네비게이션 항목 간격 조정 */
+  .navbar-nav .nav-item {
+    margin: 0 10px;
+  }
+  
+  /* 홈페이지에서 드롭다운 메뉴 스타일 */
+  body.home-page .dropdown-menu {
+    background-color: rgba(33, 37, 41, 0.9);
+    border: none;
+  }
+  
+  body.home-page .dropdown-menu .dropdown-item {
+    color: white;
+  }
+  
+  body.home-page .dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  body.home-page .dropdown-divider {
+    border-top-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* 로고 이미지 스타일 */
+  .logo-img {
+    transition: transform 0.3s ease;
+    padding: 8px 0;
+    height: 60px;
+    width: auto;
+  }
+  
+  .navbar-brand {
+    padding: 0;
+    margin-right: 2rem;
+  }
+  
+  .navbar-brand:hover .logo-img {
+    transform: scale(1.05);
+  }
+  
+  /* 홈페이지에서 로고 이미지 스타일 */
+  body.home-page .logo-img {
+    filter: brightness(0) invert(1); /* 흰색으로 변경 */
+  }
+
+  @media (max-width: 768px) {
+    .logo-img {
+      height: 50px; /* 모바일에서는 약간 작게 표시 */
+      padding: 4px 0;
+    }
+  }
+</style> 
