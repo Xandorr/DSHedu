@@ -1,0 +1,107 @@
+<%
+  // Badge 값에 따라 자동으로 색깔 매핑
+  function getBadgeClass(category) {
+    switch(category) {
+      case 'summer': return 'bg-primary';
+      case 'winter': return 'bg-info';  
+      case 'special': return 'bg-warning';
+      default: return 'bg-secondary';
+    }
+  }
+  
+  // 카테고리를 한국어로 변환
+  function getCategoryText(category) {
+    switch(category) {
+      case 'summer': return '여름';
+      case 'winter': return '겨울';
+      case 'special': return '특별';
+      default: return '기타';
+    }
+  }
+  
+  // 날짜 범위 포맷팅
+  function formatDateRange(startDate, endDate) {
+    if (!startDate || !endDate) return '날짜 미정';
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return `${start.getMonth() + 1}/${start.getDate()} - ${end.getMonth() + 1}/${end.getDate()}`;
+  }
+  
+  // 연령대 포맷팅
+  function formatAgeRange(ageRange) {
+    if (!ageRange || !ageRange.min || !ageRange.max) return '연령 미정';
+    return `${ageRange.min}-${ageRange.max}세`;
+  }
+  
+  // 위치 포맷팅
+  function formatLocation(location) {
+    if (!location) return '위치 미정';
+    if (typeof location === 'string') return location;
+    return `${location.city || ''}, ${location.state || ''}`.replace(/^,\s*/, '').replace(/,\s*$/, '') || '위치 미정';
+  }
+  
+  // 가격 포맷팅
+  function formatPrice(price) {
+    if (!price) return '$0';
+    return `$${price.toLocaleString()}`;
+  }
+  
+  // 이미지 URL 처리
+  function getImageUrl(program) {
+    // MongoDB 데이터 형식
+    if (program.photos && program.photos.length > 0) {
+      return program.photos[0];
+    }
+    // 정적 데이터 형식 (fallback)
+    if (program.image) {
+      return program.image;
+    }
+    // 기본 이미지
+    return '/images/default-program.jpg';
+  }
+  
+  // ID 처리
+  function getProgramId(program) {
+    return program._id || program.id;
+  }
+%>
+<div class="card h-100 border-0 shadow-sm program-card">
+  <div class="position-relative">
+    <img src="<%= getImageUrl(program) %>" class="card-img-top" alt="<%= program.title %>" style="height: 200px; object-fit: cover;">
+    <span class="position-absolute top-0 end-0 badge <%= getBadgeClass(program.category || program.badge) %> m-3">
+      <%= getCategoryText(program.category) || program.badge || '기타' %>
+    </span>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title fw-bold"><%= program.title %></h5>
+    <p class="card-text text-muted"><%= program.description %></p>
+    <div class="program-details my-3">
+      <div class="d-flex align-items-center mb-2">
+        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+        <span><%= formatLocation(program.location) %></span>
+      </div>
+      <div class="d-flex align-items-center mb-2">
+        <i class="fas fa-calendar-alt text-primary me-2"></i>
+        <span><%= program.dateRange || formatDateRange(program.startDate, program.endDate) %></span>
+      </div>
+      <div class="d-flex align-items-center">
+        <i class="fas fa-user-friends text-primary me-2"></i>
+        <span>연령: <%= program.ageRange && typeof program.ageRange === 'string' ? program.ageRange : formatAgeRange(program.ageRange) %></span>
+      </div>
+    </div>
+    <div class="d-flex justify-content-between align-items-center mt-4">
+      <div class="price-section">
+        <% if (program.discountPercent && program.discountPercent > 0) { %>
+          <div class="d-flex align-items-center">
+            <span class="text-muted text-decoration-line-through me-2 small"><%= formatPrice(program.originalPrice) %></span>
+            <span class="badge bg-danger text-white small me-2"><%= program.discountPercent %>% OFF</span>
+          </div>
+          <div class="fw-bold text-primary fs-5"><%= formatPrice(program.discountedPrice || program.price) %></div>
+        <% } else { %>
+          <div class="fw-bold text-primary fs-5"><%= formatPrice(program.price || program.originalPrice) %></div>
+        <% } %>
+      </div>
+      <a href="/programs/<%= getProgramId(program) %>" class="btn btn-outline-primary">상세 보기</a>
+    </div>
+  </div>
+</div> 

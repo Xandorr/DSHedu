@@ -2,25 +2,35 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4 mb-4 mb-md-0">
-        <h5 class="mb-4 text-primary">DSH에듀</h5>
-        <p>DSH에듀는 한국 학생들에게 미국의 우수한 교육 캠프 기회를 제공하여 문화 교류와 학업 우수성을 촉진합니다.</p>
+        <h5 class="mb-4 text-primary">(주)DSH에듀</h5>
+        <p class="mb-0">대표자 이진철</p>
+        <p class="mb-0">사업자등록번호: <span>181-87-03836</span></p>
         <div class="social-icons mt-4">
-          <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="text-white me-3"><i class="fab fa-youtube"></i></a>
-          <a href="#" class="text-white"><i class="fab fa-kakao"></i></a>
+          <a href="https://youtube.com/@dshedu" class="social-icon-link youtube-link" target="_blank" rel="noopener">
+            <div class="social-icon-wrapper youtube-wrapper">
+              <i class="fab fa-youtube"></i>
+              <span class="social-text">YouTube</span>
+            </div>
+          </a>
+          <a href="https://instagram.com/dshedu" class="social-icon-link instagram-link" target="_blank" rel="noopener">
+            <div class="social-icon-wrapper instagram-wrapper">
+              <i class="fab fa-instagram"></i>
+              <span class="social-text">Instagram</span>
+            </div>
+          </a>
         </div>
       </div>
       <div class="col-md-2 mb-4 mb-md-0">
         <h6 class="mb-4" data-i18n="quickLinks">빠른 링크</h6>
         <ul class="list-unstyled">
           <li class="mb-2"><a href="/" class="text-white-50 text-decoration-none" data-i18n="home">홈</a></li>
-          <li class="mb-2"><a href="/programs" class="text-white-50 text-decoration-none" data-i18n="programs">프로그램</a></li>
           <li class="mb-2"><a href="/about" class="text-white-50 text-decoration-none" data-i18n="about">소개</a></li>
+          <li class="mb-2"><a href="/programs" class="text-white-50 text-decoration-none" data-i18n="programs">프로그램</a></li>
+          <li class="mb-2"><a href="/posts" class="text-white-50 text-decoration-none" data-i18n="community">커뮤니티</a></li>
           <li class="mb-2"><a href="/contact" class="text-white-50 text-decoration-none" data-i18n="contact">문의하기</a></li>
         </ul>
       </div>
-      <div class="col-md-3 mb-4 mb-md-0">
+      <div class="col-md-2 mb-4 mb-md-0">
         <h6 class="mb-4" data-i18n="programs">프로그램</h6>
         <ul class="list-unstyled">
           <li class="mb-2"><a href="/programs?category=summer" class="text-white-50 text-decoration-none" data-i18n="summerCamps">여름 캠프</a></li>
@@ -28,11 +38,11 @@
           <li class="mb-2"><a href="/programs?category=special" class="text-white-50 text-decoration-none" data-i18n="specialPrograms">특별 프로그램</a></li>
         </ul>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <h6 class="mb-4" data-i18n="contactInfo">연락처</h6>
         <ul class="list-unstyled">
-          <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i> 서울특별시 강남구 테헤란로 123</li>
-          <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> +82 10 1234 5678</li>
+          <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i> 서울특별시 강남구 테헤란로70길 12, 402-J720호</li>
+          <li class="mb-2"><i class="fas fa-comment-dots me-2 text-primary"></i>카카오톡채널: <a href="https://pf.kakao.com/_wixkmn" target="_blank" rel="noopener">@dshedu</a></li>
           <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> info@dshedu.net</li>
           <li class="mb-2"><i class="fas fa-clock me-2 text-primary"></i> 월-금: 오전 9시 - 오후 6시</li>
         </ul>
@@ -45,13 +55,299 @@
       </div>
       <div class="col-md-6 text-md-end">
         <ul class="list-inline mb-0">
-          <li class="list-inline-item"><a href="/privacy" class="text-white-50 text-decoration-none" data-i18n="privacyPolicy">개인정보 처리방침</a></li>
-          <li class="list-inline-item ms-3"><a href="/terms" class="text-white-50 text-decoration-none" data-i18n="termsOfService">이용약관</a></li>
+          <li class="list-inline-item"><a href="#" class="text-white-50 text-decoration-none" data-bs-toggle="modal" data-bs-target="#privacyModal" data-i18n="privacyPolicy">개인정보 처리방침</a></li>
+          <li class="list-inline-item ms-3"><a href="#" class="text-white-50 text-decoration-none" data-bs-toggle="modal" data-bs-target="#termsModal" data-i18n="termsOfService">이용약관</a></li>
         </ul>
       </div>
     </div>
   </div>
 </footer>
 
+<!-- 개인정보 처리방침 모달 -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="privacyModalLabel">
+          <i class="fas fa-shield-alt text-primary me-2"></i>개인정보 처리방침
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <p class="text-muted">시행일자: 2025년 1월 1일</p>
+        </div>
+        
+        <div class="privacy-content">
+          <h5 class="text-primary">1. 개인정보의 처리 목적</h5>
+          <p>DSH에듀(이하 "회사")는 다음의 목적을 위하여 개인정보를 처리합니다. 처리한 개인정보는 다음의 목적 이외의 용도로는 사용되지 않으며, 목적이 변경될 시에는 별도의 동의를 받는 등 필요한 조치를 이행할 예정입니다.</p>
+          
+          <h6 class="mt-3">가. 홈페이지 회원가입 및 관리</h6>
+          <ul>
+            <li>회원가입의사 확인, 회원제 서비스 제공에 따른 본인 식별·인증</li>
+            <li>회원자격 유지·관리, 서비스 부정이용 방지</li>
+            <li>각종 고지·통지, 고충처리 등을 목적으로 개인정보를 처리합니다</li>
+          </ul>
+          
+          <h6 class="mt-3">나. 교육 프로그램 신청 및 관리</h6>
+          <ul>
+            <li>교육 프로그램 신청접수, 프로그램 안내 및 상담</li>
+            <li>프로그램 참가자 관리, 교육 서비스 제공</li>
+            <li>프로그램 관련 공지사항 전달</li>
+          </ul>
+          
+          <h6 class="mt-3">다. 민원사무 처리</h6>
+          <ul>
+            <li>민원인의 신원 확인, 민원사항 확인, 사실조사를 위한 연락·통지</li>
+            <li>처리결과 통보 등의 목적으로 개인정보를 처리합니다</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">2. 개인정보의 처리 및 보유기간</h5>
+          <p>회사는 정보주체로부터 개인정보를 수집할 때 동의받은 개인정보 보유·이용기간 또는 법령에 따른 개인정보 보유·이용기간 내에서 개인정보를 처리·보유합니다.</p>
+          
+          <h6 class="mt-3">각각의 개인정보 처리 및 보유 기간은 다음과 같습니다:</h6>
+          <ul>
+            <li><strong>홈페이지 회원가입 및 관리:</strong> 회원탈퇴 시까지</li>
+            <li><strong>교육 프로그램 신청 및 관리:</strong> 프로그램 종료 후 3년</li>
+            <li><strong>민원사무 처리:</strong> 민원 처리 완료 후 3년</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">3. 처리하는 개인정보의 항목</h5>
+          <h6 class="mt-3">가. 홈페이지 회원가입</h6>
+          <ul>
+            <li>필수항목: 이름, 이메일주소, 비밀번호</li>
+            <li>선택항목: 휴대전화번호</li>
+          </ul>
+          
+          <h6 class="mt-3">나. 교육 프로그램 신청</h6>
+          <ul>
+            <li>필수항목: 이름, 연락처, 이메일주소, 생년월일, 학교/학년</li>
+            <li>선택항목: 주소, 보호자 연락처, 특이사항</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">4. 개인정보의 제3자 제공</h5>
+          <p>회사는 개인정보를 제3자에게 제공하지 않습니다. 다만, 다음의 경우에는 예외로 합니다:</p>
+          <ul>
+            <li>정보주체로부터 별도의 동의를 받은 경우</li>
+            <li>법률에 특별한 규정이 있거나 법령상 의무를 준수하기 위하여 불가피한 경우</li>
+            <li>공공기관이 법령 등에서 정하는 소관 업무의 수행을 위하여 불가피한 경우</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">5. 정보주체의 권리·의무 및 행사방법</h5>
+          <p>정보주체는 회사에 대해 언제든지 다음 각 호의 개인정보 보호 관련 권리를 행사할 수 있습니다:</p>
+          <ul>
+            <li>개인정보 처리현황 통지요구</li>
+            <li>개인정보 처리정지 요구</li>
+            <li>개인정보의 정정·삭제 요구</li>
+            <li>손해배상 요구</li>
+          </ul>
+
+          <div class="alert alert-info mt-4">
+            <h6><i class="fas fa-user-shield me-2"></i>개인정보보호책임자</h6>
+            <p class="mb-2"><strong>성명:</strong> 개인정보보호책임자</p>
+            <p class="mb-2"><strong>연락처:</strong> 010-1234-5678</p>
+            <p class="mb-0"><strong>이메일:</strong> privacy@dshedu.net</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 이용약관 모달 -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="termsModalLabel">
+          <i class="fas fa-file-contract text-primary me-2"></i>이용약관
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <p class="text-muted">시행일자: 2025년 1월 1일</p>
+        </div>
+        
+        <div class="terms-content">
+          <h5 class="text-primary">제1조 (목적)</h5>
+          <p>이 약관은 DSH에듀(이하 "회사")가 제공하는 교육 서비스 및 온라인 서비스(이하 "서비스")의 이용과 관련하여 회사와 회원 간의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+
+          <h5 class="text-primary mt-4">제2조 (정의)</h5>
+          <p>이 약관에서 사용하는 용어의 정의는 다음과 같습니다:</p>
+          <ul>
+            <li><strong>"서비스"</strong>란 회사가 제공하는 교육 프로그램, 온라인 플랫폼, 상담 서비스 등을 의미합니다.</li>
+            <li><strong>"회원"</strong>이란 회사와 서비스 이용계약을 체결하고 회사가 제공하는 서비스를 이용하는 자를 의미합니다.</li>
+            <li><strong>"아이디(ID)"</strong>란 회원의 식별과 서비스 이용을 위하여 회원이 정하고 회사가 승인하는 문자 또는 문자와 숫자의 조합을 의미합니다.</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">제3조 (서비스의 제공)</h5>
+          <h6 class="mt-3">회사가 제공하는 서비스는 다음과 같습니다:</h6>
+          <ul>
+            <li>교육 캠프 프로그램 (여름 캠프, 겨울 캠프, 특별 프로그램)</li>
+            <li>온라인 상담 서비스</li>
+            <li>교육 정보 제공 서비스</li>
+            <li>회원 관리 서비스</li>
+            <li>기타 회사가 정하는 서비스</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">제4조 (회원가입)</h5>
+          <h6 class="mt-3">1. 회원가입 절차</h6>
+          <p>회원가입은 이용자가 약관의 내용에 대하여 동의를 하고 회원가입신청을 한 후 회사가 이러한 신청에 대하여 승낙함으로써 체결됩니다.</p>
+          
+          <h6 class="mt-3">2. 회원가입 제한</h6>
+          <p>회사는 다음 각 호에 해당하는 신청에 대하여는 승낙을 하지 않거나 사후에 이용계약을 해지할 수 있습니다:</p>
+          <ul>
+            <li>실명이 아니거나 타인의 명의를 이용한 경우</li>
+            <li>허위의 정보를 기재하거나, 회사가 제시하는 내용을 기재하지 않은 경우</li>
+            <li>기타 회원으로 등록하는 것이 회사의 기술상 현저히 지장이 있다고 판단되는 경우</li>
+          </ul>
+
+          <h5 class="text-primary mt-4">제5조 (회원의 의무)</h5>
+          <p>회원은 다음 사항을 준수하여야 합니다:</p>
+          <ul>
+            <li>다른 사람의 서비스 이용을 방해하거나 그 정보를 도용하는 경우</li>
+            <li>회사의 저작권, 제3자의 저작권 등 지적재산권을 침해하는 경우</li>
+            <li>회사의 승낙 없이 서비스를 이용하여 영업활동을 하는 경우</li>
+            <li>관련 법령에 위배되는 행위를 하는 경우</li>
+          </ul>
+
+          <div class="alert alert-warning mt-4">
+            <h6><i class="fas fa-exclamation-triangle me-2"></i>중요 안내사항</h6>
+            <p class="mb-0">교육 프로그램 참가 시에는 별도의 참가약관이 적용되며, 프로그램별 특별 조건이 있을 수 있습니다.</p>
+          </div>
+
+          <h5 class="text-primary mt-4">제6조 (개인정보보호)</h5>
+          <p>회사는 개인정보보호법 등 관련 법령이 정하는 바에 따라 회원의 개인정보를 보호하기 위해 노력합니다.</p>
+
+          <h5 class="text-primary mt-4">제7조 (면책조항)</h5>
+          <ul>
+            <li>회사는 천재지변 또는 이에 준하는 불가항력으로 인하여 서비스를 제공할 수 없는 경우에는 서비스 제공에 관한 책임이 면제됩니다.</li>
+            <li>회사는 회원의 귀책사유로 인한 서비스 이용의 장애에 대하여 책임을 지지 않습니다.</li>
+          </ul>
+
+          <div class="alert alert-info mt-4">
+            <h6><i class="fas fa-info-circle me-2"></i>문의처</h6>
+            <p class="mb-2"><strong>회사명:</strong> DSH에듀</p>
+            <p class="mb-2"><strong>주소:</strong> 서울특별시 강남구 테헤란로 123</p>
+            <p class="mb-2"><strong>전화:</strong> 02-1234-5678</p>
+            <p class="mb-0"><strong>이메일:</strong> info@dshedu.net</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Back to top button -->
-<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="fas fa-arrow-up"></i></a> 
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="fas fa-arrow-up"></i></a>
+
+<style>
+/* 소셜 아이콘 스타일 */
+.social-icons {
+  display: flex;
+  justify-content: flex-start;
+  gap: 16px;
+  margin-top: 1.5rem !important;
+  flex-wrap: wrap;
+}
+
+.social-icon-link {
+  text-decoration: none !important;
+  color: white !important;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.social-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  min-width: 130px;
+}
+
+.social-icon-wrapper i {
+  font-size: 20px;
+  margin-right: 8px;
+  color: white;
+}
+
+.social-text {
+  font-weight: 600;
+  font-size: 14px;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+/* 유튜브 스타일 */
+.youtube-wrapper {
+  background: linear-gradient(135deg, #FF0000, #CC0000);
+  box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+}
+
+.youtube-link:hover .youtube-wrapper {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+  background: linear-gradient(135deg, #FF1744, #D32F2F);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* 인스타그램 스타일 */
+.instagram-wrapper {
+  background: linear-gradient(135deg, #E1306C, #C13584, #833AB4);
+  box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
+}
+
+.instagram-link:hover .instagram-wrapper {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(225, 48, 108, 0.4);
+  background: linear-gradient(135deg, #F56040, #E1306C, #C13584);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.social-icon-link:hover {
+  color: white !important;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .social-icons {
+    gap: 12px;
+  }
+  
+  .social-icon-wrapper {
+    padding: 10px 16px;
+    min-width: 110px;
+  }
+  
+  .social-icon-wrapper i {
+    font-size: 18px;
+  }
+  
+  .social-text {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .social-icons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .social-icon-wrapper {
+    width: 100%;
+    max-width: 200px;
+  }
+}
+</style> 

@@ -13,14 +13,29 @@ const NaverStrategy = require('passport-naver').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const flash = require('connect-flash');
+const methodOverride = require('method-override');
 
 // Load environment variables
 dotenv.config();
+
+// Import models
+const User = require('./models/User');
+const Program = require('./models/Program');
 
 // Import routes
 const authRoutes = require('./routes/auth');
 const programRoutes = require('./routes/programs');
 const enrollmentRoutes = require('./routes/enrollments');
+const postRoutes = require('./routes/posts');
+const debugController = require('./controllers/debugController');
+
+// Import middlewares
+const { requireAuth } = require('./middlewares/auth');
+const programController = require('./controllers/programController');
+
+// Import programs configuration (fallback용)
+const { programs, getFeaturedPrograms, getProgramsByCategory, getProgramById } = require('./config/programs');
 
 // Initialize app
 const app = express();
@@ -30,6 +45,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 
 // Set view engine
 app.set('view engine', 'ejs');
@@ -37,59 +53,290 @@ app.set('view engine', 'ejs');
 // Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 세션 설정 (라우트보다 먼저!)
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dsh_edu_secret',
+  resave: false,
+  saveUninitialized: true, // passport 권장 설정
+  cookie: { 
+    secure: false, // development에서는 false
+    maxAge: 24 * 60 * 60 * 1000, // 24시간
+    httpOnly: true
+  },
+  name: 'dshedu.session' // 세션 쿠키명 명시
+}));
+
+// Passport 초기화 (라우트보다 먼저!)
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Passport 직렬화/역직렬화
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    console.log('🔍 deserializeUser 호출됨, ID:', id);
+    const user = await User.findById(id);
+    if (user) {
+      console.log('✅ 사용자 발견:', user.name, user.email);
+      done(null, user);
+    } else {
+      console.log('❌ 사용자를 찾을 수 없음, ID:', id);
+      done(null, false);
+    }
+  } catch (err) {
+    console.log('❌ deserializeUser 오류:', err.message);
+    done(err, null);
+  }
+});
+
+// 로컬 전략 설정
+passport.use(new LocalStrategy(
+  { usernameField: 'email' },
+  async (email, password, done) => {
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return done(null, false, { message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      }
+      
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return done(null, false, { message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
+      }
+      
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  }
+));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/programs', programRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
+app.use('/posts', postRoutes);
+
+// Debug route
+app.get('/debug/auth', debugController.debugAuth);
 
 // Main routes
-app.get('/', (req, res) => {
-  res.render('index', { 
-    title: 'US Summer & Winter Camps for Korean Students',
-    description: 'Discover enriching camp programs for Korean students in the United States'
-  });
+app.get('/', async (req, res) => {
+  try {
+    console.log('🏠 메인 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
+    
+    // MongoDB에서 활성화된 프로그램들 가져오기 (sortOrder로 정렬)
+    const activePrograms = await Program.find({ isActive: true }).sort({ sortOrder: 1, createdAt: -1 });
+    
+    // featured 프로그램들 필터링
+    const featuredPrograms = activePrograms; // 모든 프로그램을 슬라이더에 표시
+    
+    console.log('📊 메인 페이지 프로그램 로드:', {
+      전체: activePrograms.length,
+      추천: featuredPrograms.length
+    });
+    
+    res.render('index', { 
+      title: 'US Summer & Winter Camps for Korean Students',
+      description: 'Discover enriching camp programs for Korean students in the United States',
+      featuredPrograms: featuredPrograms,
+      programs: activePrograms,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('❌ 메인 페이지 로드 오류:', error);
+    
+    // 에러 시 정적 데이터 사용 (fallback)
+    const featuredPrograms = getFeaturedPrograms();
+    res.render('index', { 
+      title: 'US Summer & Winter Camps for Korean Students',
+      description: 'Discover enriching camp programs for Korean students in the United States',
+      featuredPrograms: featuredPrograms,
+      programs: programs,
+      user: req.user
+    });
+  }
 });
 
-app.get('/programs', (req, res) => {
-  res.render('programs', { 
-    title: 'Our Programs',
-    description: 'Explore our summer and winter camp programs'
-  });
+app.get('/programs', async (req, res) => {
+  try {
+    console.log('📚 프로그램 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
+    
+    const { category } = req.query;
+    let query = { isActive: true };
+    
+    // 카테고리 필터링
+    if (category) {
+      query.category = category;
+    }
+    
+    // MongoDB에서 프로그램 가져오기 (sortOrder로 정렬)
+    const programsFromDB = await Program.find(query).sort({ sortOrder: 1, createdAt: -1 });
+    
+    console.log('📊 프로그램 페이지 로드:', {
+      카테고리: category || '전체',
+      프로그램수: programsFromDB.length
+    });
+    
+    res.render('programs', { 
+      title: 'Our Programs',
+      description: 'Explore our summer and winter camp programs',
+      programs: programsFromDB,
+      selectedCategory: category,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('❌ 프로그램 페이지 로드 오류:', error);
+    
+    // 에러 시 정적 데이터 사용 (fallback)
+    const { category } = req.query;
+    let filteredPrograms = programs;
+    
+    if (category) {
+      filteredPrograms = getProgramsByCategory(category);
+    }
+    
+    res.render('programs', { 
+      title: 'Our Programs',
+      description: 'Explore our summer and winter camp programs',
+      programs: filteredPrograms,
+      selectedCategory: category,
+      user: req.user
+    });
+  }
 });
 
 app.get('/about', (req, res) => {
+  console.log('ℹ️ 소개 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
   res.render('about', { 
     title: 'About Us',
-    description: 'Learn about our mission and vision'
+    description: 'Learn about our mission and vision',
+    user: req.user
   });
 });
 
 app.get('/contact', (req, res) => {
+  console.log('📞 문의 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
   res.render('contact', { 
     title: 'Contact Us',
-    description: 'Get in touch with our team'
+    description: 'Get in touch with our team',
+    user: req.user
   });
 });
 
-app.get('/login', (req, res) => {
-  res.render('login', { 
-    title: 'Login',
-    description: 'Access your account'
-  });
-});
+// 로그인 라우트는 아래에 있음 (중복 제거)
 
 app.get('/register', (req, res) => {
+  console.log('📝 회원가입 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
   res.render('register', { 
     title: 'Register',
-    description: 'Create a new account'
+    description: 'Create a new account',
+    user: req.user
   });
 });
 
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', requireAuth, (req, res) => {
+  console.log('📊 대시보드 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
   res.render('dashboard', { 
     title: 'Dashboard',
-    description: 'Manage your enrollments'
+    description: 'Manage your enrollments',
+    user: req.user
   });
+});
+
+app.get('/dashboard/profile', requireAuth, (req, res) => {
+  console.log('👤 프로필 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
+  res.render('profile', { 
+    title: 'My Profile',
+    description: 'Manage your profile information',
+    user: req.user
+  });
+});
+
+app.get('/dashboard/enrollments', requireAuth, (req, res) => {
+  console.log('📋 등록 현황 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
+  res.render('my-enrollments', { 
+    title: 'My Enrollments',
+    description: 'View your program enrollments',
+    user: req.user
+  });
+});
+
+app.get('/admin', requireAuth, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).redirect('/');
+  }
+  console.log('⚙️ 관리자 패널 접속, 사용자:', req.user ? req.user.name : '비회원');
+  res.render('admin-panel', { 
+    title: 'Admin Panel',
+    description: 'Administrative control panel',
+    user: req.user
+  });
+});
+
+// ===== 관리자용 프로그램 관리 라우트 =====
+app.get('/admin/programs', requireAuth, programController.getAdminPrograms);
+app.get('/admin/programs/:id', requireAuth, programController.getProgramAdmin);
+app.post('/admin/programs', requireAuth, programController.upload.array('photos', 5), programController.createProgramAdmin);
+app.post('/admin/programs/:id', requireAuth, programController.upload.array('photos', 5), programController.updateProgramAdmin);
+app.put('/admin/programs/:id', requireAuth, programController.upload.array('photos', 5), programController.updateProgramAdmin);
+app.delete('/admin/programs/:id', requireAuth, programController.deleteProgramAdmin);
+
+app.get('/programs/:id', async (req, res) => {
+  try {
+    const programId = req.params.id;
+    console.log('📖 프로그램 상세 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
+    
+    // MongoDB에서 프로그램 찾기
+    const program = await Program.findById(programId);
+    
+    if (!program) {
+      console.log('❌ 프로그램을 찾을 수 없음:', programId);
+      return res.status(404).render('error', { 
+        title: '프로그램을 찾을 수 없습니다',
+        description: '요청하신 프로그램을 찾을 수 없습니다.',
+        user: req.user
+      });
+    }
+    
+    console.log('📊 프로그램 상세 로드:', {
+      id: program._id,
+      title: program.title,
+      price: program.price
+    });
+    
+    res.render('program-detail', { 
+      title: program.title,
+      description: program.description,
+      program: program,
+      user: req.user
+    });
+  } catch (error) {
+    console.error('❌ 프로그램 상세 페이지 로드 오류:', error);
+    
+    // 에러 시 정적 데이터 사용 (fallback)
+    const programId = req.params.id;
+    const program = getProgramById(programId);
+    
+    if (!program) {
+      return res.status(404).render('error', { 
+        title: '프로그램을 찾을 수 없습니다',
+        description: '요청하신 프로그램을 찾을 수 없습니다.',
+        user: req.user
+      });
+    }
+    
+    res.render('program-detail', { 
+      title: program.title,
+      description: program.description,
+      program: program,
+      user: req.user
+    });
+  }
 });
 
 // 이메일 전송 API 엔드포인트
@@ -129,20 +376,7 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
-// 세션 설정
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'dsh_edu_secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24시간
-  }
-}));
 
-// Passport 초기화
-app.use(passport.initialize());
-app.use(passport.session());
 
 // MongoDB 연결
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dsh_edu', {
@@ -152,62 +386,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dsh_edu',
 .then(() => console.log('MongoDB 연결 성공'))
 .catch(err => console.error('MongoDB 연결 실패:', err));
 
-// 사용자 스키마 정의
-const UserSchema = new mongoose.Schema({
-  name: String,
-  email: { type: String, unique: true },
-  password: String,
-  resetPasswordToken: String,
-  resetPasswordExpires: Date,
-  kakaoId: String,
-  naverId: String,
-  googleId: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-// 모델이 이미 존재하는지 확인 후 생성
-let User;
-try {
-  User = mongoose.model('User');
-} catch (err) {
-  User = mongoose.model('User', UserSchema);
-}
-
-// Passport 직렬화/역직렬화
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
-
-// 로컬 전략 설정
-passport.use(new LocalStrategy(
-  { usernameField: 'email' },
-  async (email, password, done) => {
-    try {
-      const user = await User.findOne({ email });
-      if (!user) {
-        return done(null, false, { message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
-      }
-      
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return done(null, false, { message: '이메일 또는 비밀번호가 올바르지 않습니다.' });
-      }
-      
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }
-));
+// User 모델은 models/User.js에서 import됨
 
 // 카카오 전략 설정
 passport.use(new KakaoStrategy({
@@ -324,19 +503,49 @@ app.get('/login', (req, res) => {
   res.render('login', { 
     title: '로그인', 
     description: 'DSH에듀에 로그인하여 회원 전용 서비스를 이용하세요',
-    user: req.user
+    user: req.user,
+    error: req.flash('error'),
+    success: req.flash('success')
   });
 });
 
-app.post('/auth/login', passport.authenticate('local', {
-  successRedirect: '/',
-  failureRedirect: '/login',
-  failureFlash: true
-}));
+app.post('/auth/login', (req, res, next) => {
+  passport.authenticate('local', (err, user, info) => {
+    if (err) {
+      console.log('❌ 로그인 오류:', err);
+      return next(err);
+    }
+    
+    if (!user) {
+      console.log('❌ 로그인 실패:', info.message);
+      req.flash('error', info.message);
+      return res.redirect('/login');
+    }
+    
+    req.logIn(user, (err) => {
+      if (err) {
+        console.log('❌ 세션 생성 오류:', err);
+        return next(err);
+      }
+      
+      console.log('✅ 로그인 성공:', user.name, user.email);
+      console.log('✅ 세션 생성됨, ID:', req.session.id);
+      console.log('✅ req.user 설정됨:', !!req.user);
+      
+      return res.redirect('/');
+    });
+  })(req, res, next);
+});
 
 app.get('/auth/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+  req.logout((err) => {
+    if (err) {
+      console.log('❌ 로그아웃 오류:', err);
+      return res.redirect('/');
+    }
+    console.log('✅ 로그아웃 성공');
+    res.redirect('/');
+  });
 });
 
 app.post('/auth/register', async (req, res) => {

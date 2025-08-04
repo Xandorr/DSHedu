@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container">
       <a class="navbar-brand" href="/">
-        <img src="/images/logo.png" alt="DSH에듀 로고" class="logo-img" height="60">
+        <img src="/images/logo.png" alt="DSH에듀 로고" class="logo-img">
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -25,6 +25,9 @@
             </ul>
           </li>
           <li class="nav-item mx-2">
+            <a class="nav-link nav-hover-effect" href="/posts" data-i18n="community">커뮤니티</a>
+          </li>
+          <li class="nav-item mx-2">
             <a class="nav-link nav-hover-effect" href="/contact" data-i18n="contact">문의하기</a>
           </li>
           <!-- If user is logged in -->
@@ -42,7 +45,7 @@
                   <li><a class="dropdown-item" href="/admin" data-i18n="adminPanel">관리자 패널</a></li>
                 <% } %>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#" id="logout" data-i18n="logout">로그아웃</a></li>
+                <li><a class="dropdown-item" href="/auth/logout" onclick="return confirm('정말 로그아웃하시겠습니까?')" data-i18n="logout">로그아웃</a></li>
               </ul>
             </li>
           <% } else { %>
@@ -133,6 +136,8 @@
     padding: 8px 0;
     height: 60px;
     width: auto;
+    max-width: 200px; /* 로고 최대 너비 설정 */
+    object-fit: contain; /* 비율 유지하며 맞춤 */
   }
   
   .navbar-brand {
@@ -144,15 +149,128 @@
     transform: scale(1.05);
   }
   
-  /* 홈페이지에서 로고 이미지 스타일 */
+  /* 홈페이지에서 로고가 잘 보이도록 배경에 그림자 효과 추가 */
   body.home-page .logo-img {
-    filter: brightness(0) invert(1); /* 흰색으로 변경 */
+    display: block; /* 홈페이지에서 로고 표시 */
+    transition: all 0.3s ease;
+  }
+  
+  /* 홈페이지에서 로고 호버 효과 */
+  body.home-page .navbar-brand:hover .logo-img {
+    transform: scale(1.05);
+  }
+  
+  /* 일반적인 헤더 스타일 */
+  .header .navbar {
+    background-color: #ffffff !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .header .navbar-brand {
+    background-color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  .header .navbar-brand:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.02);
+  }
+  
+  body.home-page header .navbar-light .navbar-nav .nav-link,
+  body.home-page header .navbar-light .navbar-nav .nav-link.active {
+    color: #333 !important;
+  }
+  
+  body.home-page header .navbar-light .navbar-nav .nav-link:hover {
+    color: #0d6efd !important;
+  }
+  
+  body.home-page header .navbar-light .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.7%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  }
+  
+  body.home-page header .navbar-light .navbar-toggler {
+    border-color: rgba(0, 0, 0, 0.3);
+  }
+  
+  /* 로고 스타일 개선 */
+  body.home-page header .navbar-brand {
+    background-color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+  }
+  
+  body.home-page header .navbar-brand:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.02);
+  }
+  
+  body.home-page header .logo-img {
+    transition: all 0.3s ease;
+  }
+  
+  body.home-page header .navbar-brand:hover .logo-img {
+    transform: scale(1.05);
+  }
+  
+  /* 로고 텍스트 스타일 */
+  .logo-text {
+    font-weight: 800;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+    transition: all 0.3s ease;
+  }
+  
+  .logo-text .text-primary {
+    background: linear-gradient(135deg, #0d6efd 0%, #4361ee 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* 홈페이지에서 로고 텍스트 스타일 */
+  body.home-page .logo-text {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  body.home-page .logo-text .text-primary {
+    background: linear-gradient(135deg, #ffffff 0%, #e9ecef 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  body.home-page .navbar-brand:hover .logo-text {
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
+  
+  body.home-page .navbar-brand:hover .logo-text .text-primary {
+    background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   @media (max-width: 768px) {
     .logo-img {
       height: 50px; /* 모바일에서는 약간 작게 표시 */
       padding: 4px 0;
+      max-width: 180px;
     }
   }
 </style> 

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | DSH에듀</title>
+  <meta name="description" content="<%= description %>">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <%- include('./partials/header') %>
+
+  <div class="container mt-5 pt-5">
+    <div class="row">
+      <!-- 왼쪽 사이드바 -->
+      <div class="col-md-3 mb-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                   style="width: 80px; height: 80px;">
+                <i class="fas fa-user fa-2x text-white"></i>
+              </div>
+            </div>
+            <h5 class="card-title"><%= user.name %></h5>
+            <p class="text-muted small"><%= user.email %></p>
+            <span class="badge bg-<%= user.role === 'admin' ? 'warning' : 'primary' %>">
+              <%= user.role === 'admin' ? '관리자' : '사용자' %>
+            </span>
+          </div>
+        </div>
+
+        <!-- 네비게이션 -->
+        <div class="list-group mt-3">
+          <a href="/dashboard" class="list-group-item list-group-item-action">
+            <i class="fas fa-tachometer-alt me-2"></i>대시보드
+          </a>
+          <a href="/dashboard/profile" class="list-group-item list-group-item-action">
+            <i class="fas fa-user me-2"></i>내 프로필
+          </a>
+          <a href="/dashboard/enrollments" class="list-group-item list-group-item-action active">
+            <i class="fas fa-list-alt me-2"></i>내 등록 현황
+          </a>
+          <% if (user.role === 'admin') { %>
+          <a href="/admin" class="list-group-item list-group-item-action">
+            <i class="fas fa-cogs me-2"></i>관리자 패널
+          </a>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- 메인 컨텐츠 -->
+      <div class="col-md-9">
+        <!-- 헤더 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2><i class="fas fa-list-alt me-2 text-success"></i>내 등록 현황</h2>
+          <a href="/programs" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>새 프로그램 찾기
+          </a>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-4">
+            <div class="card bg-primary text-white">
+              <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center">
+                  <div class="me-3">
+                    <i class="fas fa-calendar-check fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0" id="totalEnrollments">0</h4>
+                    <small>총 등록</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-success text-white">
+              <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center">
+                  <div class="me-3">
+                    <i class="fas fa-play fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0" id="activeEnrollments">0</h4>
+                    <small>진행 중</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-info text-white">
+              <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center">
+                  <div class="me-3">
+                    <i class="fas fa-check fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0" id="completedEnrollments">0</h4>
+                    <small>완료</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 필터 및 검색 -->
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-search"></i></span>
+                  <input type="text" class="form-control" placeholder="프로그램 이름으로 검색..." id="searchInput">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" id="statusFilter">
+                  <option value="">모든 상태</option>
+                  <option value="pending">대기 중</option>
+                  <option value="confirmed">확정</option>
+                  <option value="in-progress">진행 중</option>
+                  <option value="completed">완료</option>
+                  <option value="cancelled">취소됨</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <select class="form-select" id="categoryFilter">
+                  <option value="">모든 카테고리</option>
+                  <option value="summer">여름 캠프</option>
+                  <option value="winter">겨울 캠프</option>
+                  <option value="special">특별 프로그램</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 등록 현황 목록 -->
+        <div id="enrollmentsList">
+          <!-- 데이터가 없을 때 -->
+          <div class="card shadow-sm border-0">
+            <div class="card-body text-center py-5">
+              <div class="mb-4">
+                <i class="fas fa-calendar-plus fa-4x text-muted"></i>
+              </div>
+              <h5 class="text-muted">등록된 프로그램이 없습니다</h5>
+              <p class="text-muted">지금 바로 흥미로운 프로그램에 등록해보세요!</p>
+              <a href="/programs" class="btn btn-primary btn-lg">
+                <i class="fas fa-search me-2"></i>프로그램 찾아보기
+              </a>
+            </div>
+          </div>
+
+          <!-- 샘플 등록 데이터 (실제로는 서버에서 데이터를 가져옴) -->
+          <div class="d-none" id="sampleEnrollments">
+            <div class="card shadow-sm border-0 mb-3 enrollment-card" data-status="confirmed" data-category="summer">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-2">
+                      <h5 class="mb-0 me-3">여름 영어 캠프 2024</h5>
+                      <span class="badge bg-success">확정</span>
+                    </div>
+                    <p class="text-muted mb-2">
+                      <i class="fas fa-calendar me-2"></i>2024.07.15 - 2024.07.22
+                      <i class="fas fa-clock ms-3 me-2"></i>09:00 - 17:00
+                    </p>
+                    <p class="text-muted mb-0">
+                      <i class="fas fa-map-marker-alt me-2"></i>서울특별시 강남구 교육원
+                    </p>
+                  </div>
+                  <div class="col-md-4 text-end">
+                    <div class="mb-2">
+                      <strong class="fs-5 text-primary">₩350,000</strong>
+                    </div>
+                    <div class="btn-group" role="group">
+                      <button type="button" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> 상세보기
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-download"></i> 증명서
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-3 enrollment-card" data-status="in-progress" data-category="special">
+              <div class="card-body">
+                <div class="row align-items-center">
+                  <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-2">
+                      <h5 class="mb-0 me-3">코딩 부트캠프</h5>
+                      <span class="badge bg-warning">진행 중</span>
+                    </div>
+                    <p class="text-muted mb-2">
+                      <i class="fas fa-calendar me-2"></i>2024.06.01 - 2024.08.31
+                      <i class="fas fa-clock ms-3 me-2"></i>10:00 - 18:00
+                    </p>
+                    <p class="text-muted mb-0">
+                      <i class="fas fa-map-marker-alt me-2"></i>온라인 (Zoom)
+                    </p>
+                  </div>
+                  <div class="col-md-4 text-end">
+                    <div class="mb-2">
+                      <strong class="fs-5 text-primary">₩1,200,000</strong>
+                    </div>
+                    <div class="progress mb-2" style="height: 8px;">
+                      <div class="progress-bar bg-warning" role="progressbar" style="width: 65%"></div>
+                    </div>
+                    <small class="text-muted">진행률: 65%</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 페이지네이션 -->
+        <nav aria-label="등록 현황 페이지네이션" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1">이전</a>
+            </li>
+            <li class="page-item active">
+              <a class="page-link" href="#">1</a>
+            </li>
+            <li class="page-item">
+              <a class="page-link" href="#">다음</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <%- include('./partials/footer') %>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+  
+  <!-- Translations JS -->
+  <script src="/js/translations.js"></script>
+  
+  <!-- Custom JS -->
+  <script src="/js/main.js"></script>
+  
+  <!-- Initialize AOS -->
+  <script>
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 임시로 샘플 데이터 표시 (실제로는 서버에서 데이터 로드)
+      loadEnrollments();
+
+      // 검색 및 필터 이벤트
+      document.getElementById('searchInput').addEventListener('input', filterEnrollments);
+      document.getElementById('statusFilter').addEventListener('change', filterEnrollments);
+      document.getElementById('categoryFilter').addEventListener('change', filterEnrollments);
+    });
+
+    function loadEnrollments() {
+      // 실제 구현에서는 서버에서 데이터를 가져옴
+      const hasEnrollments = false; // 임시로 false 설정
+
+      if (hasEnrollments) {
+        // 데이터가 있을 때 샘플 데이터 표시
+        document.getElementById('sampleEnrollments').classList.remove('d-none');
+        updateStatistics();
+      } else {
+        // 데이터가 없을 때는 기본 화면 표시 (이미 표시됨)
+        updateStatistics(0, 0, 0);
+      }
+    }
+
+    function updateStatistics(total = 0, active = 0, completed = 0) {
+      document.getElementById('totalEnrollments').textContent = total;
+      document.getElementById('activeEnrollments').textContent = active;
+      document.getElementById('completedEnrollments').textContent = completed;
+    }
+
+    function filterEnrollments() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+      
+      const cards = document.querySelectorAll('.enrollment-card');
+      
+      cards.forEach(card => {
+        const title = card.querySelector('h5').textContent.toLowerCase();
+        const status = card.dataset.status;
+        const category = card.dataset.category;
+        
+        const matchesSearch = title.includes(searchTerm);
+        const matchesStatus = !statusFilter || status === statusFilter;
+        const matchesCategory = !categoryFilter || category === categoryFilter;
+        
+        if (matchesSearch && matchesStatus && matchesCategory) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // 상세보기 버튼 클릭 이벤트
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.btn-outline-primary')) {
+        alert('프로그램 상세 정보를 표시합니다.');
+      }
+      
+      if (e.target.closest('.btn-outline-secondary')) {
+        alert('수료증/증명서를 다운로드합니다.');
+      }
+    });
+  </script>
+</body>
+</html> 

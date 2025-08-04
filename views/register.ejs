@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | DSH에듀</title>
+  <meta name="description" content="<%= description %>">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <%- include('./partials/header') %>
+  
+  <!-- Main Content -->
+  <main>
+    <!-- Register Section -->
+    <section class="register-section position-relative py-5">
+      <div class="register-bg position-absolute w-100 h-100">
+        <div class="gradient-overlay"></div>
+      </div>
+      
+      <div class="container position-relative">
+        <div class="row justify-content-center align-items-center min-vh-100">
+          <div class="col-lg-6 col-md-8">
+            <div class="register-card bg-white rounded-5 shadow-lg p-5 mx-auto">
+              <!-- Logo & Brand -->
+              <div class="text-center mb-4">
+                <div class="brand-logo mb-3">
+                  <h2 class="fw-bold text-primary mb-0">DSH<span class="text-secondary">에듀</span></h2>
+                </div>
+                <h4 class="fw-semi-bold mb-2">Join Our Community</h4>
+                <p class="text-muted mb-0">새로운 학습 여정을 시작하세요</p>
+              </div>
+
+              <!-- Register Form -->
+              <form method="POST" action="/auth/register" class="register-form needs-validation" novalidate>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <div class="form-floating">
+                      <input type="text" class="form-control form-control-lg" id="name" name="name" placeholder="이름" required>
+                      <label for="name"><i class="fas fa-user me-2"></i>이름</label>
+                      <div class="invalid-feedback">이름을 입력해주세요.</div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-3">
+                    <div class="form-floating">
+                      <input type="tel" class="form-control form-control-lg" id="phone" name="phone" placeholder="연락처" required>
+                      <label for="phone"><i class="fas fa-phone me-2"></i>연락처</label>
+                      <div class="invalid-feedback">연락처를 입력해주세요.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-floating mb-3">
+                  <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="name@example.com" required>
+                  <label for="email"><i class="fas fa-envelope me-2"></i>이메일 주소</label>
+                  <div class="invalid-feedback">올바른 이메일 주소를 입력해주세요.</div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <div class="form-floating">
+                      <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="Password" required minlength="8">
+                      <label for="password"><i class="fas fa-lock me-2"></i>비밀번호</label>
+                      <div class="invalid-feedback">비밀번호는 8자 이상이어야 합니다.</div>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6 mb-4">
+                    <div class="form-floating">
+                      <input type="password" class="form-control form-control-lg" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+                      <label for="confirmPassword"><i class="fas fa-lock me-2"></i>비밀번호 확인</label>
+                      <div class="invalid-feedback">비밀번호가 일치하지 않습니다.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Terms Agreement -->
+                <div class="terms-section mb-4">
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="termsAll" required>
+                    <label class="form-check-label fw-semi-bold" for="termsAll">
+                      모든 약관에 동의합니다
+                    </label>
+                  </div>
+                  
+                  <div class="terms-detail ps-4">
+                    <div class="form-check mb-2">
+                      <input class="form-check-input" type="checkbox" id="terms1" required>
+                      <label class="form-check-label text-muted" for="terms1">
+                        <span class="text-danger">[필수]</span> 서비스 이용약관 동의
+                        <a href="#" class="text-primary ms-2" data-bs-toggle="modal" data-bs-target="#termsModal">보기</a>
+                      </label>
+                    </div>
+                    
+                    <div class="form-check mb-2">
+                      <input class="form-check-input" type="checkbox" id="terms2" required>
+                      <label class="form-check-label text-muted" for="terms2">
+                        <span class="text-danger">[필수]</span> 개인정보 처리방침 동의
+                        <a href="#" class="text-primary ms-2" data-bs-toggle="modal" data-bs-target="#privacyModal">보기</a>
+                      </label>
+                    </div>
+                    
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="terms3">
+                      <label class="form-check-label text-muted" for="terms3">
+                        <span class="text-secondary">[선택]</span> 마케팅 정보 수신 동의
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="d-grid mb-4">
+                  <button type="submit" class="btn btn-primary btn-lg fw-semi-bold py-3 rounded-pill">
+                    <i class="fas fa-user-plus me-2"></i>회원가입
+                  </button>
+                </div>
+              </form>
+
+              <!-- Divider -->
+              <div class="divider-container position-relative text-center mb-4">
+                <hr class="divider-line">
+                <span class="divider-text bg-white px-3 text-muted">또는</span>
+              </div>
+
+              <!-- Social Register -->
+              <div class="social-register">
+                <div class="d-grid gap-3">
+                  <a href="/auth/kakao" class="btn btn-outline-warning btn-lg rounded-pill social-btn">
+                    <div class="d-flex align-items-center">
+                      <span class="social-icon kakao-icon">K</span>
+                      <span class="fw-semi-bold ms-4">카카오로 가입하기</span>
+                    </div>
+                  </a>
+                  <a href="/auth/naver" class="btn btn-outline-success btn-lg rounded-pill social-btn">
+                    <div class="d-flex align-items-center">
+                      <span class="social-icon naver-icon">N</span>
+                      <span class="fw-semi-bold ms-4">네이버로 가입하기</span>
+                    </div>
+                  </a>
+                  <a href="/auth/google" class="btn btn-outline-danger btn-lg rounded-pill social-btn">
+                    <div class="d-flex align-items-center">
+                      <span class="social-icon google-icon">G</span>
+                      <span class="fw-semi-bold ms-4">구글로 가입하기</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Login Link -->
+              <div class="text-center mt-4 pt-3 border-top">
+                <p class="mb-0 text-muted">
+                  이미 계정이 있으신가요? 
+                  <a href="/login" class="text-primary text-decoration-none fw-semi-bold">로그인</a>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <!-- Footer -->
+  <%- include('./partials/footer') %>
+
+  <!-- Terms Modal -->
+  <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="termsModalLabel">서비스 이용약관</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="terms-content">
+            <h6>제1조 (목적)</h6>
+            <p>이 약관은 DSH에듀가 제공하는 교육 서비스 이용에 관한 조건 및 절차를 규정함을 목적으로 합니다.</p>
+            
+            <h6>제2조 (정의)</h6>
+            <p>1. "서비스"라 함은 DSH에듀가 제공하는 모든 교육 프로그램 및 관련 서비스를 의미합니다.</p>
+            <p>2. "이용자"라 함은 이 약관에 따라 서비스를 이용하는 개인을 의미합니다.</p>
+            
+            <h6>제3조 (약관의 효력 및 변경)</h6>
+            <p>이 약관은 서비스를 이용하고자 하는 모든 이용자에 대하여 그 효력을 발생합니다.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Privacy Modal -->
+  <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="privacyModalLabel">개인정보 처리방침</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="privacy-content">
+            <h6>개인정보 수집 및 이용목적</h6>
+            <p>DSH에듀는 다음의 목적을 위하여 개인정보를 처리합니다.</p>
+            <ul>
+              <li>서비스 제공 및 계약 이행</li>
+              <li>회원 관리 및 본인 확인</li>
+              <li>고객 상담 및 서비스 개선</li>
+              <li>마케팅 및 광고 활용 (동의 시)</li>
+            </ul>
+            
+            <h6>수집하는 개인정보 항목</h6>
+            <p>필수항목: 이름, 이메일, 연락처</p>
+            <p>선택항목: 마케팅 수신 동의</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <style>
+    .register-section {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .register-bg {
+      top: 0;
+      left: 0;
+      background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+    }
+
+    .gradient-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(79, 172, 254, 0.85) 0%, rgba(0, 242, 254, 0.75) 100%);
+    }
+
+    .register-card {
+      max-width: 600px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .brand-logo h2 {
+      font-size: 2.5rem;
+      letter-spacing: -1px;
+    }
+
+    .form-floating > .form-control {
+      border: 2px solid #e9ecef;
+      border-radius: 12px;
+      padding: 1.625rem 0.75rem 0.625rem;
+      height: auto;
+      transition: all 0.3s ease;
+    }
+
+    .form-floating > .form-control:focus {
+      border-color: #4facfe;
+      box-shadow: 0 0 0 0.25rem rgba(79, 172, 254, 0.15);
+    }
+
+    .form-floating > label {
+      padding: 1rem 0.75rem;
+      color: #6c757d;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      border: none;
+      font-size: 1.1rem;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+    }
+
+    .terms-section {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid #e9ecef;
+    }
+
+    .terms-detail {
+      border-left: 3px solid #4facfe;
+      padding-left: 1rem !important;
+      margin-left: 0.5rem;
+    }
+
+    .form-check-input {
+      border-radius: 4px;
+      border: 2px solid #dee2e6;
+    }
+
+    .form-check-input:checked {
+      background-color: #4facfe;
+      border-color: #4facfe;
+    }
+
+    .divider-container {
+      margin: 2rem 0;
+    }
+
+    .divider-line {
+      border-color: #e9ecef;
+      margin: 0;
+    }
+
+    .divider-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.9rem;
+    }
+
+    .social-btn {
+      padding: 0.875rem 1.5rem;
+      border-width: 2px;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      position: relative;
+    }
+
+    .social-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .social-btn .d-flex {
+      padding-left: 20px;
+    }
+
+    .btn-outline-warning:hover {
+      background-color: #FEE500;
+      border-color: #FEE500;
+      color: #3C1E1E;
+    }
+
+    .btn-outline-success:hover {
+      background-color: #03C75A;
+      border-color: #03C75A;
+      color: white;
+    }
+
+    .btn-outline-danger:hover {
+      background-color: #EA4335;
+      border-color: #EA4335;
+      color: white;
+    }
+
+    /* Social Icons */
+    .social-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: white;
+      position: absolute;
+      left: 20px;
+    }
+
+    .kakao-icon {
+      background-color: #FEE500;
+      color: #3C1E1E;
+    }
+
+    .naver-icon {
+      background-color: #03C75A;
+      color: white;
+    }
+
+    .google-icon {
+      background-color: #EA4335;
+      color: white;
+    }
+
+    .social-btn:hover .kakao-icon {
+      background-color: #3C1E1E;
+      color: #FEE500;
+    }
+
+    .social-btn:hover .naver-icon {
+      background-color: white;
+      color: #03C75A;
+    }
+
+    .social-btn:hover .google-icon {
+      background-color: white;
+      color: #EA4335;
+    }
+
+    .fw-semi-bold {
+      font-weight: 600;
+    }
+
+    .modal-content {
+      border-radius: 15px;
+      border: none;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #e9ecef;
+      padding: 1.5rem;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .terms-content h6,
+    .privacy-content h6 {
+      color: #4facfe;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .terms-content h6:first-child,
+    .privacy-content h6:first-child {
+      margin-top: 0;
+    }
+
+    @media (max-width: 768px) {
+      .register-card {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+      }
+      
+      .brand-logo h2 {
+        font-size: 2rem;
+      }
+
+      .terms-detail {
+        padding-left: 0.5rem !important;
+        margin-left: 0.25rem;
+      }
+    }
+  </style>
+
+  <script>
+    // Form validation
+    (function() {
+      'use strict';
+      window.addEventListener('load', function() {
+        const forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.filter.call(forms, function(form) {
+          form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+          }, false);
+        });
+      }, false);
+    })();
+
+    // Enhanced form interactions
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('.form-control');
+      
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.parentElement.classList.add('focused');
+        });
+        
+        input.addEventListener('blur', function() {
+          if (!this.value) {
+            this.parentElement.classList.remove('focused');
+          }
+        });
+      });
+
+      // Password confirmation validation
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirmPassword');
+
+      function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+          confirmPassword.setCustomValidity('비밀번호가 일치하지 않습니다.');
+        } else {
+          confirmPassword.setCustomValidity('');
+        }
+      }
+
+      password.addEventListener('change', validatePassword);
+      confirmPassword.addEventListener('keyup', validatePassword);
+
+      // Terms agreement handling
+      const termsAll = document.getElementById('termsAll');
+      const terms1 = document.getElementById('terms1');
+      const terms2 = document.getElementById('terms2');
+      const terms3 = document.getElementById('terms3');
+
+      termsAll.addEventListener('change', function() {
+        const isChecked = this.checked;
+        terms1.checked = isChecked;
+        terms2.checked = isChecked;
+        terms3.checked = isChecked;
+      });
+
+      [terms1, terms2, terms3].forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+          termsAll.checked = terms1.checked && terms2.checked && terms3.checked;
+        });
+      });
+
+      // Phone number formatting
+      const phoneInput = document.getElementById('phone');
+      phoneInput.addEventListener('input', function() {
+        let value = this.value.replace(/\D/g, '');
+        if (value.length >= 11) {
+          value = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        } else if (value.length >= 7) {
+          value = value.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
+        } else if (value.length >= 4) {
+          value = value.replace(/(\d{3})(\d+)/, '$1-$2');
+        }
+        this.value = value;
+      });
+    });
+  </script>
+</body>
+</html> 

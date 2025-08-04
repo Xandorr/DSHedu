@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>커뮤니티 글 | DSH에듀</title>
+  <meta name="description" content="DSH에듀 커뮤니티 게시글">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<%- include('../partials/header') %>
+
+<div class="container my-5">
+  <div class="row">
+    <!-- 메인 콘텐츠 -->
+    <div class="col-lg-8">
+      <!-- 게시글 -->
+      <article class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+          <!-- 헤더 -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <span class="badge 
+                <%= post.category === 'notice' ? 'bg-danger' : 
+                    post.category === 'info' ? 'bg-success text-white' :
+                    post.category === 'qna' ? 'bg-info text-white' : 'bg-secondary' %> me-5">
+                <%= post.category === 'general' ? '자유' :
+                    post.category === 'info' ? '정보 공유' :
+                    post.category === 'notice' ? '공지' :
+                    post.category === 'qna' ? 'Q&A' : post.category %>
+              </span>
+              <small class="text-muted">
+                <%= new Date(post.createdAt).toLocaleDateString('ko-KR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                }) %>
+              </small>
+            </div>
+            
+            <% if (user && (post.author._id.toString() === user._id.toString() || user.role === 'admin')) { %>
+              <div class="dropdown" style="position: relative; z-index: 1050;">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="/posts/<%= post._id %>/edit">
+                    <i class="fas fa-edit me-2"></i>수정
+                  </a></li>
+                  <li><a class="dropdown-item text-danger" href="#" 
+                         onclick="deletePost('<%= post._id %>')">
+                    <i class="fas fa-trash me-2"></i>삭제
+                  </a></li>
+                </ul>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- 제목 -->
+          <h1 class="h2 mb-3"><%= post.title %></h1>
+
+          <!-- 작성자 정보 -->
+          <div class="d-flex align-items-center mb-4">
+            <div class="avatar-circle me-3">
+              <i class="fas fa-user"></i>
+            </div>
+            <div>
+              <h6 class="mb-0"><%= post.author.name %></h6>
+              <small class="text-muted">
+                <% if (post.author.role === 'admin') { %>
+                  <i class="fas fa-crown text-warning me-1"></i>관리자
+                <% } else { %>
+                  회원
+                <% } %>
+              </small>
+            </div>
+          </div>
+
+          <!-- 메타 정보 -->
+          <div class="d-flex gap-3 mb-4 text-muted small border-bottom pb-3">
+            <span><i class="fas fa-eye me-1"></i>조회 <%= post.views %></span>
+            <span><i class="fas fa-heart me-1"></i>좋아요 <span id="likesCount"><%= post.likes.length %></span></span>
+            <span><i class="fas fa-comment me-1"></i>댓글 <%= comments.length %></span>
+          </div>
+
+          <!-- 내용 -->
+          <div class="post-content mb-4">
+            <% if (post.images && post.images.length > 0) { %>
+              <div class="post-images mb-4">
+                <% post.images.forEach((image, index) => { %>
+                  <img src="<%= image %>" alt="게시글 이미지 <%= index + 1 %>" 
+                       class="img-fluid rounded mb-3 w-100" 
+                       style="max-height: 500px; object-fit: cover;" 
+                       onclick="openImageModal('<%= image %>')">
+                <% }) %>
+              </div>
+            <% } %>
+
+            <div class="content-text">
+              <%- post.content.replace(/\n/g, '<br>') %>
+            </div>
+
+            <% if (post.youtubeUrl) { %>
+              <div class="youtube-container mt-4">
+                <% const videoId = post.getYoutubeVideoId(); %>
+                <% if (videoId) { %>
+                  <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/<%= videoId %>" 
+                            title="YouTube video" allowfullscreen class="rounded"></iframe>
+                  </div>
+                <% } else { %>
+                  <a href="<%= post.youtubeUrl %>" target="_blank" class="btn btn-outline-danger">
+                    <i class="fab fa-youtube me-2"></i>유튜브 영상 보기
+                  </a>
+                <% } %>
+              </div>
+            <% } %>
+          </div>
+
+          <!-- 태그 -->
+          <% if (post.tags && post.tags.length > 0) { %>
+            <div class="mb-4">
+              <% post.tags.forEach(tag => { %>
+                <span class="badge bg-light text-dark me-1">#<%= tag %></span>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <!-- 좋아요 버튼 -->
+          <div class="text-center py-3 border-top border-bottom">
+            <% if (user) { %>
+              <button class="btn btn-outline-danger btn-lg" id="likeBtn" onclick="toggleLike()">
+                <i class="fas fa-heart me-2" id="likeIcon"></i>
+                <span id="likeText">좋아요</span>
+              </button>
+            <% } else { %>
+              <button class="btn btn-outline-secondary btn-lg" onclick="alert('로그인이 필요합니다.'); location.href='/login';">
+                <i class="fas fa-heart me-2"></i>
+                좋아요 (로그인 필요)
+              </button>
+            <% } %>
+          </div>
+        </div>
+      </article>
+
+      <!-- 댓글 섹션 -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="fas fa-comments me-2"></i>댓글 <span class="text-muted">(<%= comments.length %>)</span>
+          </h5>
+        </div>
+        <div class="card-body">
+          <!-- 댓글 작성 폼 -->
+          <% if (user) { %>
+            <form id="commentForm" class="mb-4">
+              <div class="d-flex gap-3">
+                <div class="avatar-circle flex-shrink-0">
+                  <i class="fas fa-user"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <textarea class="form-control" id="commentContent" rows="3" 
+                            placeholder="댓글을 작성해보세요..." maxlength="1000"></textarea>
+                  <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted">최대 1000자</small>
+                    <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-paper-plane me-1"></i>댓글 작성
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+          <% } else { %>
+            <div class="text-center py-4 border rounded">
+              <p class="text-muted mb-2">댓글을 작성하려면 로그인이 필요합니다.</p>
+              <a href="/login" class="btn btn-primary">로그인</a>
+            </div>
+          <% } %>
+
+          <!-- 댓글 목록 -->
+          <div id="commentsList">
+            <% if (comments && comments.length > 0) { %>
+              <% comments.forEach(comment => { %>
+                <div class="comment-item border-bottom py-3" data-comment-id="<%= comment._id %>">
+                  <div class="d-flex gap-3">
+                    <div class="avatar-circle flex-shrink-0">
+                      <i class="fas fa-user"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                          <strong><%= comment.author.name %></strong>
+                          <% if (comment.author.role === 'admin') { %>
+                            <span class="badge bg-warning text-dark ms-1">관리자</span>
+                          <% } %>
+                          <small class="text-muted ms-2">
+                            <%= new Date(comment.createdAt).toLocaleDateString('ko-KR', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            }) %>
+                          </small>
+                        </div>
+                        <% if (user && (comment.author._id.toString() === user._id.toString() || user.role === 'admin')) { %>
+                          <button class="btn btn-outline-danger btn-sm" 
+                                  onclick="deleteComment('<%= comment._id %>')">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        <% } %>
+                      </div>
+                      <div class="comment-content">
+                        <%- comment.content.replace(/\n/g, '<br>') %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="text-center py-4 text-muted">
+                <i class="fas fa-comment fa-2x mb-3"></i>
+                <p>첫 번째 댓글을 작성해보세요!</p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 사이드바 -->
+    <div class="col-lg-4">
+      <div class="sticky-top" style="top: 2rem;">
+        <!-- 목록으로 돌아가기 -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body text-center">
+            <a href="/posts" class="btn btn-outline-primary">
+              <i class="fas fa-arrow-left me-2"></i>목록으로 돌아가기
+            </a>
+          </div>
+        </div>
+
+        <!-- 작성자 정보 -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">작성자 정보</h6>
+          </div>
+          <div class="card-body text-center">
+            <div class="avatar-circle mx-auto mb-3" style="width: 60px; height: 60px; font-size: 24px;">
+              <i class="fas fa-user"></i>
+            </div>
+            <h6><%= post.author.name %></h6>
+            <p class="text-muted small mb-0">
+              <%= new Date(post.author.createdAt).toLocaleDateString('ko-KR', {year: 'numeric', month: 'long'}) %> 가입
+            </p>
+          </div>
+        </div>
+
+        <!-- 최근 게시글 -->
+        <div class="card border-0 shadow-sm">
+          <div class="card-header bg-white">
+            <h6 class="mb-0">최근 게시글</h6>
+          </div>
+          <div class="card-body">
+            <div class="text-center text-muted small">
+              <i class="fas fa-clock"></i>
+              <p class="mb-0">곧 업데이트될 예정입니다</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 이미지 모달 -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <img id="modalImage" src="" alt="" class="img-fluid w-100">
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+  }
+  
+  .post-content {
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+  
+  .content-text {
+    margin-bottom: 1rem;
+  }
+  
+  .comment-item:last-child {
+    border-bottom: none !important;
+  }
+  
+  .post-images img {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .post-images img:hover {
+    transform: scale(1.02);
+  }
+  
+  .youtube-container {
+    margin: 1rem 0;
+  }
+</style>
+
+<script>
+// 좋아요 상태 초기화
+let isLiked = <%= user && post.likes.includes(user._id) ? 'true' : 'false' %>;
+updateLikeButton();
+
+// 좋아요 토글
+function toggleLike() {
+  <% if (!user) { %>
+    alert('로그인이 필요합니다.');
+    location.href = '/login';
+    return;
+  <% } %>
+  
+  fetch(`/posts/<%= post._id %>/like`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.liked !== undefined) {
+      isLiked = data.liked;
+      document.getElementById('likesCount').textContent = data.likesCount;
+      updateLikeButton();
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('오류가 발생했습니다.');
+  });
+}
+
+function updateLikeButton() {
+  const btn = document.getElementById('likeBtn');
+  const icon = document.getElementById('likeIcon');
+  const text = document.getElementById('likeText');
+  
+  if (isLiked) {
+    btn.classList.remove('btn-outline-danger');
+    btn.classList.add('btn-danger');
+    text.textContent = '좋아요 취소';
+  } else {
+    btn.classList.remove('btn-danger');
+    btn.classList.add('btn-outline-danger');
+    text.textContent = '좋아요';
+  }
+}
+
+// 댓글 작성
+document.getElementById('commentForm')?.addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const content = document.getElementById('commentContent').value.trim();
+  if (!content) {
+    alert('댓글 내용을 입력해주세요.');
+    return;
+  }
+  
+  fetch(`/posts/<%= post._id %>/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ content })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      location.reload(); // 댓글 목록 새로고침
+    } else {
+      alert('댓글 작성에 실패했습니다.');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('오류가 발생했습니다.');
+  });
+});
+
+// 댓글 삭제
+function deleteComment(commentId) {
+  if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+    fetch(`/posts/<%= post._id %>/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.message) {
+        location.reload();
+      } else {
+        alert('댓글 삭제에 실패했습니다.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('오류가 발생했습니다.');
+    });
+  }
+}
+
+// 게시글 삭제
+function deletePost(postId) {
+  if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+    fetch(`/posts/${postId}/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        window.location.href = '/posts';
+      } else {
+        alert('삭제 중 오류가 발생했습니다.');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('삭제 중 오류가 발생했습니다.');
+    });
+  }
+}
+
+// 이미지 모달
+function openImageModal(imageSrc) {
+  document.getElementById('modalImage').src = imageSrc;
+  new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+</script>
+
+<%- include('../partials/footer') %>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- AOS Animation Library -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init();
+</script>
+
+</body>
+</html> 

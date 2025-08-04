@@ -38,6 +38,19 @@ const ProgramSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  originalPrice: {
+    type: Number,
+    required: true
+  },
+  discountPercent: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  discountedPrice: {
+    type: Number
+  },
   price: {
     type: Number,
     required: true
@@ -68,6 +81,10 @@ const ProgramSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  sortOrder: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

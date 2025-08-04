@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> | DSH에듀</title>
+  <meta name="description" content="<%= description %>">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <%- include('./partials/header') %>
+
+  <div class="container-fluid mt-5 pt-5">
+    <div class="row">
+      <!-- 왼쪽 사이드바 -->
+      <div class="col-md-2 mb-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-body text-center">
+            <div class="mb-3">
+              <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center" 
+                   style="width: 60px; height: 60px;">
+                <i class="fas fa-shield-alt fa-2x text-dark"></i>
+              </div>
+            </div>
+            <h6 class="card-title"><%= user.name %></h6>
+            <small class="text-muted">관리자</small>
+          </div>
+        </div>
+
+        <!-- 관리자 네비게이션 -->
+        <div class="list-group mt-3">
+          <a href="/dashboard" class="list-group-item list-group-item-action">
+            <i class="fas fa-tachometer-alt me-2"></i>대시보드
+          </a>
+          <a href="/admin" class="list-group-item list-group-item-action active">
+            <i class="fas fa-cogs me-2"></i>관리자 패널
+          </a>
+          <a href="/posts" class="list-group-item list-group-item-action">
+            <i class="fas fa-comments me-2"></i>커뮤니티 관리
+          </a>
+          <hr>
+          <small class="text-muted px-3">빠른 작업</small>
+          <a href="#" class="list-group-item list-group-item-action" onclick="showUserModal()">
+            <i class="fas fa-user-plus me-2"></i>사용자 추가
+          </a>
+          <a href="#" class="list-group-item list-group-item-action" onclick="showProgramModal()">
+            <i class="fas fa-plus me-2"></i>프로그램 추가
+          </a>
+        </div>
+      </div>
+
+      <!-- 메인 컨텐츠 -->
+      <div class="col-md-10">
+        <!-- 헤더 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2><i class="fas fa-cogs me-2 text-warning"></i>관리자 패널</h2>
+            <p class="text-muted mb-0">시스템 전체를 관리하고 모니터링하세요</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-download me-2"></i>리포트 다운로드
+            </button>
+            <button class="btn btn-outline-success btn-sm">
+              <i class="fas fa-sync me-2"></i>데이터 새로고침
+            </button>
+          </div>
+        </div>
+
+        <!-- 통계 대시보드 -->
+        <div class="row g-4 mb-4">
+          <div class="col-md-3">
+            <div class="card bg-primary text-white">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="fas fa-users fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0">1,234</h4>
+                    <small>총 사용자</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-success text-white">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="fas fa-book fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0">45</h4>
+                    <small>활성 프로그램</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-info text-white">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="fas fa-calendar-check fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0">2,876</h4>
+                    <small>총 등록</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <i class="fas fa-won-sign fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0">₩125M</h4>
+                    <small>총 매출</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 관리 탭 -->
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-light">
+            <ul class="nav nav-tabs card-header-tabs" id="adminTabs" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="users-tab" data-bs-toggle="tab" data-bs-target="#users" type="button" role="tab">
+                  <i class="fas fa-users me-2"></i>사용자 관리
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="programs-tab" data-bs-toggle="tab" data-bs-target="#programs" type="button" role="tab">
+                  <i class="fas fa-book me-2"></i>프로그램 관리
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="enrollments-tab" data-bs-toggle="tab" data-bs-target="#enrollments" type="button" role="tab">
+                  <i class="fas fa-list-alt me-2"></i>등록 관리
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="system-tab" data-bs-toggle="tab" data-bs-target="#system" type="button" role="tab">
+                  <i class="fas fa-cog me-2"></i>시스템 설정
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="card-body">
+            <div class="tab-content" id="adminTabsContent">
+              <!-- 사용자 관리 탭 -->
+              <div class="tab-pane fade show active" id="users" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5>사용자 관리</h5>
+                  <button class="btn btn-primary btn-sm" onclick="showUserModal()">
+                    <i class="fas fa-user-plus me-2"></i>새 사용자 추가
+                  </button>
+                </div>
+                
+                <!-- 사용자 검색 및 필터 -->
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" class="form-control" placeholder="이름 또는 이메일로 검색...">
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select">
+                      <option value="">모든 역할</option>
+                      <option value="admin">관리자</option>
+                      <option value="user">일반 사용자</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select">
+                      <option value="">모든 상태</option>
+                      <option value="active">활성</option>
+                      <option value="inactive">비활성</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 사용자 테이블 -->
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>이름</th>
+                        <th>이메일</th>
+                        <th>역할</th>
+                        <th>가입일</th>
+                        <th>상태</th>
+                        <th>작업</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><%= user.name %></td>
+                        <td><%= user.email %></td>
+                        <td><span class="badge bg-warning">관리자</span></td>
+                        <td>2024-01-15</td>
+                        <td><span class="badge bg-success">활성</span></td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-primary" title="편집">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-outline-info" title="상세보기">
+                              <i class="fas fa-eye"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <!-- 추가 사용자 데이터는 실제로는 서버에서 로드 -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 프로그램 관리 탭 -->
+              <div class="tab-pane fade" id="programs" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5>프로그램 관리</h5>
+                  <button class="btn btn-success btn-sm" onclick="showProgramModal()">
+                    <i class="fas fa-plus me-2"></i>새 프로그램 추가
+                  </button>
+                </div>
+
+                <!-- 프로그램 검색 및 필터 -->
+                <div class="row mb-3">
+                  <div class="col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-search"></i></span>
+                      <input type="text" class="form-control" id="programSearch" placeholder="프로그램명 또는 위치로 검색...">
+                    </div>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select" id="categoryFilter">
+                      <option value="all">모든 카테고리</option>
+                      <option value="summer">여름 캠프</option>
+                      <option value="winter">겨울 캠프</option>
+                      <option value="spring">봄 캠프</option>
+                      <option value="special">특별 프로그램</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                      <option value="all">모든 상태</option>
+                      <option value="active">활성</option>
+                      <option value="inactive">비활성</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <button class="btn btn-primary w-100" onclick="searchPrograms()">
+                      <i class="fas fa-search me-1"></i>검색
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- 프로그램 목록 -->
+                <div id="programsList">
+                  <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">로딩 중...</span>
+                    </div>
+                    <p class="mt-2 text-muted">프로그램 목록을 불러오는 중...</p>
+                  </div>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <nav aria-label="프로그램 페이지네이션" class="mt-4">
+                  <ul class="pagination justify-content-center" id="programsPagination">
+                    <!-- 페이지네이션 버튼들이 JavaScript로 생성됩니다 -->
+                  </ul>
+                </nav>
+              </div>
+
+              <!-- 등록 관리 탭 -->
+              <div class="tab-pane fade" id="enrollments" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5>등록 관리</h5>
+                  <div class="btn-group">
+                    <button class="btn btn-outline-primary btn-sm">
+                      <i class="fas fa-download me-2"></i>엑셀 다운로드
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>
+                  최근 등록 현황과 대기 중인 승인 건을 확인하세요.
+                </div>
+
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
+                      <tr>
+                        <th>참가자</th>
+                        <th>프로그램</th>
+                        <th>등록일</th>
+                        <th>상태</th>
+                        <th>결제</th>
+                        <th>작업</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>김학생</td>
+                        <td>여름 영어 캠프</td>
+                        <td>2024-06-15</td>
+                        <td><span class="badge bg-warning">승인 대기</span></td>
+                        <td><span class="badge bg-success">완료</span></td>
+                        <td>
+                          <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-success">승인</button>
+                            <button class="btn btn-outline-danger">거절</button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 시스템 설정 탭 -->
+              <div class="tab-pane fade" id="system" role="tabpanel">
+                <h5>시스템 설정</h5>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card">
+                      <div class="card-header">
+                        <h6 class="mb-0">일반 설정</h6>
+                      </div>
+                      <div class="card-body">
+                        <div class="mb-3">
+                          <label class="form-label">사이트 제목</label>
+                          <input type="text" class="form-control" value="교육 캠프 웹사이트">
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">관리자 이메일</label>
+                          <input type="email" class="form-control" value="admin@dshedu.net">
+                        </div>
+                        <button class="btn btn-primary">설정 저장</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card">
+                      <div class="card-header">
+                        <h6 class="mb-0">시스템 정보</h6>
+                      </div>
+                      <div class="card-body">
+                        <ul class="list-unstyled mb-0">
+                          <li><strong>서버 상태:</strong> <span class="text-success">정상</span></li>
+                          <li><strong>데이터베이스:</strong> <span class="text-success">연결됨</span></li>
+                          <li><strong>마지막 백업:</strong> 2024-06-20 03:00</li>
+                          <li><strong>시스템 버전:</strong> v1.0.0</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사용자 추가 모달 -->
+  <div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">새 사용자 추가</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="mb-3">
+              <label class="form-label">이름</label>
+              <input type="text" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">이메일</label>
+              <input type="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">역할</label>
+              <select class="form-select">
+                <option value="user">일반 사용자</option>
+                <option value="admin">관리자</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">임시 비밀번호</label>
+              <input type="password" class="form-control" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-primary">사용자 추가</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 프로그램 추가/편집 모달 -->
+  <div class="modal fade" id="programModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="programModalTitle">새 프로그램 추가</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="programForm" enctype="multipart/form-data">
+            <!-- 기본 정보 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary border-bottom pb-2 mb-3">기본 정보</h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">프로그램 이름 *</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">카테고리 *</label>
+                <select class="form-select" id="category" name="category" required>
+                  <option value="summer">여름 캠프</option>
+                  <option value="winter">겨울 캠프</option>
+                  <option value="spring">봄 캠프</option>
+                  <option value="special">특별 프로그램</option>
+                </select>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">설명 *</label>
+                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+              </div>
+            </div>
+
+            <!-- 일정 및 가격 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary border-bottom pb-2 mb-3">일정 및 가격</h6>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">시작일 *</label>
+                <input type="date" class="form-control" id="startDate" name="startDate" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">종료일 *</label>
+                <input type="date" class="form-control" id="endDate" name="endDate" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">정원 *</label>
+                <input type="number" class="form-control" id="capacity" name="capacity" min="1" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">표시 순서</label>
+                <input type="number" class="form-control" id="sortOrder" name="sortOrder" min="0" value="0">
+                <div class="form-text">낮은 숫자일수록 앞에 표시됩니다 (1, 2, 3...)</div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">원래 가격 *</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" id="originalPrice" name="originalPrice" min="0" step="0.01" required onchange="calculateDiscountedPrice()" value="0">
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">할인율 (%)</label>
+                <div class="input-group">
+                  <input type="number" class="form-control" id="discountPercent" name="discountPercent" min="0" max="100" step="0.1" value="0" onchange="calculateDiscountedPrice()">
+                  <span class="input-group-text">%</span>
+                </div>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">판매 가격</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" id="discountedPrice" name="discountedPrice" readonly style="background-color: #f8f9fa;">
+                </div>
+                <div class="form-text">원래 가격과 할인율에 따라 자동 계산됩니다.</div>
+              </div>
+            </div>
+
+            <!-- 위치 정보 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary border-bottom pb-2 mb-3">위치 정보</h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">장소명</label>
+                <input type="text" class="form-control" id="locationName" name="locationName">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">도시</label>
+                <input type="text" class="form-control" id="locationCity" name="locationCity">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">주/도</label>
+                <input type="text" class="form-control" id="locationState" name="locationState">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">주소</label>
+                <input type="text" class="form-control" id="locationAddress" name="locationAddress">
+              </div>
+            </div>
+
+            <!-- 연령 및 활동 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary border-bottom pb-2 mb-3">연령 및 활동</h6>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">최소 연령</label>
+                <input type="number" class="form-control" id="ageMin" name="ageMin" min="0" max="99">
+              </div>
+              <div class="col-md-3 mb-3">
+                <label class="form-label">최대 연령</label>
+                <input type="number" class="form-control" id="ageMax" name="ageMax" min="0" max="99">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">활동 (쉼표로 구분)</label>
+                <input type="text" class="form-control" id="activities" name="activities" placeholder="예: 수영, 하이킹, 영어 수업">
+              </div>
+            </div>
+
+            <!-- 이미지 업로드 -->
+            <div class="row mb-4">
+              <div class="col-12">
+                <h6 class="text-primary border-bottom pb-2 mb-3">이미지</h6>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">프로그램 이미지 (최대 5개)</label>
+                <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
+                <div class="form-text">JPG, PNG, GIF, WebP 파일만 업로드 가능합니다. (최대 10MB)</div>
+              </div>
+              <div class="col-12" id="imagePreview">
+                <!-- 이미지 미리보기가 여기에 표시됩니다 -->
+              </div>
+            </div>
+
+            <!-- 설정 -->
+            <div class="row mb-3">
+              <div class="col-12">
+                <h6 class="text-primary border-bottom pb-2 mb-3">설정</h6>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                  <label class="form-check-label" for="featured">
+                    추천 프로그램으로 설정
+                  </label>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                  <label class="form-check-label" for="isActive">
+                    활성화
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <input type="hidden" id="programId" name="programId">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-success" id="saveProgramBtn" onclick="saveProgram()">
+            <span id="saveBtnText">프로그램 추가</span>
+            <span id="saveBtnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status">
+              <span class="visually-hidden">저장 중...</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <%- include('./partials/footer') %>
+  
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+  
+  <!-- Translations JS -->
+  <script src="/js/translations.js"></script>
+  
+  <!-- Custom JS -->
+  <script src="/js/main.js"></script>
+  
+  <!-- Initialize AOS -->
+  <script>
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
+  </script>
+
+  <script>
+    let currentPage = 1;
+    let currentSearchTerm = '';
+    let currentCategory = 'all';
+    let currentStatus = 'all';
+
+    function showUserModal() {
+      const modal = new bootstrap.Modal(document.getElementById('userModal'));
+      modal.show();
+    }
+
+    function showProgramModal(programId = null) {
+      // 모달 초기화
+      resetProgramModal();
+      
+      if (programId) {
+        // 편집 모드
+        document.getElementById('programModalTitle').textContent = '프로그램 편집';
+        document.getElementById('saveBtnText').textContent = '프로그램 수정';
+        document.getElementById('programId').value = programId;
+        
+        // 프로그램 데이터 로드
+        loadProgramForEdit(programId);
+      } else {
+        // 추가 모드
+        document.getElementById('programModalTitle').textContent = '새 프로그램 추가';
+        document.getElementById('saveBtnText').textContent = '프로그램 추가';
+        document.getElementById('programId').value = '';
+      }
+      
+      const modal = new bootstrap.Modal(document.getElementById('programModal'));
+      modal.show();
+    }
+
+    function resetProgramModal() {
+      document.getElementById('programForm').reset();
+      document.getElementById('imagePreview').innerHTML = '';
+      document.getElementById('isActive').checked = true;
+      document.getElementById('discountPercent').value = '0';
+      document.getElementById('originalPrice').value = '0';
+      document.getElementById('discountedPrice').value = '0';
+      document.getElementById('sortOrder').value = '0';
+      calculateDiscountedPrice();
+      
+      console.log('🔄 모달 초기화 완료');
+    }
+
+    function calculateDiscountedPrice() {
+      const originalPrice = parseFloat(document.getElementById('originalPrice').value) || 0;
+      const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+      
+      const discountedPrice = originalPrice * (1 - discountPercent / 100);
+      document.getElementById('discountedPrice').value = discountedPrice.toFixed(2);
+      
+      console.log('🧮 가격 계산:', {
+        originalPrice,
+        discountPercent,
+        discountedPrice: discountedPrice.toFixed(2)
+      });
+      
+      // 할인율에 따른 시각적 피드백
+      const discountField = document.getElementById('discountPercent');
+      const discountedField = document.getElementById('discountedPrice');
+      
+      if (discountPercent > 0) {
+        discountField.style.borderColor = '#28a745';
+        discountedField.style.borderColor = '#28a745';
+        discountedField.style.color = '#28a745';
+        discountedField.style.fontWeight = 'bold';
+      } else {
+        discountField.style.borderColor = '';
+        discountedField.style.borderColor = '';
+        discountedField.style.color = '';
+        discountedField.style.fontWeight = '';
+      }
+    }
+
+    async function loadProgramForEdit(programId) {
+      try {
+        const response = await fetch(`/admin/programs/${programId}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) throw new Error('프로그램을 불러올 수 없습니다.');
+        
+        const data = await response.json();
+        const program = data.program;
+        
+        // 폼 필드 채우기
+        document.getElementById('title').value = program.title || '';
+        document.getElementById('description').value = program.description || '';
+        document.getElementById('category').value = program.category || 'summer';
+        document.getElementById('startDate').value = program.startDate ? program.startDate.split('T')[0] : '';
+        document.getElementById('endDate').value = program.endDate ? program.endDate.split('T')[0] : '';
+        document.getElementById('originalPrice').value = program.originalPrice || program.price || '';
+        document.getElementById('discountPercent').value = program.discountPercent || 0;
+        document.getElementById('capacity').value = program.capacity || '';
+        document.getElementById('sortOrder').value = program.sortOrder || 0;
+        
+        console.log('🔄 편집 모드 데이터 로드:', {
+          title: program.title,
+          originalPrice: program.originalPrice,
+          price: program.price,
+          discountPercent: program.discountPercent,
+          capacity: program.capacity,
+          sortOrder: program.sortOrder
+        });
+        
+        // 할인된 가격 계산
+        calculateDiscountedPrice();
+        
+        // 위치 정보
+        if (program.location) {
+          document.getElementById('locationName').value = program.location.name || '';
+          document.getElementById('locationCity').value = program.location.city || '';
+          document.getElementById('locationState').value = program.location.state || '';
+          document.getElementById('locationAddress').value = program.location.address || '';
+        }
+        
+        // 연령 정보
+        if (program.ageRange) {
+          document.getElementById('ageMin').value = program.ageRange.min || '';
+          document.getElementById('ageMax').value = program.ageRange.max || '';
+        }
+        
+        // 활동
+        if (program.activities && program.activities.length > 0) {
+          document.getElementById('activities').value = program.activities.join(', ');
+        }
+        
+        // 설정
+        document.getElementById('featured').checked = program.featured || false;
+        document.getElementById('isActive').checked = program.isActive !== false;
+        
+        // 기존 이미지 미리보기
+        if (program.photos && program.photos.length > 0) {
+          const previewContainer = document.getElementById('imagePreview');
+          previewContainer.innerHTML = '<h6>기존 이미지:</h6><div class="row" id="existingImages"></div>';
+          const imagesRow = document.getElementById('existingImages');
+          
+          program.photos.forEach(photo => {
+            const imgDiv = document.createElement('div');
+            imgDiv.className = 'col-md-3 mb-2';
+            imgDiv.innerHTML = `
+              <div class="card">
+                <img src="${photo}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                <div class="card-body p-2">
+                  <button type="button" class="btn btn-sm btn-outline-danger w-100" 
+                          onclick="removeExistingImage('${photo}', this)">
+                    <i class="fas fa-trash"></i> 삭제
+                  </button>
+                </div>
+              </div>
+            `;
+            imagesRow.appendChild(imgDiv);
+          });
+        }
+        
+      } catch (error) {
+        console.error('프로그램 로드 오류:', error);
+        alert('프로그램 정보를 불러오는 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function saveProgram() {
+      const form = document.getElementById('programForm');
+      
+      // 폼 유효성 검사
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      
+      const formData = new FormData(form);
+      const programId = document.getElementById('programId').value;
+      
+      // 디버깅을 위한 FormData 내용 출력
+      console.log('📝 폼 데이터 전송:', {
+        programId,
+        title: formData.get('title'),
+        originalPrice: formData.get('originalPrice'),
+        discountPercent: formData.get('discountPercent'),
+        capacity: formData.get('capacity')
+      });
+      
+      // 로딩 상태 설정
+      const saveBtn = document.getElementById('saveProgramBtn');
+      const btnText = document.getElementById('saveBtnText');
+      const btnSpinner = document.getElementById('saveBtnSpinner');
+      
+      saveBtn.disabled = true;
+      btnSpinner.classList.remove('d-none');
+      
+      try {
+        let url;
+        
+        if (programId) {
+          // 편집 모드: method-override를 사용한 PUT
+          url = `/admin/programs/${programId}`;
+          formData.append('_method', 'PUT');
+        } else {
+          // 생성 모드: POST 요청
+          url = '/admin/programs';
+        }
+        
+        console.log('📤 요청 정보:', { url, method: 'POST', programId, hasMethodOverride: !!programId });
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData
+        });
+        
+        console.log('📤 응답 상태:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ HTTP 오류:', errorText);
+          throw new Error(`서버 오류 (${response.status}): ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('📥 응답 데이터:', data);
+        
+        if (data.success) {
+          alert(data.message);
+          bootstrap.Modal.getInstance(document.getElementById('programModal')).hide();
+          loadPrograms(); // 프로그램 목록 새로고침
+        } else {
+          throw new Error(data.message || '저장 중 오류가 발생했습니다.');
+        }
+        
+      } catch (error) {
+        console.error('❌ 프로그램 저장 오류:', error);
+        console.error('❌ 에러 상세:', {
+          message: error.message,
+          stack: error.stack
+        });
+        
+        let errorMessage = '프로그램 저장 중 오류가 발생했습니다.';
+        if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        alert(`오류 발생!\n\n${errorMessage}\n\n개발자 도구 콘솔을 확인해주세요.`);
+      } finally {
+        // 로딩 상태 해제
+        saveBtn.disabled = false;
+        btnSpinner.classList.add('d-none');
+      }
+    }
+
+    async function deleteProgram(programId, programTitle) {
+      if (!confirm(`정말로 "${programTitle}" 프로그램을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/admin/programs/${programId}`, {
+          method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          alert(data.message);
+          loadPrograms(); // 프로그램 목록 새로고침
+        } else {
+          throw new Error(data.message || '삭제 중 오류가 발생했습니다.');
+        }
+        
+      } catch (error) {
+        console.error('프로그램 삭제 오류:', error);
+        alert(error.message || '프로그램 삭제 중 오류가 발생했습니다.');
+      }
+    }
+
+    async function loadPrograms(page = 1) {
+      currentPage = page;
+      
+      try {
+        const params = new URLSearchParams({
+          page: page,
+          limit: 12,
+          search: currentSearchTerm,
+          category: currentCategory,
+          status: currentStatus
+        });
+        
+        const response = await fetch(`/admin/programs?${params}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) throw new Error('프로그램 목록을 불러올 수 없습니다.');
+        
+        const data = await response.json();
+        renderPrograms(data.programs);
+        renderPagination(data.pagination);
+        
+      } catch (error) {
+        console.error('프로그램 목록 로드 오류:', error);
+        document.getElementById('programsList').innerHTML = `
+          <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            프로그램 목록을 불러오는 중 오류가 발생했습니다.
+          </div>
+        `;
+      }
+    }
+
+    function renderPrograms(programs) {
+      const container = document.getElementById('programsList');
+      
+      if (!programs || programs.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5>등록된 프로그램이 없습니다</h5>
+            <p class="text-muted">새 프로그램을 추가해보세요!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = `
+        <div class="row">
+          ${programs.map(program => `
+            <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 ${program.featured ? 'border-warning' : ''}">
+                ${program.photos && program.photos.length > 0 ? `
+                  <img src="${program.photos[0]}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                ` : `
+                  <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-image fa-3x text-muted"></i>
+                  </div>
+                `}
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h6 class="card-title mb-0">${program.title}</h6>
+                    ${program.featured ? '<i class="fas fa-star text-warning" title="추천 프로그램"></i>' : ''}
+                  </div>
+                  <p class="card-text small text-muted">${program.description.substring(0, 100)}...</p>
+                  <div class="mb-2">
+                    <small class="text-muted">
+                      <i class="fas fa-calendar me-1"></i>
+                      ${new Date(program.startDate).toLocaleDateString('ko-KR')} - 
+                      ${new Date(program.endDate).toLocaleDateString('ko-KR')}
+                    </small>
+                  </div>
+                  <div class="mb-2">
+                    <small class="text-muted">
+                      <i class="fas fa-dollar-sign me-1"></i>
+                      ${program.discountPercent > 0 ? `
+                        <span style="text-decoration: line-through; color: #6c757d;">$${program.originalPrice}</span>
+                        <span style="color: #28a745; font-weight: bold;">$${program.price}</span>
+                        <span class="badge bg-danger ms-1">${program.discountPercent}% OFF</span>
+                      ` : `$${program.price || program.originalPrice}`}
+                      <span class="ms-2">
+                        <i class="fas fa-users me-1"></i>정원 ${program.capacity}명
+                      </span>
+                    </small>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <span class="badge ${program.isActive ? 'bg-success' : 'bg-secondary'}">${program.isActive ? '활성' : '비활성'}</span>
+                      <span class="badge bg-info">${getCategoryText(program.category)}</span>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                      <button class="btn btn-outline-primary" onclick="showProgramModal('${program._id}')" title="편집">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn btn-outline-danger" onclick="deleteProgram('${program._id}', '${program.title}')" title="삭제">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+
+    function renderPagination(pagination) {
+      const container = document.getElementById('programsPagination');
+      
+      if (pagination.totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+      }
+      
+      let html = '';
+      
+      // 이전 페이지
+      if (pagination.hasPrevPage) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadPrograms(${pagination.currentPage - 1})">이전</a></li>`;
+      }
+      
+      // 페이지 번호들
+      const startPage = Math.max(1, pagination.currentPage - 2);
+      const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+      
+      for (let i = startPage; i <= endPage; i++) {
+        html += `<li class="page-item ${i === pagination.currentPage ? 'active' : ''}">
+                  <a class="page-link" href="#" onclick="loadPrograms(${i})">${i}</a>
+                </li>`;
+      }
+      
+      // 다음 페이지
+      if (pagination.hasNextPage) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadPrograms(${pagination.currentPage + 1})">다음</a></li>`;
+      }
+      
+      container.innerHTML = html;
+    }
+
+    function getCategoryText(category) {
+      const categories = {
+        'summer': '여름 캠프',
+        'winter': '겨울 캠프',
+        'spring': '봄 캠프',
+        'special': '특별 프로그램'
+      };
+      return categories[category] || category;
+    }
+
+    function searchPrograms() {
+      currentSearchTerm = document.getElementById('programSearch').value.trim();
+      currentCategory = document.getElementById('categoryFilter').value;
+      currentStatus = document.getElementById('statusFilter').value;
+      loadPrograms(1); // 첫 페이지부터 검색
+    }
+
+    // 이미지 미리보기 기능
+    document.getElementById('photos').addEventListener('change', function(e) {
+      const files = e.target.files;
+      const previewContainer = document.getElementById('imagePreview');
+      
+      if (files.length > 0) {
+        const existingContent = previewContainer.innerHTML;
+        previewContainer.innerHTML = existingContent + '<h6>새 이미지 미리보기:</h6><div class="row" id="newImagePreviews"></div>';
+        const row = document.getElementById('newImagePreviews');
+        
+        Array.from(files).forEach((file, index) => {
+          if (index < 5) { // 최대 5개
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              const div = document.createElement('div');
+              div.className = 'col-md-3 mb-2';
+              div.innerHTML = `
+                <div class="card">
+                  <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                  <div class="card-body p-2">
+                    <small class="text-muted">${file.name}</small>
+                  </div>
+                </div>
+              `;
+              row.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
+
+    // 페이지 로드 시 프로그램 목록 로드
+    document.addEventListener('DOMContentLoaded', function() {
+      // 프로그램 탭이 활성화될 때 목록 로드
+      document.getElementById('programs-tab').addEventListener('shown.bs.tab', function() {
+        loadPrograms();
+      });
+
+      // 검색 입력 시 엔터키로 검색
+      document.getElementById('programSearch').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          searchPrograms();
+        }
+      });
+
+      // 통계 애니메이션
+      const counters = document.querySelectorAll('h4');
+      counters.forEach(counter => {
+        const target = parseInt(counter.textContent.replace(/[^0-9]/g, ''));
+        if (target > 0) {
+          let count = 0;
+          const increment = target / 50;
+          const timer = setInterval(() => {
+            count += increment;
+            if (count >= target) {
+              counter.textContent = counter.textContent.replace(/[0-9,]+/, target.toLocaleString());
+              clearInterval(timer);
+            } else {
+              counter.textContent = counter.textContent.replace(/[0-9,]+/, Math.floor(count).toLocaleString());
+            }
+          }, 20);
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
+</html> 
