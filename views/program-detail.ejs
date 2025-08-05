@@ -8,6 +8,65 @@
       default: return 'bg-secondary';
     }
   }
+  
+  // 연령 범위를 문자열로 변환하는 함수
+  function formatAgeRange(ageRange) {
+    if (!ageRange) return '연령 정보 없음';
+    if (typeof ageRange === 'string') return ageRange;
+    if (typeof ageRange === 'object' && ageRange.min !== undefined && ageRange.max !== undefined) {
+      return `${ageRange.min}세 - ${ageRange.max}세`;
+    }
+    return '연령 정보 없음';
+  }
+  
+  // 위치 정보를 문자열로 변환하는 함수
+  function formatLocation(location) {
+    if (!location) return '위치 정보 없음';
+    if (typeof location === 'string') return location;
+    if (typeof location === 'object') {
+      const parts = [];
+      if (location.name) parts.push(location.name);
+      if (location.city && location.city !== location.name) parts.push(location.city);
+      if (location.state && location.state !== location.city) parts.push(location.state);
+      if (location.country && location.country !== 'USA') parts.push(location.country);
+      
+      return parts.length > 0 ? parts.join(', ') : '위치 정보 없음';
+    }
+    return '위치 정보 없음';
+  }
+  
+  // 날짜 범위를 문자열로 변환하는 함수
+  function formatDateRange(startDate, endDate) {
+    if (!startDate || !endDate) return '날짜 정보 없음';
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const startStr = start.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+    const endStr = end.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+    return `${startStr} - ${endStr}`;
+  }
+  
+  // 기간을 계산하는 함수
+  function calculateDuration(startDate, endDate) {
+    if (!startDate || !endDate) return '기간 정보 없음';
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end - start);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) return '1일';
+    if (diffDays < 7) return `${diffDays}일`;
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      const remainingDays = diffDays % 7;
+      if (remainingDays === 0) return `${weeks}주`;
+      return `${weeks}주 ${remainingDays}일`;
+    }
+    
+    const months = Math.floor(diffDays / 30);
+    const remainingDays = diffDays % 30;
+    if (remainingDays === 0) return `${months}개월`;
+    return `${months}개월 ${remainingDays}일`;
+  }
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -108,6 +167,8 @@
     .info-icon {
       width: 50px;
       height: 50px;
+      min-width: 50px;
+      min-height: 50px;
       background: linear-gradient(135deg, #182D64, #72F5B7);
       border-radius: 12px;
       display: flex;
@@ -115,6 +176,13 @@
       justify-content: center;
       color: white;
       font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    
+    .info-icon i {
+      width: auto;
+      height: auto;
+      line-height: 1;
     }
     
     .feature-item {
@@ -393,15 +461,15 @@
                              <div class="d-flex flex-wrap gap-3 mb-4">
                  <div class="d-flex align-items-center hero-info-badge rounded-pill px-3 py-2">
                    <i class="fas fa-calendar-alt me-2"></i>
-                   <span><%= program.dateRange %></span>
+                   <span><%= formatDateRange(program.startDate, program.endDate) %></span>
                  </div>
                  <div class="d-flex align-items-center hero-info-badge rounded-pill px-3 py-2">
                    <i class="fas fa-clock me-2"></i>
-                   <span><%= program.duration %></span>
+                   <span><%= calculateDuration(program.startDate, program.endDate) %></span>
                  </div>
                  <div class="d-flex align-items-center hero-info-badge rounded-pill px-3 py-2">
                    <i class="fas fa-users me-2"></i>
-                   <span><%= program.ageRange %></span>
+                   <span><%= formatAgeRange(program.ageRange) %></span>
                  </div>
                </div>
             </div>
@@ -409,12 +477,17 @@
           <div class="col-lg-4" data-aos="fade-left">
             <div class="text-center">
               <div class="price-tag">
-                <div class="d-flex align-items-center justify-content-center mb-2">
-                  <span class="text-white text-decoration-line-through me-2 opacity-70"><%= program.originalPrice %></span>
-                  <span class="badge bg-warning text-dark fw-bold"><%= program.discountPercent %> OFF</span>
-                </div>
-                <h3 class="fw-bold mb-0"><%= program.discountedPrice %></h3>
-                <p class="mb-0 opacity-80">할인된 프로그램 비용</p>
+                <% if (program.discountPercent && program.discountPercent > 0) { %>
+                  <div class="d-flex align-items-center justify-content-center mb-2">
+                    <span class="text-white text-decoration-line-through me-2 opacity-70">$<%= program.originalPrice.toLocaleString() %></span>
+                    <span class="badge bg-warning text-dark fw-bold"><%= program.discountPercent %>% OFF</span>
+                  </div>
+                  <h3 class="fw-bold mb-0">$<%= program.discountedPrice.toLocaleString() %></h3>
+                  <p class="mb-0 opacity-80">할인된 프로그램 비용</p>
+                <% } else { %>
+                  <h3 class="fw-bold mb-0">$<%= (program.price || program.originalPrice).toLocaleString() %></h3>
+                  <p class="mb-0 opacity-80">프로그램 비용</p>
+                <% } %>
               </div>
                              <a href="#contact-section" class="btn btn-warning btn-lg px-4 fw-bold" style="color: #2d3748 !important;">
                  <i class="fas fa-paper-plane me-2" style="color: #2d3748 !important;"></i>지금 신청하기
@@ -449,7 +522,7 @@
                     </div>
                     <div>
                       <h5 class="mb-1 fw-bold">위치</h5>
-                      <p class="text-muted mb-0"><%= program.location %></p>
+                      <p class="text-muted mb-0"><%= formatLocation(program.location) %></p>
                     </div>
                   </div>
                 </div>
@@ -463,7 +536,7 @@
                     </div>
                     <div>
                       <h5 class="mb-1 fw-bold">연령 대상</h5>
-                      <p class="text-muted mb-0"><%= program.ageRange %></p>
+                      <p class="text-muted mb-0"><%= formatAgeRange(program.ageRange) %></p>
                     </div>
                   </div>
                 </div>
@@ -477,7 +550,7 @@
                     </div>
                     <div>
                       <h5 class="mb-1 fw-bold">기간</h5>
-                      <p class="text-muted mb-0"><%= program.duration %></p>
+                      <p class="text-muted mb-0"><%= calculateDuration(program.startDate, program.endDate) %></p>
                     </div>
                   </div>
                 </div>
@@ -491,11 +564,15 @@
                     </div>
                     <div>
                       <h5 class="mb-1 fw-bold">프로그램 비용</h5>
-                      <div class="d-flex align-items-center">
-                        <span class="text-muted text-decoration-line-through me-2 small"><%= program.originalPrice %></span>
-                        <span class="badge bg-danger text-white small me-2"><%= program.discountPercent %> OFF</span>
-                      </div>
-                      <p class="text-primary fw-bold mb-0 fs-5"><%= program.discountedPrice %></p>
+                      <% if (program.discountPercent && program.discountPercent > 0) { %>
+                        <div class="d-flex align-items-center">
+                          <span class="text-muted text-decoration-line-through me-2 small">$<%= program.originalPrice.toLocaleString() %></span>
+                          <span class="badge bg-danger text-white small me-2"><%= program.discountPercent %>% OFF</span>
+                        </div>
+                        <p class="text-primary fw-bold mb-0 fs-5">$<%= program.discountedPrice.toLocaleString() %></p>
+                      <% } else { %>
+                        <p class="text-primary fw-bold mb-0 fs-5">$<%= (program.price || program.originalPrice).toLocaleString() %></p>
+                      <% } %>
                     </div>
                   </div>
                 </div>
@@ -554,24 +631,28 @@
                 <div class="mb-3">
                   <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">카테고리:</span>
-                    <span class="fw-500"><%= program.badge %></span>
+                    <span class="fw-500"><%= program.badge || program.category %></span>
                   </div>
                   <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">기간:</span>
-                    <span class="fw-500"><%= program.duration %></span>
+                    <span class="fw-500"><%= calculateDuration(program.startDate, program.endDate) %></span>
                   </div>
                   <div class="d-flex justify-content-between mb-2">
                     <span class="text-muted">연령:</span>
-                    <span class="fw-500"><%= program.ageRange %></span>
+                    <span class="fw-500"><%= formatAgeRange(program.ageRange) %></span>
                   </div>
                   <div class="d-flex justify-content-between">
                     <span class="text-muted">비용:</span>
                     <div class="text-end">
-                      <div class="d-flex align-items-center justify-content-end mb-1">
-                        <span class="text-muted text-decoration-line-through me-2 small"><%= program.originalPrice %></span>
-                        <span class="badge bg-danger text-white small"><%= program.discountPercent %> OFF</span>
-                      </div>
-                      <span class="fw-bold text-primary"><%= program.discountedPrice %></span>
+                      <% if (program.discountPercent && program.discountPercent > 0) { %>
+                        <div class="d-flex align-items-center justify-content-end mb-1">
+                          <span class="text-muted text-decoration-line-through me-2 small">$<%= program.originalPrice.toLocaleString() %></span>
+                          <span class="badge bg-danger text-white small"><%= program.discountPercent %>% OFF</span>
+                        </div>
+                        <span class="fw-bold text-primary">$<%= program.discountedPrice.toLocaleString() %></span>
+                      <% } else { %>
+                        <span class="fw-bold text-primary">$<%= (program.price || program.originalPrice).toLocaleString() %></span>
+                      <% } %>
                     </div>
                   </div>
                 </div>
