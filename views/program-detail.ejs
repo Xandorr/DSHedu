@@ -33,6 +33,16 @@
   <link rel="stylesheet" href="/css/style.css">
   
   <style>
+    /* 스크롤 성능 개선 */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 100px;
+    }
+    
+    body {
+      overflow-x: hidden;
+    }
+    
     /* Program Detail Specific Styles */
     .program-hero {
       background: linear-gradient(135deg, #182D64 0%, #72F5B7 100%);
@@ -143,6 +153,7 @@
       top: 100px;
       max-height: calc(100vh - 120px);
       overflow-y: auto;
+      transition: all 0.3s ease;
     }
     
     .program-details-container {
@@ -151,11 +162,6 @@
     
     .main-content-col {
       position: relative;
-    }
-    
-    .content-end-marker {
-      visibility: hidden;
-      pointer-events: none;
     }
     
     /* 사이드바 부모 컨테이너 높이 제한 */
@@ -323,6 +329,24 @@
       
 
 
+      /* 페이지 하단 스크롤 안정화 */
+      main {
+        min-height: 100vh;
+        position: relative;
+      }
+      
+      .related-programs {
+        position: relative;
+        z-index: 1;
+      }
+      
+      /* 스크롤 끝 부분 안정화 */
+      body::after {
+        content: '';
+        display: block;
+        height: 50px;
+      }
+
       @media (max-width: 991.98px) {
         .sticky-sidebar {
           position: static;
@@ -331,6 +355,11 @@
         
         .program-image-section img {
           height: 300px;
+        }
+        
+        /* 모바일에서 스크롤 성능 최적화 */
+        html {
+          -webkit-overflow-scrolling: touch;
         }
       }
   </style>
@@ -568,14 +597,14 @@
     </section>
 
     <!-- Related Programs Section -->
-    <section class="related-programs py-5">
+    <section class="related-programs py-5 mb-5">
       <div class="container">
                  <div class="text-center section-title" data-aos="fade-up">
            <h2 class="display-6 fw-bold" style="color: #2d3748 !important;">비슷한 프로그램</h2>
            <p class="lead text-muted" style="color: #6c757d !important;">관심 있으실 만한 다른 프로그램들을 확인해보세요</p>
          </div>
         
-        <div class="text-center">
+        <div class="text-center pb-5">
           <a href="/programs?category=<%= program.category %>" class="btn btn-primary btn-lg px-4" data-aos="fade-up">
             <i class="fas fa-search me-2"></i><%= program.badge %> 프로그램 더 보기
           </a>
@@ -610,52 +639,57 @@
       });
     });
 
-    // Sticky sidebar height control  
+    // Sticky sidebar height control - 개선된 버전
     document.addEventListener('DOMContentLoaded', function() {
       const sidebar = document.querySelector('.sticky-sidebar');
       const mainContent = document.querySelector('.main-content-col');
+      const footer = document.querySelector('footer');
       
       if (sidebar && mainContent && window.innerWidth > 991) {
-        // 메인 컨텐츠 끝에 마커 요소 추가
-        const endMarker = document.createElement('div');
-        endMarker.style.height = '1px';
-        endMarker.style.position = 'absolute';
-        endMarker.style.bottom = '50px';
-        endMarker.style.left = '0';
-        endMarker.className = 'content-end-marker';
-        mainContent.appendChild(endMarker);
+        let ticking = false;
         
-        // Intersection Observer로 마커 감지
-        const observer = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) {
-            if (entry.isIntersecting) {
-              // 메인 컨텐츠 끝에 도달하면 사이드바를 절대 위치로 고정
+        function updateSidebarPosition() {
+          if (!ticking) {
+            requestAnimationFrame(function() {
+              const scrollTop = window.pageYOffset;
               const mainContentRect = mainContent.getBoundingClientRect();
               const sidebarHeight = sidebar.offsetHeight;
-              const topPosition = Math.max(0, mainContentRect.height - sidebarHeight - 50);
+              const windowHeight = window.innerHeight;
+              const footerRect = footer ? footer.getBoundingClientRect() : null;
               
-              sidebar.style.position = 'absolute';
-              sidebar.style.top = topPosition + 'px';
-            } else {
-              // 메인 컨텐츠 중간이면 일반 sticky 동작
-              sidebar.style.position = 'sticky';
-              sidebar.style.top = '100px';
-            }
-          });
-        }, {
-          rootMargin: '0px 0px -10% 0px',
-          threshold: 0
-        });
+              // 푸터가 뷰포트에 나타나기 시작하면 사이드바 고정
+              if (footerRect && footerRect.top < windowHeight + 100) {
+                const containerRect = mainContent.parentElement.getBoundingClientRect();
+                const maxTop = containerRect.height - sidebarHeight - 100;
+                sidebar.style.position = 'absolute';
+                sidebar.style.top = Math.max(0, maxTop) + 'px';
+              } else {
+                // 일반적인 sticky 동작
+                sidebar.style.position = 'sticky';
+                sidebar.style.top = '100px';
+              }
+              
+              ticking = false;
+            });
+            ticking = true;
+          }
+        }
         
-        observer.observe(endMarker);
+        // 스크롤 이벤트에 throttling 적용
+        window.addEventListener('scroll', updateSidebarPosition, { passive: true });
         
         // 리사이즈 시 재계산
         window.addEventListener('resize', function() {
           if (window.innerWidth <= 991) {
             sidebar.style.position = 'static';
             sidebar.style.top = 'auto';
+          } else {
+            updateSidebarPosition();
           }
         });
+        
+        // 초기 위치 설정
+        updateSidebarPosition();
       }
     });
   </script>
