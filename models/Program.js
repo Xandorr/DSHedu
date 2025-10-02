@@ -73,6 +73,7 @@ const ProgramSchema = new mongoose.Schema({
     photo: String
   }],
   activities: [String],
+  features: [String],
   photos: [String],
   featured: {
     type: Boolean,

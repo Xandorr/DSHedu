@@ -36,6 +36,14 @@ const postSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
+  isPrivate: {
+    type: Boolean,
+    default: false
+  },
   views: {
     type: Number,
     default: 0

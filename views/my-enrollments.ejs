@@ -32,10 +32,15 @@
         <div class="card shadow-sm border-0">
           <div class="card-body text-center">
             <div class="mb-3">
-              <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
-                   style="width: 80px; height: 80px;">
-                <i class="fas fa-user fa-2x text-white"></i>
-              </div>
+              <% if (user.profilePhoto) { %>
+                <img src="<%= user.profilePhoto %>" alt="프로필 사진" 
+                     class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+              <% } else { %>
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px;">
+                  <i class="fas fa-user fa-2x text-white"></i>
+                </div>
+              <% } %>
             </div>
             <h5 class="card-title"><%= user.name %></h5>
             <p class="text-muted small"><%= user.email %></p>
@@ -76,7 +81,22 @@
 
         <!-- 통계 카드 -->
         <div class="row g-4 mb-4">
-          <div class="col-md-4">
+          <div class="col-md-3">
+            <div class="card bg-danger text-white">
+              <div class="card-body text-center">
+                <div class="d-flex align-items-center justify-content-center">
+                  <div class="me-3">
+                    <i class="fas fa-heart fa-2x"></i>
+                  </div>
+                  <div>
+                    <h4 class="mb-0" id="wishlistEnrollments">0</h4>
+                    <small>찜한 프로그램</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
             <div class="card bg-primary text-white">
               <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center">
@@ -91,7 +111,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <div class="card bg-success text-white">
               <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center">
@@ -106,7 +126,7 @@
               </div>
             </div>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <div class="card bg-info text-white">
               <div class="card-body text-center">
                 <div class="d-flex align-items-center justify-content-center">
@@ -136,11 +156,11 @@
               <div class="col-md-3">
                 <select class="form-select" id="statusFilter">
                   <option value="">모든 상태</option>
+                  <option value="wishlist">찜한 프로그램</option>
                   <option value="pending">대기 중</option>
                   <option value="confirmed">확정</option>
                   <option value="in-progress">진행 중</option>
                   <option value="completed">완료</option>
-                  <option value="cancelled">취소됨</option>
                 </select>
               </div>
               <div class="col-md-3">
@@ -157,84 +177,106 @@
 
         <!-- 등록 현황 목록 -->
         <div id="enrollmentsList">
-          <!-- 데이터가 없을 때 -->
-          <div class="card shadow-sm border-0">
-            <div class="card-body text-center py-5">
-              <div class="mb-4">
-                <i class="fas fa-calendar-plus fa-4x text-muted"></i>
-              </div>
-              <h5 class="text-muted">등록된 프로그램이 없습니다</h5>
-              <p class="text-muted">지금 바로 흥미로운 프로그램에 등록해보세요!</p>
-              <a href="/programs" class="btn btn-primary btn-lg">
-                <i class="fas fa-search me-2"></i>프로그램 찾아보기
-              </a>
-            </div>
-          </div>
-
-          <!-- 샘플 등록 데이터 (실제로는 서버에서 데이터를 가져옴) -->
-          <div class="d-none" id="sampleEnrollments">
-            <div class="card shadow-sm border-0 mb-3 enrollment-card" data-status="confirmed" data-category="summer">
-              <div class="card-body">
-                <div class="row align-items-center">
-                  <div class="col-md-8">
-                    <div class="d-flex align-items-center mb-2">
-                      <h5 class="mb-0 me-3">여름 영어 캠프 2024</h5>
-                      <span class="badge bg-success">확정</span>
+          <% if (enrollments && enrollments.length > 0) { %>
+            <% enrollments.forEach(function(enrollment) { %>
+              <div class="card shadow-sm border-0 mb-3 enrollment-card" 
+                   data-status="<%= enrollment.status %>" 
+                   data-category="<%= enrollment.program?.category || '' %>">
+                <div class="card-body">
+                  <div class="row align-items-center">
+                    <div class="col-md-8">
+                      <div class="d-flex align-items-center mb-2">
+                        <h5 class="mb-0 me-3"><%= enrollment.program?.title || '프로그램 정보 없음' %></h5>
+                        <span class="badge bg-<%= 
+                          enrollment.status === 'wishlist' ? 'danger' :
+                          enrollment.status === 'confirmed' ? 'success' : 
+                          enrollment.status === 'pending' ? 'warning' : 
+                          enrollment.status === 'in-progress' ? 'info' : 
+                          enrollment.status === 'completed' ? 'primary' : 'secondary'
+                        %>">
+                          <%= 
+                            enrollment.status === 'wishlist' ? '찜한 프로그램' :
+                            enrollment.status === 'confirmed' ? '확정' : 
+                            enrollment.status === 'pending' ? '대기 중' : 
+                            enrollment.status === 'in-progress' ? '진행 중' : 
+                            enrollment.status === 'completed' ? '완료' : 
+                            enrollment.status === 'cancelled' ? '취소됨' : '알 수 없음'
+                          %>
+                        </span>
+                      </div>
+                      <% if (enrollment.program?.startDate && enrollment.program?.endDate) { %>
+                        <p class="text-muted mb-2">
+                          <i class="fas fa-calendar me-2"></i>
+                          <%= new Date(enrollment.program.startDate).toLocaleDateString('ko-KR') %> - 
+                          <%= new Date(enrollment.program.endDate).toLocaleDateString('ko-KR') %>
+                        </p>
+                      <% } %>
+                      <p class="text-muted mb-2">
+                        <i class="fas fa-clock me-2"></i>등록일: 
+                        <%= new Date(enrollment.createdAt).toLocaleDateString('ko-KR') %>
+                      </p>
+                      <% if (enrollment.student?.name) { %>
+                        <p class="text-muted mb-0">
+                          <i class="fas fa-user me-2"></i>참가자: <%= enrollment.student.name %>
+                        </p>
+                      <% } %>
                     </div>
-                    <p class="text-muted mb-2">
-                      <i class="fas fa-calendar me-2"></i>2024.07.15 - 2024.07.22
-                      <i class="fas fa-clock ms-3 me-2"></i>09:00 - 17:00
-                    </p>
-                    <p class="text-muted mb-0">
-                      <i class="fas fa-map-marker-alt me-2"></i>서울특별시 강남구 교육원
-                    </p>
-                  </div>
-                  <div class="col-md-4 text-end">
-                    <div class="mb-2">
-                      <strong class="fs-5 text-primary">₩350,000</strong>
-                    </div>
-                    <div class="btn-group" role="group">
-                      <button type="button" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-eye"></i> 상세보기
-                      </button>
-                      <button type="button" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-download"></i> 증명서
-                      </button>
+                    <div class="col-md-4 text-end">
+                      <% if (enrollment.program?.price || enrollment.program?.originalPrice) { %>
+                        <div class="mb-2">
+                          <strong class="fs-5 text-primary">
+                            $<%= (enrollment.program.price || enrollment.program.originalPrice || 0).toLocaleString() %>
+                          </strong>
+                        </div>
+                      <% } %>
+                      <div class="btn-group" role="group">
+                        <% if (enrollment.program?._id) { %>
+                          <a href="/programs/<%= enrollment.program._id %>" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> 상세보기
+                          </a>
+                        <% } %>
+                        <% if (enrollment.status === 'wishlist') { %>
+                          <button type="button" class="btn btn-sm btn-outline-success" 
+                                  onclick="enrollFromWishlist('<%= enrollment._id %>')">
+                            <i class="fas fa-plus"></i> 등록하기
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-danger" 
+                                  onclick="removeFromWishlist('<%= enrollment.program._id %>')">
+                            <i class="fas fa-heart-broken"></i> 찜 해제
+                          </button>
+                        <% } else if (enrollment.status === 'completed') { %>
+                          <button type="button" class="btn btn-sm btn-outline-success" 
+                                  onclick="downloadCertificate('<%= enrollment._id %>')">
+                            <i class="fas fa-download"></i> 수료증
+                          </button>
+                        <% } else if (enrollment.status === 'pending' || enrollment.status === 'confirmed') { %>
+                          <button type="button" class="btn btn-sm btn-outline-danger" 
+                                  onclick="cancelEnrollment('<%= enrollment._id %>')">
+                            <i class="fas fa-times"></i> 취소
+                          </button>
+                        <% } %>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="card shadow-sm border-0 mb-3 enrollment-card" data-status="in-progress" data-category="special">
-              <div class="card-body">
-                <div class="row align-items-center">
-                  <div class="col-md-8">
-                    <div class="d-flex align-items-center mb-2">
-                      <h5 class="mb-0 me-3">코딩 부트캠프</h5>
-                      <span class="badge bg-warning">진행 중</span>
-                    </div>
-                    <p class="text-muted mb-2">
-                      <i class="fas fa-calendar me-2"></i>2024.06.01 - 2024.08.31
-                      <i class="fas fa-clock ms-3 me-2"></i>10:00 - 18:00
-                    </p>
-                    <p class="text-muted mb-0">
-                      <i class="fas fa-map-marker-alt me-2"></i>온라인 (Zoom)
-                    </p>
-                  </div>
-                  <div class="col-md-4 text-end">
-                    <div class="mb-2">
-                      <strong class="fs-5 text-primary">₩1,200,000</strong>
-                    </div>
-                    <div class="progress mb-2" style="height: 8px;">
-                      <div class="progress-bar bg-warning" role="progressbar" style="width: 65%"></div>
-                    </div>
-                    <small class="text-muted">진행률: 65%</small>
-                  </div>
+            <% }); %>
+          <% } else { %>
+            <!-- 데이터가 없을 때 -->
+            <div class="card shadow-sm border-0">
+              <div class="card-body text-center py-5">
+                <div class="mb-4">
+                  <i class="fas fa-calendar-plus fa-4x text-muted"></i>
                 </div>
+                <h5 class="text-muted">등록된 프로그램이 없습니다</h5>
+                <p class="text-muted">지금 바로 흥미로운 프로그램에 등록해보세요!</p>
+                <a href="/programs" class="btn btn-primary btn-lg">
+                  <i class="fas fa-search me-2"></i>프로그램 찾아보기
+                </a>
               </div>
             </div>
-          </div>
+          <% } %>
+
         </div>
 
         <!-- 페이지네이션 -->
@@ -284,8 +326,8 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // 임시로 샘플 데이터 표시 (실제로는 서버에서 데이터 로드)
-      loadEnrollments();
+      // 페이지 로드 시 통계 업데이트
+      updateStatistics();
 
       // 검색 및 필터 이벤트
       document.getElementById('searchInput').addEventListener('input', filterEnrollments);
@@ -293,22 +335,42 @@
       document.getElementById('categoryFilter').addEventListener('change', filterEnrollments);
     });
 
-    function loadEnrollments() {
-      // 실제 구현에서는 서버에서 데이터를 가져옴
-      const hasEnrollments = false; // 임시로 false 설정
+    function updateStatistics() {
+      const cards = document.querySelectorAll('.enrollment-card');
+      console.log('📊 찾은 카드 수:', cards.length);
+      
+      let wishlist = 0;
+      let active = 0;
+      let completed = 0;
 
-      if (hasEnrollments) {
-        // 데이터가 있을 때 샘플 데이터 표시
-        document.getElementById('sampleEnrollments').classList.remove('d-none');
-        updateStatistics();
-      } else {
-        // 데이터가 없을 때는 기본 화면 표시 (이미 표시됨)
-        updateStatistics(0, 0, 0);
-      }
-    }
+      cards.forEach((card, index) => {
+        const status = card.dataset.status;
+        console.log(`📊 카드 ${index + 1} 상태:`, status);
+        
+        if (status === 'wishlist') {
+          wishlist++;
+        } else if (status === 'in-progress') {
+          // 진행 중: 관리자가 실제로 진행 중으로 변경한 상태만 포함
+          active++;
+        } else if (status === 'completed') {
+          completed++;
+        }
+        // pending 상태는 아직 관리자 승인 대기 중이므로 진행 중에 포함하지 않음
+      });
 
-    function updateStatistics(total = 0, active = 0, completed = 0) {
-      document.getElementById('totalEnrollments').textContent = total;
+      // 총 등록 = 승인됨 + 진행 중 + 완료 (찜하기와 대기 중은 제외)
+      let confirmed = 0;
+      cards.forEach((card) => {
+        if (card.dataset.status === 'confirmed') {
+          confirmed++;
+        }
+      });
+      const actualTotal = confirmed + active + completed;
+
+      console.log('📊 최종 통계:', { wishlist, active, completed, actualTotal });
+
+      document.getElementById('wishlistEnrollments').textContent = wishlist;
+      document.getElementById('totalEnrollments').textContent = actualTotal;
       document.getElementById('activeEnrollments').textContent = active;
       document.getElementById('completedEnrollments').textContent = completed;
     }
@@ -337,16 +399,179 @@
       });
     }
 
-    // 상세보기 버튼 클릭 이벤트
-    document.addEventListener('click', function(e) {
-      if (e.target.closest('.btn-outline-primary')) {
-        alert('프로그램 상세 정보를 표시합니다.');
-      }
+    // 등록 취소 함수
+    function cancelEnrollment(enrollmentId) {
+      console.log('🎯 취소 함수 호출됨:', enrollmentId);
       
-      if (e.target.closest('.btn-outline-secondary')) {
-        alert('수료증/증명서를 다운로드합니다.');
+      const confirmResult = confirm('정말로 이 등록을 취소하시겠습니까?');
+      console.log('❓ 사용자 확인 결과:', confirmResult);
+      
+      if (!confirmResult) {
+        console.log('❌ 사용자가 취소함');
+        return;
       }
-    });
+
+      console.log('🔄 취소 요청 시작:', enrollmentId);
+      console.log('🔗 요청 URL:', `/api/enrollments/${enrollmentId}/cancel`);
+      
+      fetch(`/api/enrollments/${enrollmentId}/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      })
+      .then(response => {
+        console.log('📡 응답 상태:', response.status, response.statusText);
+        
+        if (response.status === 401) {
+          console.log('❌ 401 인증 오류');
+          showToast('로그인이 필요합니다. 다시 로그인해주세요.', 'error');
+          setTimeout(() => window.location.href = '/login', 1500);
+          throw new Error('Authentication required');
+        }
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        return response.json();
+      })
+      .then(data => {
+        console.log('✅ 취소 응답 데이터:', data);
+        
+        if (data && data.success) {
+          showToast('등록이 성공적으로 취소되었습니다.', 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else if (data) {
+          showToast(data.message || '등록 취소에 실패했습니다.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('❌ 취소 오류:', error);
+        if (error.message !== 'Authentication required') {
+          showToast('오류가 발생했습니다: ' + error.message, 'error');
+        }
+      });
+    }
+
+    // 수료증 다운로드 함수
+    function downloadCertificate(enrollmentId) {
+      fetch(`/api/enrollments/${enrollmentId}/certificate`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.blob();
+        } else {
+          throw new Error('수료증을 찾을 수 없습니다.');
+        }
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `certificate_${enrollmentId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        showToast('수료증 다운로드가 시작됩니다.', 'success');
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('수료증 다운로드에 실패했습니다.', 'error');
+      });
+    }
+
+    // 찜하기에서 등록하기 함수
+    function enrollFromWishlist(enrollmentId) {
+      // 간단한 등록 정보로 전환 (실제로는 모달을 띄워서 상세 정보 입력받을 수 있음)
+      if (!confirm('이 프로그램을 정식으로 등록하시겠습니까?')) {
+        return;
+      }
+
+      const studentData = {
+        student: {
+          name: '학생', // 실제로는 사용자 입력
+          age: 15 // 실제로는 사용자 입력
+        },
+        emergencyContact: {
+          name: '비상연락처', // 실제로는 사용자 입력
+          phone: '010-0000-0000' // 실제로는 사용자 입력
+        }
+      };
+
+      fetch(`/api/enrollments/${enrollmentId}/enroll`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(studentData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('성공적으로 등록되었습니다.', 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showToast(data.message || '등록에 실패했습니다.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      });
+    }
+
+    // 찜하기 해제 함수
+    function removeFromWishlist(programId) {
+      if (!confirm('찜 목록에서 제거하시겠습니까?')) {
+        return;
+      }
+
+      fetch(`/api/enrollments/wishlist/${programId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('찜 목록에서 제거되었습니다.', 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showToast(data.message || '제거에 실패했습니다.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      });
+    }
+
+    // Toast 메시지 표시 함수
+    function showToast(message, type = 'info') {
+      // 기존 toast 제거
+      const existingToast = document.querySelector('.toast-custom');
+      if (existingToast) {
+        existingToast.remove();
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast-custom position-fixed top-0 end-0 m-3 p-3 rounded ${type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info'} text-white`;
+      toast.style.zIndex = '9999';
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
   </script>
 </body>
 </html> 

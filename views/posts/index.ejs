@@ -4,19 +4,42 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>커뮤니티 | DSH에듀</title>
-  <meta name="description" content="DSH에듀 회원 커뮤니티">
+  <meta name="description" content="DSH에듀 회원 커뮤니티 - 자유게시판, 정보공유, Q&A, 공지사항을 통해 다양한 정보를 나누세요">
+  <meta name="keywords" content="DSH에듀, 커뮤니티, 자유게시판, 정보공유, Q&A, 공지사항, 교육, 캠프">
+  
+  <!-- Open Graph 메타 태그 -->
+  <meta property="og:title" content="커뮤니티 | DSH에듀">
+  <meta property="og:description" content="DSH에듀 회원 커뮤니티 - 자유게시판, 정보공유, Q&A, 공지사항을 통해 다양한 정보를 나누세요">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= req.protocol %>://<%= req.get('host') %>/posts">
+  <meta property="og:site_name" content="DSH에듀">
+  <meta property="og:image" content="<%= req.protocol %>://<%= req.get('host') %>/images/logo.png">
+  <meta property="og:locale" content="ko_KR">
+  
+  <!-- 트위터 카드 메타 태그 -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="커뮤니티 | DSH에듀">
+  <meta name="twitter:description" content="DSH에듀 회원 커뮤니티 - 자유게시판, 정보공유, Q&A, 공지사항을 통해 다양한 정보를 나누세요">
+  <meta name="twitter:image" content="<%= req.protocol %>://<%= req.get('host') %>/images/logo.png">
+  
+  <!-- 기타 SEO 메타 태그 -->
+  <meta name="robots" content="index, follow">
+  <meta name="googlebot" content="index, follow">
+  <link rel="canonical" href="<%= req.protocol %>://<%= req.get('host') %>/posts">
   
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
-  <!-- AOS Animation Library -->
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- AOS Animation Library - 지연 로딩 -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" media="print" onload="this.media='all'">
+  
+  <!-- Google Fonts - 최적화된 로딩 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
   
   <!-- Custom CSS -->
   <link rel="stylesheet" href="/css/style.css">
@@ -57,11 +80,11 @@
       right: 0;
       bottom: 0;
       background-image: 
-        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(255,255,255,0.03) 0%, transparent 50%);
-      background-size: 300px 300px, 200px 200px, 400px 400px;
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 40%);
+      background-size: 200px 200px, 150px 150px;
       z-index: 2;
+      will-change: auto;
     }
     
     .hero-content {
@@ -79,13 +102,14 @@
       display: inline-flex;
       align-items: center;
       background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 50px;
       padding: 0.8rem 1.5rem;
       color: white;
       font-weight: 500;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      will-change: transform;
     }
     
     .badge-icon {
@@ -229,6 +253,7 @@
     }
     
     .crown-icon,
+    .level-icon,
     .rocket-icon {
       background: linear-gradient(45deg, #667eea, #764ba2);
       border-radius: 50%;
@@ -241,6 +266,113 @@
       color: white;
       font-size: 1.5rem;
       box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    /* 환영 메시지 스타일 */
+    .welcome-header {
+      margin-bottom: 1rem;
+    }
+
+    .welcome-content {
+      text-align: center;
+    }
+
+    .welcome-title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .welcome-name-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .user-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #555;
+    }
+
+    .user-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      max-width: fit-content;
+    }
+
+    .user-badge.admin-badge {
+      background-color: #ffc107;
+      color: #212529;
+    }
+
+    .user-badge.level-badge.level-1 {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .user-badge.level-badge.level-2 {
+      background: linear-gradient(45deg, #c0c0c0, #e8e8e8);
+      color: #333;
+      border: 1px solid #b0b0b0;
+    }
+
+    .user-badge.level-badge.level-3 {
+      background-color: #ffc107;
+      color: #212529;
+    }
+
+    .user-badge.level-badge.level-4 {
+      background: linear-gradient(45deg, #8e44ad, #9b59b6, #e74c3c);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+
+    .user-badge.level-badge.level-5 {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+      background-size: 300% 300%;
+      animation: diamondShine 3s ease-in-out infinite;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    @keyframes diamondShine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* 게시글 목록용 실버 스타일 */
+    .level-2-silver {
+      background: linear-gradient(45deg, #c0c0c0, #e8e8e8) !important;
+      color: #333 !important;
+      border: 1px solid #b0b0b0 !important;
+    }
+
+    /* 게시글 목록용 플래티넘 스타일 */
+    .level-4-platinum {
+      background: linear-gradient(45deg, #8e44ad, #9b59b6, #e74c3c) !important;
+      color: white !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+    }
+
+    /* 게시글 목록용 다이아몬드 스타일 */
+    .level-5-diamond {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57) !important;
+      background-size: 300% 300% !important;
+      animation: diamondShine 3s ease-in-out infinite !important;
+      color: white !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
     }
     
     .welcome-title {
@@ -274,16 +406,16 @@
       text-decoration: none;
       font-weight: 600;
       font-size: 1.1rem;
-      transition: all 0.3s ease;
+      transition: box-shadow 0.2s ease;
       border: none;
       overflow: hidden;
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
       width: 100%;
+      will-change: box-shadow;
     }
     
     .action-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35);
       color: white;
       text-decoration: none;
     }
@@ -357,17 +489,17 @@
 
     /* 커뮤니티 게시판 전용 스타일 */
     .post-row {
-      transition: all 0.3s ease;
+      transition: background-color 0.2s ease, border-left-color 0.2s ease, box-shadow 0.2s ease;
       border-left: 3px solid transparent;
       position: relative;
       background-color: white;
+      will-change: background-color, border-left-color, box-shadow;
     }
     
     .post-row:hover {
       background-color: #f8f9fa !important;
       border-left-color: #667eea;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       z-index: 1;
     }
     
@@ -560,11 +692,25 @@
           <div class="action-card">
             <% if (user) { %>
               <div class="welcome-section mb-4">
-                <div class="crown-icon">
-                  <i class="fas fa-crown"></i>
+                <div class="welcome-header">
+                  <div class="welcome-content">
+                    <h5 class="welcome-title">환영합니다!</h5>
+                    <div class="welcome-name-section">
+                      <span class="user-name"><%= user.name %>님</span>
+                      <% if (user.role === 'admin') { %>
+                        <div class="user-badge admin-badge">
+                          <i class="fas fa-crown"></i>
+                          <span>관리자</span>
+                        </div>
+                      <% } else if (user.communityLevel && user.communityLevel.level) { %>
+                        <div class="user-badge level-badge level-<%= user.communityLevel.level %>">
+                          <i class="<%= user.communityLevel.level === 1 ? 'fas fa-medal' : user.communityLevel.level === 2 ? 'fas fa-medal' : user.communityLevel.level === 3 ? 'fas fa-medal' : user.communityLevel.level === 4 ? 'fas fa-gem' : 'fas fa-crown' %>"></i>
+                          <span><%= user.communityLevel.title %></span>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
                 </div>
-                <h5 class="welcome-title">환영합니다!</h5>
-                <p class="welcome-name"><%= user.name %>님</p>
               </div>
               
               <a href="/posts/create" class="action-btn primary-btn">
@@ -657,7 +803,7 @@
               </thead>
                              <tbody id="postsContainer">
                 <% posts.forEach(post => { %>
-                  <tr class="post-row" style="cursor: pointer;" onclick="location.href='/posts/<%= post._id %>'"
+                  <tr class="post-row" style="cursor: pointer;"
                       data-category="<%= post.category %>"
                       data-title="<%= post.title %>"
                       data-author="<%= post.author.name %>"
@@ -685,6 +831,9 @@
                             </a>
                             <% if (post.category === 'notice') { %>
                               <i class="fas fa-thumbtack text-danger ms-1" title="공지사항"></i>
+                            <% } %>
+                            <% if (post.isPrivate) { %>
+                              <i class="fas fa-lock text-warning ms-1" title="비밀글"></i>
                             <% } %>
                           </h6>
                           
@@ -727,16 +876,34 @@
                     <!-- 작성자 -->
                     <td class="text-center py-3">
                       <div class="d-flex flex-column align-items-center">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-1" 
-                             style="width: 32px; height: 32px; font-size: 0.8rem;">
-                          <%= post.author.name.charAt(0).toUpperCase() %>
-                        </div>
-                        <small class="text-muted">
-                          <%= post.author.name %>
-                          <% if (user && user.role === 'admin' && post.author._id.toString() === user._id.toString()) { %>
-                            <i class="fas fa-crown text-warning ms-1" title="관리자"></i>
+                        <% if (post.author.profilePhoto) { %>
+                          <img src="<%= post.author.profilePhoto %>" alt="프로필 사진" 
+                               class="rounded-circle mb-1" style="width: 32px; height: 32px; object-fit: cover;">
+                        <% } else { %>
+                          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-1" 
+                               style="width: 32px; height: 32px; font-size: 0.8rem;">
+                            <%= post.author.name.charAt(0).toUpperCase() %>
+                          </div>
+                        <% } %>
+                        <div>
+                          <small class="text-muted">
+                            <%= post.author.name %>
+                          </small>
+                          <% if (post.author.role === 'admin') { %>
+                            <div class="mt-1">
+                              <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">
+                                <i class="fas fa-crown me-1"></i>관리자
+                              </span>
+                            </div>
+                          <% } else if (post.author.communityLevel && post.author.communityLevel.level) { %>
+                            <div class="mt-1">
+                              <span class="badge <%= post.author.communityLevel.level === 1 ? 'bg-secondary' : post.author.communityLevel.level === 2 ? 'level-2-silver' : post.author.communityLevel.level === 3 ? 'bg-warning text-dark' : post.author.communityLevel.level === 4 ? 'level-4-platinum' : 'level-5-diamond' %>" style="font-size: 0.6rem;">
+                                <i class="<%= post.author.communityLevel.level === 1 ? 'fas fa-medal' : post.author.communityLevel.level === 2 ? 'fas fa-medal' : post.author.communityLevel.level === 3 ? 'fas fa-medal' : post.author.communityLevel.level === 4 ? 'fas fa-gem' : 'fas fa-crown' %> me-1"></i>
+                                <%= post.author.communityLevel.title %>
+                              </span>
+                            </div>
                           <% } %>
-                        </small>
+                        </div>
                       </div>
                     </td>
                     
@@ -762,7 +929,7 @@
                               onclick="toggleLike('<%= post._id %>', this)" 
                               data-post-id="<%= post._id %>"
                               style="border: none; background: none;">
-                        <i class="fas fa-heart me-1 <%= user && post.likes && post.likes.includes(user._id) ? 'text-danger' : 'text-muted' %>"></i>
+                        <i class="fas fa-heart me-1 <%= user && post.isLiked ? 'text-danger' : 'text-muted' %>"></i>
                         <span class="like-count"><%= post.likes ? post.likes.length : 0 %></span>
                       </button>
                     </td>
@@ -859,9 +1026,38 @@
   .badge {
     font-size: 0.75em;
   }
+
+  /* AJAX로 동적 생성되는 등급별 배지 스타일 */
+  .level-2-silver {
+    background: linear-gradient(45deg, #c0c0c0, #e8e8e8) !important;
+    color: #333 !important;
+    border: 1px solid #b0b0b0 !important;
+  }
+
+  .level-4-platinum {
+    background: linear-gradient(45deg, #8e44ad, #9b59b6, #e74c3c) !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+  }
+
+  .level-5-diamond {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57) !important;
+    background-size: 300% 300% !important;
+    animation: diamondShine 3s ease-in-out infinite !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  }
+
+  @keyframes diamondShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
 </style>
 
 <script>
+// 게시글 삭제 함수 (전역 스코프)
 function deletePost(postId) {
   if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
     fetch(`/posts/${postId}/delete`, {
@@ -883,6 +1079,8 @@ function deletePost(postId) {
     });
   }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
 
 function toggleLike(postId, button) {
   event.stopPropagation();
@@ -929,6 +1127,7 @@ function stopEventPropagation(event) {
   event.stopPropagation();
   event.preventDefault();
 }
+}); // DOMContentLoaded 이벤트 리스너 종료
 </script>
 
 <%- include('../partials/footer') %>
@@ -936,10 +1135,25 @@ function stopEventPropagation(event) {
 <!-- Bootstrap JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- AOS Animation Library -->
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<!-- AOS Animation Library - 지연 로딩 -->
 <script>
-  AOS.init();
+// AOS 라이브러리 지연 로딩
+function loadAOS() {
+  const script = document.createElement('script');
+  script.src = 'https://unpkg.com/aos@2.3.1/dist/aos.js';
+  script.onload = function() {
+    AOS.init({
+      duration: 600,
+      once: true,
+      offset: 50
+    });
+  };
+  document.head.appendChild(script);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // 페이지 로드 후 AOS 초기화
+  setTimeout(loadAOS, 100);
 
   // 현재 카테고리 상태 추적
   let currentCategory = '<%= category %>';
@@ -1029,6 +1243,18 @@ function stopEventPropagation(event) {
   function updatePostsList(posts) {
     const postsContainer = document.getElementById('postsContainer');
     
+    // postsContainer가 존재하지 않으면 에러 방지
+    if (!postsContainer) {
+      console.error('postsContainer 요소를 찾을 수 없습니다.');
+      return;
+    }
+    
+    // posts가 유효하지 않으면 에러 방지
+    if (!posts) {
+      console.error('posts 데이터가 유효하지 않습니다.');
+      return;
+    }
+    
     if (!posts || posts.length === 0) {
       postsContainer.innerHTML = `
         <tr>
@@ -1048,10 +1274,10 @@ function stopEventPropagation(event) {
       const createdDate = new Date(post.createdAt).toLocaleDateString('ko-KR');
       
       html += `
-        <tr class="post-row" style="cursor: pointer;" onclick="location.href='/posts/${post._id}'"
+        <tr class="post-row" style="cursor: pointer;"
             data-category="${post.category}"
             data-title="${post.title}"
-            data-author="${post.author.name}"
+            data-author="${post.author ? post.author.name : '삭제된 사용자'}"
             data-comments="${post.commentCount || 0}"
             data-views="${post.views || 0}"
             data-date="${createdDate}">
@@ -1066,6 +1292,7 @@ function stopEventPropagation(event) {
                     ${post.title}
                   </a>
                   ${post.category === 'notice' ? '<i class="fas fa-thumbtack text-danger ms-1" title="공지사항"></i>' : ''}
+                  ${post.isPrivate ? '<i class="fas fa-lock text-warning ms-1" title="비밀글"></i>' : ''}
                 </h6>
                                  ${post.tags && post.tags.length > 0 ? `
                    <div class="mt-1">
@@ -1075,8 +1302,37 @@ function stopEventPropagation(event) {
               </div>
             </div>
           </td>
-          <td class="text-center py-3">
-            <small class="text-muted">${post.author.name}</small>
+            <td class="text-center py-3">
+              <div class="d-flex flex-column align-items-center">
+                ${post.author && post.author.profilePhoto ? `
+                  <img src="${post.author.profilePhoto}" alt="프로필 사진" 
+                       class="rounded-circle mb-1" style="width: 32px; height: 32px; object-fit: cover;">
+                ` : `
+                  <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mb-1" 
+                       style="width: 32px; height: 32px; font-size: 0.8rem;">
+                    ${post.author && post.author.name ? post.author.name.charAt(0).toUpperCase() : '삭'}
+                  </div>
+                `}
+                <div>
+                  <small class="text-muted">
+                    ${post.author && post.author.name ? post.author.name : '삭제된 사용자'}
+                  </small>
+                ${post.author && post.author.role === 'admin' ? `
+                  <div class="mt-1">
+                    <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">
+                      <i class="fas fa-crown me-1"></i>관리자
+                    </span>
+                  </div>
+                ` : post.author && post.author.communityLevel && post.author.communityLevel.level ? `
+                  <div class="mt-1">
+                    <span class="badge ${getLevelBadgeClass(post.author.communityLevel.level)}" style="font-size: 0.6rem;">
+                      <i class="${getLevelIcon(post.author.communityLevel.level)} me-1"></i>
+                      ${post.author.communityLevel.title}
+                    </span>
+                  </div>
+                ` : ''}
+              </div>
+            </div>
           </td>
           <td class="text-center py-3">
             <small class="text-muted">${post.commentCount || 0}</small>
@@ -1118,6 +1374,48 @@ function stopEventPropagation(event) {
     }
   }
 
+  // 등급별 배지 클래스 반환
+  function getLevelBadgeClass(level) {
+    switch(level) {
+      case 1: return 'bg-secondary';      // 브론즈 - 회색
+      case 2: return 'level-2-silver';    // 실버 - 그라데이션 회색
+      case 3: return 'bg-warning text-dark'; // 골드 - 노란색
+      case 4: return 'level-4-platinum';  // 플래티넘 - 보라색 그라데이션
+      case 5: return 'level-5-diamond';   // 다이아몬드 - 무지개 그라데이션
+      default: return 'bg-secondary';
+    }
+  }
+
+  // 등급별 아이콘 반환
+  function getLevelIcon(level) {
+    switch(level) {
+      case 1: return 'fas fa-medal';      // 브론즈 - 메달
+      case 2: return 'fas fa-medal';      // 실버 - 메달
+      case 3: return 'fas fa-medal';      // 골드 - 메달
+      case 4: return 'fas fa-gem';        // 플래티넘 - 보석
+      case 5: return 'fas fa-crown';      // 다이아몬드 - 왕관
+      default: return 'fas fa-medal';
+    }
+  }
+
+  // 게시글 행 클릭 이벤트 (중복 방지)
+  document.addEventListener('click', function(e) {
+    const postRow = e.target.closest('.post-row');
+    if (postRow) {
+      // 링크나 버튼 클릭 시에는 행 클릭 이벤트 실행하지 않음
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON' || e.target.closest('a') || e.target.closest('button') || e.target.closest('.dropdown')) {
+        return;
+      }
+      
+      // 게시글 ID 추출
+      const postId = postRow.querySelector('a[href*="/posts/"]')?.href?.match(/\/posts\/([^\/]+)/)?.[1];
+      if (postId) {
+        console.log('📖 게시글 클릭:', postId);
+        window.location.href = `/posts/${postId}`;
+      }
+    }
+  });
+
   // Enter 키로도 검색 가능
   document.getElementById('searchInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -1125,6 +1423,7 @@ function stopEventPropagation(event) {
       document.getElementById('searchForm').dispatchEvent(new Event('submit'));
     }
   });
+}); // DOMContentLoaded 이벤트 리스너 종료
 </script>
 
 </body>

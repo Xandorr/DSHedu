@@ -1,6 +1,7 @@
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -48,6 +49,29 @@ exports.getPosts = async (req, res) => {
 
     let query = { isPublished: true };
 
+    // 비밀글 필터링: 작성자와 관리자만 볼 수 있음
+    if (req.user) {
+      if (req.user.role === 'admin') {
+        // 관리자: 모든 게시글 볼 수 있음 (비밀글 제한 없음)
+        // query에 isPrivate 조건을 추가하지 않음
+      } else {
+        // 일반 사용자: 자신의 비밀글 + 모든 공개글 (isPrivate가 false이거나 null/undefined인 경우)
+        query.$or = [
+          { isPrivate: false }, // 공개글
+          { isPrivate: { $exists: false } }, // isPrivate 필드가 없는 기존 게시글
+          { isPrivate: null }, // isPrivate가 null인 기존 게시글
+          { isPrivate: true, author: req.user._id } // 자신의 비밀글
+        ];
+      }
+    } else {
+      // 비로그인 사용자: 공개글만 (isPrivate가 false이거나 null/undefined인 경우)
+      query.$or = [
+        { isPrivate: false },
+        { isPrivate: { $exists: false } },
+        { isPrivate: null }
+      ];
+    }
+
     if (category && category !== 'all') {
       query.category = category;
     }
@@ -55,12 +79,24 @@ exports.getPosts = async (req, res) => {
     if (search) {
       console.log('🔍 검색어:', search);
       const searchRegex = { $regex: search, $options: 'i' };
-      query.$or = [
+      const searchConditions = [
         { title: searchRegex },
         { content: searchRegex },
         { tags: searchRegex }
       ];
-      console.log('🏷️ 태그 검색 조건 추가됨, 검색 조건:', JSON.stringify(query.$or, null, 2));
+      
+      // 기존 비밀글 조건과 검색 조건을 결합
+      if (query.$or) {
+        // 비밀글 조건이 있는 경우, 검색 조건과 AND로 결합
+        query.$and = [
+          { $or: query.$or },
+          { $or: searchConditions }
+        ];
+        delete query.$or;
+      } else {
+        query.$or = searchConditions;
+      }
+      console.log('🏷️ 태그 검색 조건 추가됨, 검색 조건:', JSON.stringify(searchConditions, null, 2));
     }
 
     console.log('📝 게시글 조회 쿼리:', JSON.stringify(query, null, 2));
@@ -73,7 +109,8 @@ exports.getPosts = async (req, res) => {
     try {
       // 공지사항 우선, 그 다음 최신순으로 정렬
       posts = await Post.find(query)
-        .populate('author', 'name email')
+        .populate('author', 'name email profilePhoto role communityLevel activityStats')
+        .populate('likes', 'name')
         .sort({ 
           category: 1,  // notice가 먼저 오도록 (알파벳 순서상 notice < general < info < qna)
           createdAt: -1 
@@ -87,6 +124,113 @@ exports.getPosts = async (req, res) => {
         if (a.category !== 'notice' && b.category === 'notice') return 1;
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
+
+      // 모든 작성자의 통계를 한 번에 계산 (성능 최적화)
+      try {
+        // 작성자가 존재하는 게시글만 필터링
+        const validPosts = posts.filter(post => post.author && post.author._id);
+        const authorIds = [...new Set(validPosts.map(post => post.author._id.toString()))];
+        
+        if (authorIds.length > 0) {
+          // 게시글 수 통계 계산
+          const postsStats = await Post.aggregate([
+            { $match: { author: { $in: authorIds.map(id => new mongoose.Types.ObjectId(id)) }, isPublished: true } },
+            { $group: { _id: '$author', count: { $sum: 1 } } }
+          ]);
+          
+          // 댓글 수 통계 계산
+          const commentsStats = await Comment.aggregate([
+            { $match: { author: { $in: authorIds.map(id => new mongoose.Types.ObjectId(id)) }, isDeleted: false } },
+            { $group: { _id: '$author', count: { $sum: 1 } } }
+          ]);
+          
+          // 좋아요 수 통계 계산
+          const likesStats = await Post.aggregate([
+            { $match: { author: { $in: authorIds.map(id => new mongoose.Types.ObjectId(id)) }, isPublished: true } },
+            { $project: { author: 1, likesCount: { $size: { $ifNull: ["$likes", []] } } } },
+            { $group: { _id: '$author', count: { $sum: '$likesCount' } } }
+          ]);
+          
+          // 통계 데이터를 Map으로 변환하여 빠른 조회
+          const postsMap = new Map(postsStats.map(stat => [stat._id.toString(), stat.count]));
+          const commentsMap = new Map(commentsStats.map(stat => [stat._id.toString(), stat.count]));
+          const likesMap = new Map(likesStats.map(stat => [stat._id.toString(), stat.count]));
+          
+          // 각 게시글의 작성자 통계 업데이트
+          posts.forEach(post => {
+            if (post.author && post.author._id) {
+              const authorId = post.author._id.toString();
+              post.author.activityStats = {
+                postsCount: postsMap.get(authorId) || 0,
+                commentsCount: commentsMap.get(authorId) || 0,
+                likesReceived: likesMap.get(authorId) || 0,
+                lastActiveAt: post.author.activityStats?.lastActiveAt || new Date()
+              };
+            } else {
+              // 작성자가 삭제된 경우 기본값 설정
+              post.author = {
+                name: '삭제된 사용자',
+                email: 'deleted@user.com',
+                role: 'user',
+                profilePhoto: null,
+                communityLevel: null,
+                activityStats: {
+                  postsCount: 0,
+                  commentsCount: 0,
+                  likesReceived: 0,
+                  lastActiveAt: new Date()
+                }
+              };
+            }
+          });
+          
+          console.log('📊 통계 계산 최적화 완료:', { 
+            authors: authorIds.length, 
+            posts: postsStats.length, 
+            comments: commentsStats.length, 
+            likes: likesStats.length 
+          });
+        }
+      } catch (statsError) {
+        console.log('통계 계산 오류 (무시 가능):', statsError.message);
+        // 오류 발생 시 기존 방식으로 fallback
+        for (let post of posts) {
+          if (post.author && post.author._id) {
+            post.author.activityStats = {
+              postsCount: 0,
+              commentsCount: 0,
+              likesReceived: 0,
+              lastActiveAt: post.author.activityStats?.lastActiveAt || new Date()
+            };
+          } else {
+            // 작성자가 삭제된 경우 기본값 설정
+            post.author = {
+              name: '삭제된 사용자',
+              email: 'deleted@user.com',
+              role: 'user',
+              profilePhoto: null,
+              communityLevel: null,
+              activityStats: {
+                postsCount: 0,
+                commentsCount: 0,
+                likesReceived: 0,
+                lastActiveAt: new Date()
+              }
+            };
+          }
+        }
+      }
+
+      // 각 게시글에 사용자의 좋아요 상태 추가
+      if (req.user) {
+        posts.forEach(post => {
+          const isLiked = post.likes.some(like => {
+            const likeId = like._id ? like._id.toString() : like.toString();
+            return likeId === req.user._id.toString();
+          });
+          post.isLiked = isLiked;
+        });
+      }
 
       total = await Post.countDocuments(query);
     } catch (dbError) {
@@ -141,6 +285,7 @@ DSH에듀 드림 ❤️`,
           tags: ['이용수칙', '안내', '커뮤니티', '공지'],
           views: 234,
           likes: [],
+          isLiked: false,
           getExcerpt: function(length = 100) {
             return this.content.substring(0, length) + '...';
           }
@@ -165,6 +310,7 @@ DSH에듀 드림 ❤️`,
           tags: ['환영', '안내', '커뮤니티'],
           views: 156,
           likes: [],
+          isLiked: false,
           getExcerpt: function(length = 100) {
             return this.content.substring(0, length) + '...';
           }
@@ -189,6 +335,7 @@ DSH에듀 드림 ❤️`,
           tags: ['여름캠프', '정보공유', '영어', '문화체험'],
           views: 89,
           likes: [],
+          isLiked: false,
           getExcerpt: function(length = 100) {
             return this.content.substring(0, length) + '...';
           }
@@ -211,6 +358,7 @@ DSH에듀 드림 ❤️`,
           tags: ['준비물', 'Q&A', '조언'],
           views: 34,
           likes: [],
+          isLiked: false,
           getExcerpt: function(length = 100) {
             return this.content.substring(0, length) + '...';
           }
@@ -275,7 +423,8 @@ DSH에듀 드림 ❤️`,
       },
       category: category || 'all',
       search: search || '',
-      user: req.user
+      user: req.user,
+      req: req
     });
 
   } catch (error) {
@@ -286,40 +435,217 @@ DSH에듀 드림 ❤️`,
 
 // 게시글 상세 조회
 exports.getPost = async (req, res) => {
+  const postId = req.params.id;
+  
+  console.log('📖 게시글 상세 조회:', postId);
+  
+  let post;
+  let comments = [];
+  let recentPosts = [];
+
   try {
-    const postId = req.params.id;
-    
-    console.log('📖 게시글 상세 조회:', postId);
-    
-    let post;
-    let comments = [];
+    // MongoDB에서 게시글 조회 시도
+    post = await Post.findById(postId)
+      .populate('author', 'name email role createdAt profilePhoto communityLevel activityStats')
+      .populate('likes', 'name');
 
-    try {
-      // MongoDB에서 게시글 조회 시도
-      post = await Post.findById(postId)
-        .populate('author', 'name email role createdAt')
-        .populate('likes', 'name');
-
-      if (post) {
-        // 조회수 증가
-        await Post.findByIdAndUpdate(postId, { $inc: { views: 1 } });
-
-        // 댓글 조회
-        comments = await Comment.find({ post: postId, parentComment: null, isDeleted: false })
-          .populate('author', 'name email role')
-          .sort({ createdAt: 1 });
-
-        console.log('✅ 게시글 조회 성공:', post.title);
+    if (post) {
+      // 작성자가 존재하는지 확인
+      if (post.author && post.author._id) {
+        // 작성자의 실제 통계 계산 (최적화된 방식)
+        try {
+          const authorId = post.author._id;
+          
+          // 한 번의 aggregate 쿼리로 모든 통계 계산
+          const stats = await Post.aggregate([
+            {
+              $facet: {
+                postsCount: [
+                  { $match: { author: authorId, isPublished: true } },
+                  { $count: "count" }
+                ],
+                commentsCount: [
+                  { $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'post',
+                    as: 'comments'
+                  }},
+                  { $match: { author: authorId, 'comments.isDeleted': { $ne: true } } },
+                  { $count: "count" }
+                ],
+                likesReceived: [
+                  { $match: { author: authorId, isPublished: true } },
+                  { $project: { likesCount: { $size: { $ifNull: ["$likes", []] } } } },
+                  { $group: { _id: null, totalLikes: { $sum: "$likesCount" } } },
+                  { $project: { count: "$totalLikes" } }
+                ]
+              }
+            }
+          ]);
+          
+          const postsCount = stats[0].postsCount[0]?.count || 0;
+          const commentsCount = await Comment.countDocuments({ author: authorId, isDeleted: false });
+          const likesReceived = stats[0].likesReceived[0]?.count || 0;
+          
+          // activityStats 업데이트
+          post.author.activityStats = {
+            postsCount,
+            commentsCount,
+            likesReceived,
+            lastActiveAt: post.author.activityStats?.lastActiveAt || new Date()
+          };
+          
+          console.log(`📊 ${post.author.name}님 실제 통계: 게시글 ${postsCount}, 댓글 ${commentsCount}, 좋아요 ${likesReceived}`);
+        } catch (statsError) {
+          console.log('통계 계산 오류 (무시 가능):', statsError.message);
+          // 오류 발생 시 기본값 설정
+          post.author.activityStats = {
+            postsCount: 0,
+            commentsCount: 0,
+            likesReceived: 0,
+            lastActiveAt: post.author.activityStats?.lastActiveAt || new Date()
+          };
+        }
+      } else {
+        // 작성자가 삭제된 경우 기본값 설정
+        post.author = {
+          name: '삭제된 사용자',
+          email: 'deleted@user.com',
+          role: 'user',
+          profilePhoto: null,
+          communityLevel: null,
+          activityStats: {
+            postsCount: 0,
+            commentsCount: 0,
+            likesReceived: 0,
+            lastActiveAt: new Date()
+          }
+        };
+        console.log('⚠️ 작성자가 삭제된 게시글입니다.');
       }
-    } catch (dbError) {
-      console.log('❌ 데이터베이스 연결 실패, 테스트 데이터 사용:', dbError.message);
       
-      // 테스트 데이터
-      const testPosts = [
-        {
-          _id: '1',
-          title: '📋 커뮤니티 이용수칙 및 안내사항',
-          content: `안녕하세요, DSH에듀 커뮤니티 회원 여러분!
+      // 비밀글 접근 권한 확인
+      if (post.isPrivate) {
+        if (!req.user) {
+          return res.status(403).render('error', {
+            title: '접근 권한 없음',
+            message: '비밀글은 로그인이 필요합니다.',
+            user: req.user
+          });
+        }
+        
+        const isAuthor = post.author._id.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+        
+        if (!isAuthor && !isAdmin) {
+          return res.status(403).render('error', {
+            title: '접근 권한 없음',
+            message: '비밀글은 작성자와 관리자만 볼 수 있습니다.',
+            user: req.user
+          });
+        }
+      }
+
+      // 조회수 증가
+      await Post.findByIdAndUpdate(postId, { $inc: { views: 1 } });
+
+      // 댓글 조회
+      comments = await Comment.find({ post: postId, parentComment: null, isDeleted: false })
+        .populate('author', 'name email role profilePhoto communityLevel activityStats')
+        .sort({ createdAt: 1 });
+      
+      // 댓글 작성자가 삭제된 경우 처리
+      comments = comments.map(comment => {
+        if (!comment.author || !comment.author._id) {
+          comment.author = {
+            name: '삭제된 사용자',
+            email: 'deleted@user.com',
+            role: 'user',
+            profilePhoto: null,
+            communityLevel: null,
+            activityStats: {
+              postsCount: 0,
+              commentsCount: 0,
+              likesReceived: 0,
+              lastActiveAt: new Date()
+            }
+          };
+        }
+        return comment;
+      });
+
+      // 최근 게시글 조회 (현재 게시글 제외)
+      let recentQuery = { 
+        isPublished: true, 
+        _id: { $ne: postId }
+      };
+
+      // 비밀글 필터링
+      if (req.user) {
+        if (req.user.role === 'admin') {
+          // 관리자: 모든 게시글 볼 수 있음
+        } else {
+          recentQuery.$or = [
+            { isPrivate: false },
+            { isPrivate: { $exists: false } },
+            { isPrivate: null },
+            { isPrivate: true, author: req.user._id }
+          ];
+        }
+      } else {
+        recentQuery.$or = [
+          { isPrivate: false },
+          { isPrivate: { $exists: false } },
+          { isPrivate: null }
+        ];
+      }
+
+      recentPosts = await Post.find(recentQuery)
+        .populate('author', 'name email role profilePhoto communityLevel activityStats')
+        .sort({ createdAt: -1 })
+        .limit(5);
+      
+      // 최근 게시글 작성자가 삭제된 경우 처리
+      recentPosts = recentPosts.map(post => {
+        if (!post.author || !post.author._id) {
+          post.author = {
+            name: '삭제된 사용자',
+            email: 'deleted@user.com',
+            role: 'user',
+            profilePhoto: null,
+            communityLevel: null,
+            activityStats: {
+              postsCount: 0,
+              commentsCount: 0,
+              likesReceived: 0,
+              lastActiveAt: new Date()
+            }
+          };
+        }
+        return post;
+      });
+
+      // 사용자의 좋아요 상태 추가
+      if (req.user) {
+        const isLiked = post.likes.some(like => {
+          const likeId = like._id ? like._id.toString() : like.toString();
+          return likeId === req.user._id.toString();
+        });
+        post.isLiked = isLiked;
+      }
+
+      console.log('✅ 게시글 조회 성공:', post.title);
+    }
+  } catch (dbError) {
+    console.log('❌ 데이터베이스 연결 실패, 테스트 데이터 사용:', dbError.message);
+    
+    // 테스트 데이터
+    const testPosts = [
+      {
+        _id: '1',
+        title: '📋 커뮤니티 이용수칙 및 안내사항',
+        content: `안녕하세요, DSH에듀 커뮤니티 회원 여러분!
 
 건전하고 유익한 커뮤니티 환경 조성을 위해 다음 이용수칙을 안내드립니다.
 
@@ -346,20 +672,21 @@ exports.getPost = async (req, res) => {
 궁금한 사항이 있으시면 언제든 Q&A 게시판이나 문의하기를 통해 연락주세요!
 
 감사합니다. 🙏`,
-          category: 'notice',
-          author: { _id: '1', name: '관리자', email: 'admin@dshedu.net', role: 'admin' },
-          createdAt: new Date('2024-12-15'),
-          tags: ['이용수칙', '안내', '커뮤니티', '공지'],
-          views: 234,
-          likes: [],
-          getExcerpt: function(length = 100) {
-            return this.content.substring(0, length) + '...';
-          }
-        },
-                 {
-           _id: '2',
-           title: '🎉 DSH에듀 커뮤니티에 오신 것을 환영합니다!',
-           content: `안녕하세요! DSH에듀 커뮤니티에 오신 것을 진심으로 환영합니다.
+        category: 'notice',
+        author: { _id: '1', name: '관리자', email: 'admin@dshedu.net', role: 'admin' },
+        createdAt: new Date('2024-12-15'),
+        tags: ['이용수칙', '안내', '커뮤니티', '공지'],
+        views: 234,
+        likes: [],
+        isLiked: false,
+        getExcerpt: function(length = 100) {
+          return this.content.substring(0, length) + '...';
+        }
+      },
+      {
+        _id: '2',
+        title: '🎉 DSH에듀 커뮤니티에 오신 것을 환영합니다!',
+        content: `안녕하세요! DSH에듀 커뮤니티에 오신 것을 진심으로 환영합니다.
 
 이곳은 미국 캠프 프로그램에 참여하신 분들과 관심 있는 분들이 모여 소중한 경험과 정보를 나누는 공간입니다.
 
@@ -370,48 +697,48 @@ exports.getPost = async (req, res) => {
 - ❓ Q&A: 궁금한 점 문의
 
 많은 참여 부탁드립니다! 😊`,
-           category: 'notice',
-           author: { _id: '1', name: '관리자', email: 'admin@dshedu.net', role: 'admin' },
-           createdAt: new Date('2025-03-01'),
-          tags: ['환영', '안내', '커뮤니티'],
-          views: 156,
-          likes: [],
-          getExcerpt: function(length = 100) {
-            return this.content.substring(0, length) + '...';
-          }
+        category: 'notice',
+        author: { _id: '1', name: '관리자', email: 'admin@dshedu.net', role: 'admin' },
+        createdAt: new Date('2025-03-01'),
+        tags: ['환영', '안내', '커뮤니티'],
+        views: 156,
+        likes: [],
+        isLiked: false,
+        getExcerpt: function(length = 100) {
+          return this.content.substring(0, length) + '...';
         }
-      ];
+      }
+    ];
 
-      post = testPosts.find(p => p._id === postId);
-    }
+    post = testPosts.find(p => p._id === postId);
+    
+    // 테스트 데이터에서 최근 게시글 조회 (현재 게시글 제외)
+    recentPosts = testPosts
+      .filter(p => p._id !== postId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 5);
+  }
 
-    if (!post) {
-      console.log('❌ 게시글을 찾을 수 없음:', postId);
-      return res.status(404).render('error', {
-        title: '게시글을 찾을 수 없습니다',
-        message: '요청하신 게시글이 존재하지 않습니다.',
-        user: req.user
-      });
-    }
-
-    console.log('📝 댓글 수:', comments.length);
-
-    res.render('posts/show', {
-      title: post.title,
-      description: typeof post.getExcerpt === 'function' ? post.getExcerpt(160) : post.content.substring(0, 160) + '...',
-      post,
-      comments,
-      user: req.user
-    });
-
-  } catch (error) {
-    console.error('게시글 조회 오류:', error);
-    res.status(500).render('error', {
-      title: '오류가 발생했습니다',
-      message: '게시글을 불러오는 중 오류가 발생했습니다.',
+  if (!post) {
+    console.log('❌ 게시글을 찾을 수 없음:', postId);
+    return res.status(404).render('error', {
+      title: '게시글을 찾을 수 없습니다',
+      message: '요청하신 게시글이 존재하지 않습니다.',
       user: req.user
     });
   }
+
+  console.log('📝 댓글 수:', comments.length);
+
+  res.render('posts/show', {
+    title: post.title,
+    description: typeof post.getExcerpt === 'function' ? post.getExcerpt(160) : post.content.substring(0, 160) + '...',
+    post,
+    comments,
+    recentPosts,
+    user: req.user,
+    req: req
+  });
 };
 
 // 게시글 작성 폼
@@ -426,9 +753,9 @@ exports.getCreatePost = (req, res) => {
 // 게시글 작성
 exports.createPost = async (req, res) => {
   try {
-    const { title, content, category, tags, youtubeUrl } = req.body;
+    const { title, content, category, tags, youtubeUrl, isPrivate } = req.body;
     
-    console.log('📝 게시글 작성 시도:', { title, category, content: content?.substring(0, 50) + '...' });
+    console.log('📝 게시글 작성 시도:', { title, category, content: content?.substring(0, 50) + '...', isPrivate });
     
     const images = req.files ? req.files.map(file => `/uploads/posts/${file.filename}`) : [];
 
@@ -440,11 +767,41 @@ exports.createPost = async (req, res) => {
       tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
       youtubeUrl: youtubeUrl || '',
       images,
-      isPublished: true // 명시적으로 설정
+      isPublished: true, // 명시적으로 설정
+      isPrivate: isPrivate === 'true' || isPrivate === true // 비밀글 설정
     });
 
     const savedPost = await post.save();
     console.log('✅ 게시글 저장 완료:', savedPost._id, savedPost.title);
+
+    // 게시글 작성자에게 경험치 지급
+    try {
+      const author = await User.findById(req.user._id);
+      if (author) {
+        const result = await author.addExperience(50, '게시글 작성');
+        author.activityStats.postsCount += 1;
+        // 좋아요 개수를 0으로 초기화 (aggregate 쿼리로 정확히 계산되므로)
+        author.activityStats.likesReceived = 0;
+        await author.save();
+        
+        if (result.levelUp) {
+          console.log(`🎉 ${author.name}님이 레벨업! ${result.newLevel}레벨 (${result.newTitle})`);
+        }
+      }
+    } catch (error) {
+      console.log('경험치 지급 오류 (무시 가능):', error.message);
+    }
+
+    // 검색엔진에 새로운 콘텐츠 알림 (비동기)
+    setImmediate(() => {
+      try {
+        const SearchEngineSubmitter = require('../scripts/submit-to-search-engines');
+        const submitter = new SearchEngineSubmitter(`${req.protocol}://${req.get('host')}`);
+        submitter.notifyNewContent(`${req.protocol}://${req.get('host')}/posts/${savedPost._id}`);
+      } catch (error) {
+        console.log('검색엔진 알림 오류 (무시 가능):', error.message);
+      }
+    });
 
     res.redirect(`/posts/${savedPost._id}`);
 
@@ -633,7 +990,25 @@ exports.createComment = async (req, res) => {
     });
 
     await comment.save();
-    await comment.populate('author', 'name email role');
+    await comment.populate('author', 'name email role profilePhoto communityLevel activityStats');
+
+    // 댓글 작성자에게 경험치 지급
+    try {
+      const author = await User.findById(req.user._id);
+      if (author) {
+        const result = await author.addExperience(10, '댓글 작성');
+        author.activityStats.commentsCount += 1;
+        // 좋아요 개수를 0으로 초기화 (aggregate 쿼리로 정확히 계산되므로)
+        author.activityStats.likesReceived = 0;
+        await author.save();
+        
+        if (result.levelUp) {
+          console.log(`🎉 ${author.name}님이 레벨업! ${result.newLevel}레벨 (${result.newTitle})`);
+        }
+      }
+    } catch (error) {
+      console.log('댓글 경험치 지급 오류 (무시 가능):', error.message);
+    }
 
     res.json({
       success: true,
@@ -689,6 +1064,20 @@ exports.toggleLike = async (req, res) => {
     } else {
       // 좋아요 추가
       post.likes.push(userId);
+      
+      // 게시글 작성자에게 좋아요 경험치 지급 (자신의 게시글이 아닌 경우만)
+      if (post.author.toString() !== userId.toString()) {
+        try {
+          const postAuthor = await User.findById(post.author);
+          if (postAuthor) {
+            await postAuthor.addExperience(5, '좋아요 받음');
+            // likesReceived는 aggregate 쿼리로 정확히 계산되므로 수동 증가 제거
+            await postAuthor.save();
+          }
+        } catch (error) {
+          console.log('좋아요 경험치 지급 오류 (무시 가능):', error.message);
+        }
+      }
     }
 
     await post.save();

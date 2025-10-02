@@ -65,7 +65,7 @@ const programs = [
     discountedPrice: "$1,511",
     discountPercent: "10%",
     price: "$1,511부터", // 백워드 호환성을 위해 유지
-    image: "https://res.cloudinary.com/dnry0kzyv/image/upload/v1752808299/ChatGPT_Image_Jul_17_2025_11_08_06_PM_g5xdsb.png",
+    image: "https://res.cloudinary.com/dnry0kzyv/image/upload/v1758853468/Gemini_Generated_Image_rqcolerqcolerqco_bd4f9i.png",
     badge: "여름",
     badgeClass: "bg-primary",
     featured: true,

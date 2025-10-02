@@ -32,10 +32,15 @@
         <div class="card shadow-sm border-0">
           <div class="card-body text-center">
             <div class="mb-3">
-              <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center" 
-                   style="width: 60px; height: 60px;">
-                <i class="fas fa-shield-alt fa-2x text-dark"></i>
-              </div>
+              <% if (user.profilePhoto) { %>
+                <img src="<%= user.profilePhoto %>" alt="프로필 사진" 
+                     class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+              <% } else { %>
+                <div class="bg-warning rounded-circle d-inline-flex align-items-center justify-content-center" 
+                     style="width: 60px; height: 60px;">
+                  <i class="fas fa-shield-alt fa-2x text-dark"></i>
+                </div>
+              <% } %>
             </div>
             <h6 class="card-title"><%= user.name %></h6>
             <small class="text-muted">관리자</small>
@@ -73,10 +78,23 @@
             <p class="text-muted mb-0">시스템 전체를 관리하고 모니터링하세요</p>
           </div>
           <div class="btn-group">
-            <button class="btn btn-outline-primary btn-sm">
-              <i class="fas fa-download me-2"></i>리포트 다운로드
-            </button>
-            <button class="btn btn-outline-success btn-sm">
+            <div class="dropdown">
+              <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-download me-2"></i>리포트 다운로드
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="downloadReport('users')">
+                  <i class="fas fa-users me-2"></i>사용자 관리 리스트
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="downloadReport('programs')">
+                  <i class="fas fa-book me-2"></i>프로그램 관리 리스트
+                </a></li>
+                <li><a class="dropdown-item" href="#" onclick="downloadReport('enrollments')">
+                  <i class="fas fa-list-alt me-2"></i>등록 관리 리스트
+                </a></li>
+              </ul>
+            </div>
+            <button class="btn btn-outline-success btn-sm" onclick="loadAdminStats()">
               <i class="fas fa-sync me-2"></i>데이터 새로고침
             </button>
           </div>
@@ -92,7 +110,7 @@
                     <i class="fas fa-users fa-2x"></i>
                   </div>
                   <div>
-                    <h4 class="mb-0">1,234</h4>
+                    <h4 class="mb-0" id="totalUsers">0</h4>
                     <small>총 사용자</small>
                   </div>
                 </div>
@@ -107,7 +125,7 @@
                     <i class="fas fa-book fa-2x"></i>
                   </div>
                   <div>
-                    <h4 class="mb-0">45</h4>
+                    <h4 class="mb-0" id="activePrograms">0</h4>
                     <small>활성 프로그램</small>
                   </div>
                 </div>
@@ -122,8 +140,8 @@
                     <i class="fas fa-calendar-check fa-2x"></i>
                   </div>
                   <div>
-                    <h4 class="mb-0">2,876</h4>
-                    <small>총 등록</small>
+                    <h4 class="mb-0" id="totalEnrollments">0</h4>
+                    <small>총 진행 중</small>
                   </div>
                 </div>
               </div>
@@ -134,10 +152,10 @@
               <div class="card-body">
                 <div class="d-flex align-items-center">
                   <div class="me-3">
-                    <i class="fas fa-won-sign fa-2x"></i>
+                    <i class="fas fa-dollar-sign fa-2x"></i>
                   </div>
                   <div>
-                    <h4 class="mb-0">₩125M</h4>
+                    <h4 class="mb-0" id="totalRevenue">0</h4>
                     <small>총 매출</small>
                   </div>
                 </div>
@@ -163,6 +181,16 @@
               <li class="nav-item" role="presentation">
                 <button class="nav-link" id="enrollments-tab" data-bs-toggle="tab" data-bs-target="#enrollments" type="button" role="tab">
                   <i class="fas fa-list-alt me-2"></i>등록 관리
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="levels-tab" data-bs-toggle="tab" data-bs-target="#levels" type="button" role="tab">
+                  <i class="fas fa-trophy me-2"></i>등급 관리
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="featured-posts-tab" data-bs-toggle="tab" data-bs-target="#featured-posts" type="button" role="tab">
+                  <i class="fas fa-star me-2"></i>추천 게시글
                 </button>
               </li>
               <li class="nav-item" role="presentation">
@@ -220,28 +248,18 @@
                         <th>작업</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      <tr>
-                        <td><%= user.name %></td>
-                        <td><%= user.email %></td>
-                        <td><span class="badge bg-warning">관리자</span></td>
-                        <td>2024-01-15</td>
-                        <td><span class="badge bg-success">활성</span></td>
-                        <td>
-                          <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-primary" title="편집">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-outline-info" title="상세보기">
-                              <i class="fas fa-eye"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      <!-- 추가 사용자 데이터는 실제로는 서버에서 로드 -->
+                    <tbody id="usersTableBody">
+                      <!-- 사용자 데이터는 JavaScript로 동적 로드 -->
                     </tbody>
                   </table>
                 </div>
+                
+                <!-- 페이지네이션 -->
+                <nav aria-label="사용자 목록 페이지네이션">
+                  <ul class="pagination justify-content-center" id="usersPagination">
+                    <!-- 페이지네이션은 JavaScript로 동적 생성 -->
+                  </ul>
+                </nav>
               </div>
 
               <!-- 프로그램 관리 탭 -->
@@ -306,9 +324,25 @@
               <div class="tab-pane fade" id="enrollments" role="tabpanel">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <h5>등록 관리</h5>
-                  <div class="btn-group">
-                    <button class="btn btn-outline-primary btn-sm">
-                      <i class="fas fa-download me-2"></i>엑셀 다운로드
+                </div>
+                
+                <!-- 검색 및 필터 -->
+                <div class="row mb-3">
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" placeholder="참가자명 또는 비상연락처명 검색">
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select">
+                      <option value="">전체 상태</option>
+                      <option value="pending">대기 중</option>
+                      <option value="confirmed">승인됨</option>
+                      <option value="in-progress">진행 중</option>
+                      <option value="completed">완료</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <button class="btn btn-primary" onclick="loadEnrollments()">
+                      <i class="fas fa-search me-1"></i>검색
                     </button>
                   </div>
                 </div>
@@ -330,22 +364,191 @@
                         <th>작업</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="enrollmentsTableBody">
+                      <!-- 등록 데이터는 JavaScript로 동적 로드 -->
+                    </tbody>
+                  </table>
+                </div>
+                
+                <!-- 페이지네이션 -->
+                <nav aria-label="등록 목록 페이지네이션">
+                  <ul class="pagination justify-content-center" id="enrollmentsPagination">
+                    <!-- 페이지네이션은 JavaScript로 동적 생성 -->
+                  </ul>
+                </nav>
+              </div>
+
+              <!-- 등급 관리 탭 -->
+              <div class="tab-pane fade" id="levels" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5><i class="fas fa-trophy me-2 text-warning"></i>커뮤니티 등급 관리</h5>
+                  <div class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    회원들의 참여도에 따른 등급을 관리하세요
+                  </div>
+                </div>
+
+                <!-- 등급 시스템 정보 -->
+                <div class="alert alert-info mb-4">
+                  <h6><i class="fas fa-lightbulb me-2"></i>등급 시스템 안내</h6>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <strong>경험치 획득 방법:</strong>
+                      <ul class="mb-0 mt-2">
+                        <li>게시글 작성: <span class="badge bg-primary">+50XP</span></li>
+                        <li>댓글 작성: <span class="badge bg-success">+10XP</span></li>
+                        <li>좋아요 받기: <span class="badge bg-danger">+5XP</span></li>
+                      </ul>
+                    </div>
+                    <div class="col-md-6">
+                <strong>등급별 칭호:</strong>
+                <ul class="mb-0 mt-2">
+                  <li><i class="fas fa-medal text-secondary me-2"></i>1레벨: 브론즈 (0-199XP)</li>
+                  <li><i class="fas fa-medal me-2" style="color: #c0c0c0;"></i>2레벨: 실버 (200-499XP)</li>
+                  <li><i class="fas fa-medal text-warning me-2"></i>3레벨: 골드 (500-999XP)</li>
+                  <li><i class="fas fa-gem me-2" style="color: #8e44ad;"></i>4레벨: 플래티넘 (1000-1999XP)</li>
+                  <li><i class="fas fa-crown me-2" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>5레벨: 다이아몬드 (2000XP 이상)</li>
+                </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 검색 및 필터 -->
+                <div class="row mb-3">
+                  <div class="col-md-4">
+                    <input type="text" class="form-control" id="levelSearchInput" placeholder="사용자명 또는 이메일 검색">
+                  </div>
+                  <div class="col-md-3">
+                    <select class="form-select" id="levelFilterSelect">
+                      <option value="">전체 등급</option>
+                      <option value="1">1레벨 (브론즈)</option>
+                      <option value="2">2레벨 (실버)</option>
+                      <option value="3">3레벨 (골드)</option>
+                      <option value="4">4레벨 (플래티넘)</option>
+                      <option value="5">5레벨 (다이아몬드)</option>
+                    </select>
+                  </div>
+                  <div class="col-md-2">
+                    <button class="btn btn-primary" onclick="loadLevels()">
+                      <i class="fas fa-search me-1"></i>검색
+                    </button>
+                  </div>
+                  <div class="col-md-3 text-end">
+                    <button class="btn btn-outline-secondary" onclick="refreshLevels()">
+                      <i class="fas fa-sync-alt me-1"></i>새로고침
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 등급 목록 테이블 -->
+                <div class="table-responsive">
+                  <table class="table table-hover">
+                    <thead class="table-light">
                       <tr>
-                        <td>김학생</td>
-                        <td>여름 영어 캠프</td>
-                        <td>2024-06-15</td>
-                        <td><span class="badge bg-warning">승인 대기</span></td>
-                        <td><span class="badge bg-success">완료</span></td>
-                        <td>
-                          <div class="btn-group btn-group-sm">
-                            <button class="btn btn-outline-success">승인</button>
-                            <button class="btn btn-outline-danger">거절</button>
+                        <th>순위</th>
+                        <th>사용자</th>
+                        <th>등급</th>
+                        <th>경험치</th>
+                        <th>활동 통계</th>
+                        <th>가입일</th>
+                        <th>관리</th>
+                      </tr>
+                    </thead>
+                    <tbody id="levelsTableBody">
+                      <tr>
+                        <td colspan="7" class="text-center py-4">
+                          <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">로딩 중...</span>
                           </div>
+                          <p class="mt-2 text-muted">등급 정보를 불러오는 중...</p>
                         </td>
                       </tr>
                     </tbody>
                   </table>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <nav aria-label="등급 관리 페이지네이션">
+                  <ul class="pagination justify-content-center" id="levelsPagination">
+                    <!-- 페이지네이션은 JavaScript로 동적 생성 -->
+                  </ul>
+                </nav>
+              </div>
+
+              <!-- 추천 게시글 관리 탭 -->
+              <div class="tab-pane fade" id="featured-posts" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5>추천 게시글 관리</h5>
+                  <div class="text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    메인페이지에 표시할 게시글을 선택하세요 (최대 6개)
+                  </div>
+                </div>
+
+                <!-- 현재 추천 게시글 -->
+                <div class="card mb-4">
+                  <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                      <i class="fas fa-star me-2"></i>현재 추천 게시글
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <div id="currentFeaturedPosts">
+                      <div class="text-center py-3">
+                        <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">로딩 중...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 게시글 검색 및 추가 -->
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="mb-0">
+                      <i class="fas fa-search me-2"></i>게시글 검색 및 추가
+                    </h6>
+                  </div>
+                  <div class="card-body">
+                    <!-- 검색 필터 -->
+                    <div class="row mb-3">
+                      <div class="col-md-4">
+                        <div class="input-group">
+                          <span class="input-group-text"><i class="fas fa-search"></i></span>
+                          <input type="text" class="form-control" id="postSearch" placeholder="제목으로 검색...">
+                        </div>
+                      </div>
+                      <div class="col-md-3">
+                        <select class="form-select" id="postCategoryFilter">
+                          <option value="">모든 카테고리</option>
+                          <option value="general">일반</option>
+                          <option value="info">정보공유</option>
+                          <option value="notice">공지사항</option>
+                          <option value="qna">질문답변</option>
+                        </select>
+                      </div>
+                      <div class="col-md-3">
+                        <select class="form-select" id="postStatusFilter">
+                          <option value="published">게시됨</option>
+                          <option value="all">모든 상태</option>
+                        </select>
+                      </div>
+                      <div class="col-md-2">
+                        <button class="btn btn-primary w-100" onclick="searchPosts()">
+                          <i class="fas fa-search me-1"></i>검색
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 검색 결과 -->
+                    <div id="postSearchResults">
+                      <div class="text-center py-4 text-muted">
+                        <i class="fas fa-search fa-2x mb-2"></i>
+                        <p>검색 버튼을 클릭하여 게시글을 찾아보세요</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -366,7 +569,7 @@
                         </div>
                         <div class="mb-3">
                           <label class="form-label">관리자 이메일</label>
-                          <input type="email" class="form-control" value="admin@dshedu.net">
+                          <input type="email" class="form-control" value="info@dshedu.net">
                         </div>
                         <button class="btn btn-primary">설정 저장</button>
                       </div>
@@ -405,31 +608,174 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <form>
+          <form id="userAddForm">
             <div class="mb-3">
-              <label class="form-label">이름</label>
-              <input type="text" class="form-control" required>
+              <label class="form-label">이름 *</label>
+              <input type="text" class="form-control" id="userName" name="name" required>
             </div>
             <div class="mb-3">
-              <label class="form-label">이메일</label>
-              <input type="email" class="form-control" required>
+              <label class="form-label">이메일 *</label>
+              <input type="email" class="form-control" id="userEmail" name="email" required>
+              <div class="form-text">로그인 시 사용할 이메일 주소입니다.</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">임시 비밀번호 *</label>
+              <input type="password" class="form-control" id="userPassword" name="password" required minlength="6">
+              <div class="form-text">최소 6자 이상 입력해주세요. 사용자가 로그인 후 변경할 수 있습니다.</div>
             </div>
             <div class="mb-3">
               <label class="form-label">역할</label>
-              <select class="form-select">
-                <option value="user">일반 사용자</option>
+              <select class="form-select" id="userRole" name="role">
+                <option value="parent">학부모</option>
+                <option value="student">학생</option>
                 <option value="admin">관리자</option>
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label">임시 비밀번호</label>
-              <input type="password" class="form-control" required>
+              <label class="form-label">전화번호</label>
+              <input type="tel" class="form-control" id="userPhone" name="phone" placeholder="010-1234-5678">
+              <div class="form-text">선택사항입니다.</div>
+            </div>
+            <div class="alert alert-info">
+              <h6><i class="fas fa-info-circle me-2"></i>사용자 추가 안내</h6>
+              <ul class="mb-0">
+                <li>새로 추가된 사용자는 브론즈 등급으로 시작합니다.</li>
+                <li>사용자는 이메일과 임시 비밀번호로 로그인할 수 있습니다.</li>
+                <li>첫 로그인 시 비밀번호 변경을 권장합니다.</li>
+              </ul>
             </div>
           </form>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-          <button type="button" class="btn btn-primary">사용자 추가</button>
+          <button type="button" class="btn btn-primary" onclick="addUser()">
+            <i class="fas fa-user-plus me-1"></i>사용자 추가
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사용자 편집 모달 -->
+  <div class="modal fade" id="userEditModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">사용자 정보 수정</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="userEditForm">
+            <input type="hidden" id="editUserId" name="userId">
+            
+            <!-- 기본 정보 -->
+            <h6 class="text-primary mb-3">기본 정보</h6>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">이름</label>
+                <input type="text" class="form-control" id="editUserName" name="name" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">이메일</label>
+                <input type="email" class="form-control" id="editUserEmail" name="email" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">전화번호</label>
+                <input type="text" class="form-control" id="editUserPhone" name="phone">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">생년월일</label>
+                <input type="date" class="form-control" id="editUserBirthDate" name="birthDate">
+              </div>
+            </div>
+            
+            <!-- 주소 정보 -->
+            <h6 class="text-primary mb-3 mt-4">주소 정보</h6>
+            <div class="row">
+              <div class="col-md-8 mb-3">
+                <label class="form-label">주소</label>
+                <input type="text" class="form-control" id="editUserAddress" name="address">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">우편번호</label>
+                <input type="text" class="form-control" id="editUserZipCode" name="zipCode">
+              </div>
+            </div>
+            
+            <!-- 비상 연락처 -->
+            <h6 class="text-primary mb-3 mt-4">비상 연락처</h6>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">비상 연락처 이름</label>
+                <input type="text" class="form-control" id="editUserEmergencyName" name="emergencyContactName">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">비상 연락처 전화번호</label>
+                <input type="text" class="form-control" id="editUserEmergencyPhone" name="emergencyContactPhone">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">관계</label>
+                <input type="text" class="form-control" id="editUserEmergencyRelationship" name="emergencyContactRelationship">
+              </div>
+            </div>
+            
+            <!-- 계정 설정 -->
+            <h6 class="text-primary mb-3 mt-4">계정 설정</h6>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">역할</label>
+                <select class="form-select" id="editUserRole" name="role" required>
+                  <option value="parent">학부모</option>
+                  <option value="student">학생</option>
+                  <option value="admin">관리자</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">상태</label>
+                <select class="form-select" id="editUserIsActive" name="isActive">
+                  <option value="true">활성</option>
+                  <option value="false">비활성</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- 알림 설정 -->
+            <h6 class="text-primary mb-3 mt-4">알림 설정</h6>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="editUserEmailNotifications" name="emailNotifications">
+                <label class="form-check-label" for="editUserEmailNotifications">
+                  이메일 알림 받기
+                </label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-primary" onclick="updateUser()">수정 저장</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 사용자 상세보기 모달 -->
+  <div class="modal fade" id="userDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">사용자 상세 정보</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="userDetailContent">
+            <!-- 사용자 상세 정보가 여기에 로드됩니다 -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
         </div>
       </div>
     </div>
@@ -528,13 +874,9 @@
                 <label class="form-label">도시</label>
                 <input type="text" class="form-control" id="locationCity" name="locationCity">
               </div>
-              <div class="col-md-6 mb-3">
-                <label class="form-label">주/도</label>
-                <input type="text" class="form-control" id="locationState" name="locationState">
-              </div>
-              <div class="col-md-6 mb-3">
+              <div class="col-12 mb-3">
                 <label class="form-label">주소</label>
-                <input type="text" class="form-control" id="locationAddress" name="locationAddress">
+                <input type="text" class="form-control" id="locationAddress" name="locationAddress" placeholder="예: 123 Main St, Atlanta, GA 30309">
               </div>
             </div>
 
@@ -555,6 +897,25 @@
                 <label class="form-label">활동 (쉼표로 구분)</label>
                 <input type="text" class="form-control" id="activities" name="activities" placeholder="예: 수영, 하이킹, 영어 수업">
               </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">프로그램 특징</label>
+                <div class="mb-2">
+                  <small class="text-muted">프로그램의 주요 특징들을 입력하세요. 각 특징은 별도 줄에 입력하거나 '+' 버튼으로 추가할 수 있습니다.</small>
+                </div>
+                <div id="featuresContainer">
+                  <div class="feature-input-group mb-2">
+                    <div class="input-group">
+                      <input type="text" class="form-control feature-input" placeholder="프로그램 특징을 입력하세요">
+                      <button type="button" class="btn btn-outline-secondary add-feature-btn">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="addFeatureBtn">
+                  <i class="fas fa-plus me-1"></i>특징 추가
+                </button>
+              </div>
             </div>
 
             <!-- 이미지 업로드 -->
@@ -566,6 +927,16 @@
                 <label class="form-label">프로그램 이미지 (최대 5개)</label>
                 <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
                 <div class="form-text">JPG, PNG, GIF, WebP 파일만 업로드 가능합니다. (최대 10MB)</div>
+              </div>
+              <div class="col-12 mb-3">
+                <label class="form-label">또는 웹 이미지 URL 추가</label>
+                <div class="input-group">
+                  <input type="url" class="form-control" id="imageUrl" placeholder="https://example.com/image.jpg">
+                  <button type="button" class="btn btn-outline-primary" id="addImageUrlBtn">
+                    <i class="fas fa-plus"></i> URL 추가
+                  </button>
+                </div>
+                <div class="form-text">웹에서 접근 가능한 이미지 URL을 입력하세요.</div>
               </div>
               <div class="col-12" id="imagePreview">
                 <!-- 이미지 미리보기가 여기에 표시됩니다 -->
@@ -587,7 +958,7 @@
               </div>
               <div class="col-md-6 mb-3">
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="isActive" name="isActive" checked>
+                  <input class="form-check-input" type="checkbox" id="isActive" name="isActive" value="true" checked>
                   <label class="form-check-label" for="isActive">
                     활성화
                   </label>
@@ -605,6 +976,66 @@
             <span id="saveBtnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status">
               <span class="visually-hidden">저장 중...</span>
             </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 등급 조정 모달 -->
+  <div class="modal fade" id="levelAdjustModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-trophy me-2 text-warning"></i>등급 조정</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="levelAdjustForm">
+            <div class="mb-3">
+              <label class="form-label">사용자</label>
+              <input type="text" class="form-control" id="adjustUserName" readonly>
+              <input type="hidden" id="adjustUserId">
+            </div>
+            
+            <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">현재 등급</label>
+                      <div class="form-control-plaintext" id="currentLevel" style="border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.375rem 0.75rem; background-color: #f8f9fa;"></div>
+                    </div>
+              <div class="col-md-6">
+                <label class="form-label">현재 경험치</label>
+                <input type="text" class="form-control" id="currentExp" readonly>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">새 경험치 *</label>
+              <input type="number" class="form-control" id="newExp" min="0" required>
+              <div class="form-text">경험치를 직접 설정합니다. 등급은 자동으로 계산됩니다.</div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">조정 사유</label>
+              <textarea class="form-control" id="adjustReason" rows="3" placeholder="등급 조정 사유를 입력하세요 (선택사항)"></textarea>
+            </div>
+            
+                  <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>등급 계산 기준</h6>
+                    <ul class="mb-0">
+                      <li><i class="fas fa-medal text-secondary me-2"></i>1레벨 (브론즈): 0-199XP</li>
+                      <li><i class="fas fa-medal me-2" style="color: #c0c0c0;"></i>2레벨 (실버): 200-499XP</li>
+                      <li><i class="fas fa-medal text-warning me-2"></i>3레벨 (골드): 500-999XP</li>
+                      <li><i class="fas fa-gem me-2" style="color: #8e44ad;"></i>4레벨 (플래티넘): 1000-1999XP</li>
+                      <li><i class="fas fa-crown me-2" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>5레벨 (다이아몬드): 2000XP 이상</li>
+                    </ul>
+                  </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-warning" onclick="adjustUserLevel()">
+            <i class="fas fa-edit me-1"></i>등급 조정
           </button>
         </div>
       </div>
@@ -645,13 +1076,776 @@
     let currentStatus = 'all';
 
     function showUserModal() {
+      // 폼 초기화
+      document.getElementById('userAddForm').reset();
       const modal = new bootstrap.Modal(document.getElementById('userModal'));
       modal.show();
+    }
+
+    // 사용자 추가 함수
+    async function addUser() {
+      const form = document.getElementById('userAddForm');
+      const formData = new FormData(form);
+      
+      const userData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+        role: formData.get('role'),
+        phone: formData.get('phone')
+      };
+
+      // 클라이언트 사이드 유효성 검사
+      if (!userData.name || !userData.email || !userData.password) {
+        showAlert('이름, 이메일, 비밀번호는 필수 입력 항목입니다.', 'warning');
+        return;
+      }
+
+      if (userData.password.length < 6) {
+        showAlert('비밀번호는 최소 6자 이상이어야 합니다.', 'warning');
+        return;
+      }
+
+      // 이메일 형식 검사
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(userData.email)) {
+        showAlert('올바른 이메일 형식을 입력해주세요.', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/users/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showAlert(`사용자가 성공적으로 추가되었습니다! ${data.user.name} (${data.user.email})`, 'success');
+          
+          // 모달 닫기
+          const modal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+          modal.hide();
+          
+          // 폼 초기화
+          form.reset();
+          
+          // 사용자 목록 새로고침 (사용자 관리 탭이 활성화되어 있다면)
+          if (document.getElementById('users-tab').classList.contains('active')) {
+            loadUsers();
+          }
+        } else {
+          showAlert(data.message || '사용자 추가에 실패했습니다.', 'danger');
+        }
+      } catch (error) {
+        console.error('사용자 추가 오류:', error);
+        showAlert('사용자 추가 중 오류가 발생했습니다.', 'danger');
+      }
+    }
+
+    // ===== 사용자 관리 기능 =====
+    
+    // 사용자 목록 로드
+    async function loadUsers(page = 1, search = '', role = '', status = '') {
+      try {
+        const params = new URLSearchParams({
+          page: page,
+          limit: 10,
+          ...(search && { search }),
+          ...(role && { role }),
+          ...(status && { status })
+        });
+        
+        const response = await fetch(`/admin/users?${params}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          renderUsersTable(data.users);
+          renderUsersPagination(data.pagination);
+        } else {
+          showToast('사용자 목록을 불러오는데 실패했습니다.', 'error');
+        }
+      } catch (error) {
+        console.error('사용자 목록 로드 오류:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      }
+    }
+    
+    // 사용자 테이블 렌더링
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('usersTableBody');
+      
+      if (!users || users.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="fas fa-users fa-2x mb-2"></i>
+              <p>등록된 사용자가 없습니다.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td>
+            <div class="d-flex align-items-center">
+              ${user.profilePhoto ? 
+                `<img src="${user.profilePhoto}" alt="프로필" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">` :
+                `<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                  ${user.name.charAt(0).toUpperCase()}
+                </div>`
+              }
+              <span>${user.name}</span>
+            </div>
+          </td>
+          <td>${user.email}</td>
+          <td>
+            <span class="badge ${getRoleBadgeClass(user.role)}">${getRoleText(user.role)}</span>
+          </td>
+          <td>${new Date(user.createdAt).toLocaleDateString('ko-KR')}</td>
+          <td>
+            <span class="badge ${user.isActive !== false ? 'bg-success' : 'bg-secondary'}">
+              ${user.isActive !== false ? '활성' : '비활성'}
+            </span>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-primary" onclick="editUser('${user._id}')" title="편집">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="btn btn-outline-info" onclick="viewUserDetail('${user._id}')" title="상세보기">
+                <i class="fas fa-eye"></i>
+              </button>
+              ${user._id !== '<%= user._id %>' ? `
+                <button class="btn btn-outline-danger" onclick="deleteUser('${user._id}', '${user.name}')" title="삭제">
+                  <i class="fas fa-trash"></i>
+                </button>
+              ` : ''}
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // 사용자 페이지네이션 렌더링
+    function renderUsersPagination(pagination) {
+      const paginationEl = document.getElementById('usersPagination');
+      
+      if (!pagination || pagination.totalPages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+      }
+      
+      let paginationHTML = '';
+      
+      // 이전 페이지
+      if (pagination.hasPrevPage) {
+        paginationHTML += `
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadUsers(${pagination.currentPage - 1})">이전</a>
+          </li>
+        `;
+      }
+      
+      // 페이지 번호들
+      for (let i = 1; i <= pagination.totalPages; i++) {
+        if (i === pagination.currentPage) {
+          paginationHTML += `
+            <li class="page-item active">
+              <span class="page-link">${i}</span>
+            </li>
+          `;
+        } else {
+          paginationHTML += `
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadUsers(${i})">${i}</a>
+            </li>
+          `;
+        }
+      }
+      
+      // 다음 페이지
+      if (pagination.hasNextPage) {
+        paginationHTML += `
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadUsers(${pagination.currentPage + 1})">다음</a>
+          </li>
+        `;
+      }
+      
+      paginationEl.innerHTML = paginationHTML;
+    }
+
+    // 전화번호 포맷팅 함수
+    function formatPhoneNumber(input) {
+      let value = input.value.replace(/\D/g, ''); // 숫자만 추출
+      
+      if (value.length >= 11) {
+        // 010-1234-5678 형식
+        value = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+      } else if (value.length >= 7) {
+        // 010-123-4567 형식
+        value = value.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+      } else if (value.length >= 3) {
+        // 010-123 형식
+        value = value.replace(/(\d{3})(\d{0,4})/, '$1-$2');
+      }
+      
+      input.value = value;
+    }
+    
+    // 사용자 편집
+    async function editUser(userId) {
+      try {
+        const response = await fetch(`/admin/users/${userId}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const user = data.user;
+          
+          // 모달 폼에 데이터 채우기
+          document.getElementById('editUserId').value = user._id;
+          
+          // 기본 정보
+          document.getElementById('editUserName').value = user.name || '';
+          document.getElementById('editUserEmail').value = user.email || '';
+          document.getElementById('editUserPhone').value = user.phone || '';
+          document.getElementById('editUserBirthDate').value = user.birthDate || '';
+          
+          // 주소 정보
+          document.getElementById('editUserAddress').value = user.address?.street || '';
+          document.getElementById('editUserZipCode').value = user.address?.zipCode || '';
+          
+          // 비상 연락처
+          document.getElementById('editUserEmergencyName').value = user.emergencyContact?.name || '';
+          document.getElementById('editUserEmergencyPhone').value = user.emergencyContact?.phone || '';
+          document.getElementById('editUserEmergencyRelationship').value = user.emergencyContact?.relationship || '';
+          
+          // 계정 설정
+          document.getElementById('editUserRole').value = user.role || 'parent';
+          document.getElementById('editUserIsActive').value = user.isActive !== false ? 'true' : 'false';
+          
+          // 알림 설정
+          document.getElementById('editUserEmailNotifications').checked = user.preferences?.emailNotifications !== false;
+          
+          // 모달 표시
+          const modal = new bootstrap.Modal(document.getElementById('userEditModal'));
+          modal.show();
+          
+          // 전화번호 포맷팅 이벤트 리스너 추가
+          const phoneInput = document.getElementById('editUserPhone');
+          const emergencyPhoneInput = document.getElementById('editUserEmergencyPhone');
+          
+          if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+              formatPhoneNumber(this);
+            });
+          }
+          
+          if (emergencyPhoneInput) {
+            emergencyPhoneInput.addEventListener('input', function() {
+              formatPhoneNumber(this);
+            });
+          }
+        } else {
+          showToast('사용자 정보를 불러오는데 실패했습니다.', 'error');
+        }
+      } catch (error) {
+        console.error('사용자 편집 오류:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      }
+    }
+    
+    // 사용자 정보 수정
+    async function updateUser() {
+      try {
+        const userId = document.getElementById('editUserId').value;
+        
+        // 폼 데이터를 수동으로 수집
+        const updateData = {
+          name: document.getElementById('editUserName').value,
+          email: document.getElementById('editUserEmail').value,
+          phone: document.getElementById('editUserPhone').value,
+          birthDate: document.getElementById('editUserBirthDate').value,
+          address: document.getElementById('editUserAddress').value,
+          zipCode: document.getElementById('editUserZipCode').value,
+          emergencyContactName: document.getElementById('editUserEmergencyName').value,
+          emergencyContactPhone: document.getElementById('editUserEmergencyPhone').value,
+          emergencyContactRelationship: document.getElementById('editUserEmergencyRelationship').value,
+          role: document.getElementById('editUserRole').value,
+          isActive: document.getElementById('editUserIsActive').value,
+          emailNotifications: document.getElementById('editUserEmailNotifications').checked
+        };
+        
+        console.log('📝 전송할 데이터:', updateData);
+        
+        const response = await fetch(`/admin/users/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updateData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showToast('사용자 정보가 성공적으로 수정되었습니다.', 'success');
+          
+          // 모달 닫기
+          const modal = bootstrap.Modal.getInstance(document.getElementById('userEditModal'));
+          modal.hide();
+          
+          // 사용자 목록 새로고침
+          loadUsers();
+        } else {
+          showToast(data.message || '사용자 정보 수정에 실패했습니다.', 'error');
+        }
+      } catch (error) {
+        console.error('사용자 수정 오류:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      }
+    }
+    
+    // 사용자 상세보기
+    async function viewUserDetail(userId) {
+      try {
+        const response = await fetch(`/admin/users/${userId}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const user = data.user;
+          const enrollments = data.enrollments || [];
+          
+          // 상세 정보 HTML 생성
+          const detailHTML = `
+            <div class="row">
+              <div class="col-md-4">
+                <div class="text-center mb-3">
+                  ${user.profilePhoto ? 
+                    `<img src="${user.profilePhoto}" alt="프로필" class="rounded-circle mb-2" style="width: 80px; height: 80px; object-fit: cover;">` :
+                    `<div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" style="width: 80px; height: 80px; font-size: 24px;">
+                      ${user.name.charAt(0).toUpperCase()}
+                    </div>`
+                  }
+                  <h5>${user.name}</h5>
+                  <span class="badge ${getRoleBadgeClass(user.role)}">${getRoleText(user.role)}</span>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="row">
+                  <div class="col-sm-6 mb-3">
+                    <label class="form-label fw-bold">이메일</label>
+                    <p class="mb-0">${user.email}</p>
+                  </div>
+                  <div class="col-sm-6 mb-3">
+                    <label class="form-label fw-bold">전화번호</label>
+                    <p class="mb-0">${user.phone || '-'}</p>
+                  </div>
+                  <div class="col-sm-6 mb-3">
+                    <label class="form-label fw-bold">가입일</label>
+                    <p class="mb-0">${new Date(user.createdAt).toLocaleDateString('ko-KR')}</p>
+                  </div>
+                  <div class="col-sm-6 mb-3">
+                    <label class="form-label fw-bold">상태</label>
+                    <p class="mb-0">
+                      <span class="badge ${user.isActive !== false ? 'bg-success' : 'bg-secondary'}">
+                        ${user.isActive !== false ? '활성' : '비활성'}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            ${enrollments.length > 0 ? `
+              <hr>
+              <h6 class="mb-3">등록한 프로그램 (${enrollments.length}개)</h6>
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>프로그램</th>
+                      <th>카테고리</th>
+                      <th>등록일</th>
+                      <th>상태</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${enrollments.map(enrollment => `
+                      <tr>
+                        <td>${enrollment.program?.title || '-'}</td>
+                        <td>${enrollment.program?.category || '-'}</td>
+                        <td>${new Date(enrollment.createdAt).toLocaleDateString('ko-KR')}</td>
+                        <td>
+                          <span class="badge ${enrollment.status === 'confirmed' ? 'bg-success' : 'bg-warning'}">
+                            ${enrollment.status === 'confirmed' ? '확정' : '대기'}
+                          </span>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : `
+              <hr>
+              <p class="text-muted text-center">등록한 프로그램이 없습니다.</p>
+            `}
+          `;
+          
+          document.getElementById('userDetailContent').innerHTML = detailHTML;
+          
+          // 모달 표시
+          const modal = new bootstrap.Modal(document.getElementById('userDetailModal'));
+          modal.show();
+        } else {
+          showToast('사용자 정보를 불러오는데 실패했습니다.', 'error');
+        }
+      } catch (error) {
+        console.error('사용자 상세보기 오류:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      }
+    }
+    
+    // 사용자 삭제
+    async function deleteUser(userId, userName) {
+      if (!confirm(`정말로 "${userName}" 사용자를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`/admin/users/${userId}`, {
+          method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showToast('사용자가 성공적으로 삭제되었습니다.', 'success');
+          loadUsers(); // 목록 새로고침
+        } else {
+          showToast(data.message || '사용자 삭제에 실패했습니다.', 'error');
+        }
+      } catch (error) {
+        console.error('사용자 삭제 오류:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      }
+    }
+    
+    // 역할 텍스트 변환
+    function getRoleText(role) {
+      const roleMap = {
+        'admin': '관리자',
+        'parent': '학부모',
+        'student': '학생'
+      };
+      return roleMap[role] || role;
+    }
+    
+    // 역할 배지 클래스
+    function getRoleBadgeClass(role) {
+      const classMap = {
+        'admin': 'bg-warning',
+        'parent': 'bg-primary',
+        'student': 'bg-info'
+      };
+      return classMap[role] || 'bg-secondary';
+    }
+
+    // ===== 등록 관리 기능 =====
+    
+    // 등록 목록 로드
+    async function loadEnrollments(page = 1, search = '', status = '') {
+      try {
+        const params = new URLSearchParams({
+          page: page,
+          limit: 10
+        });
+        
+        if (search) params.append('search', search);
+        if (status) params.append('status', status);
+        
+        const response = await fetch(`/admin/enrollments?${params}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('등록 목록을 불러오는데 실패했습니다.');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          renderEnrollmentsTable(result.data);
+          renderEnrollmentsPagination(result.pagination);
+        } else {
+          throw new Error(result.message || '등록 목록을 불러오는데 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('등록 목록 로드 오류:', error);
+        showToast('등록 목록을 불러오는데 실패했습니다.', 'error');
+      }
+    }
+    
+    // 등록 테이블 렌더링
+    function renderEnrollmentsTable(enrollments) {
+      const tbody = document.getElementById('enrollmentsTableBody');
+      
+      if (!enrollments || enrollments.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              <i class="fas fa-inbox fa-2x mb-2"></i>
+              <br>등록된 데이터가 없습니다.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = enrollments.map(enrollment => `
+        <tr>
+          <td>
+            <div>
+              <strong>${enrollment.student?.name || '-'}</strong>
+              <br>
+              <small class="text-muted">${enrollment.user?.name || '-'} (${enrollment.user?.email || '-'})</small>
+            </div>
+          </td>
+          <td>
+            <div>
+              <strong>${enrollment.program?.title || '-'}</strong>
+              <br>
+              <small class="text-muted">${enrollment.program?.category || '-'}</small>
+            </div>
+          </td>
+          <td>${new Date(enrollment.createdAt).toLocaleDateString('ko-KR')}</td>
+          <td>
+            <span class="badge ${getEnrollmentStatusBadgeClass(enrollment.status)}">
+              ${getEnrollmentStatusText(enrollment.status)}
+            </span>
+          </td>
+          <td>
+            <span class="badge ${getPaymentStatusBadgeClass(enrollment.paymentStatus)}">
+              ${getPaymentStatusText(enrollment.paymentStatus)}
+            </span>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-primary" onclick="viewEnrollmentDetail('${enrollment._id}')" title="상세보기">
+                <i class="fas fa-eye"></i>
+              </button>
+              ${enrollment.status === 'pending' ? `
+                <button class="btn btn-outline-success" onclick="updateEnrollmentStatus('${enrollment._id}', 'confirmed')" title="승인">
+                  <i class="fas fa-check"></i>
+                </button>
+              ` : ''}
+              ${enrollment.status === 'confirmed' ? `
+                <button class="btn btn-outline-info" onclick="updateEnrollmentStatus('${enrollment._id}', 'in-progress')" title="진행 시작">
+                  <i class="fas fa-play"></i>
+                </button>
+              ` : ''}
+              ${enrollment.status === 'in-progress' ? `
+                <button class="btn btn-outline-warning" onclick="updateEnrollmentStatus('${enrollment._id}', 'completed')" title="완료">
+                  <i class="fas fa-flag-checkered"></i>
+                </button>
+              ` : ''}
+              <button class="btn btn-outline-danger" onclick="deleteEnrollment('${enrollment._id}', '${enrollment.student?.name || 'Unknown'}', '${enrollment.program?.title || 'Unknown'}')" title="삭제">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+    
+    // 등록 페이지네이션 렌더링
+    function renderEnrollmentsPagination(pagination) {
+      const paginationEl = document.getElementById('enrollmentsPagination');
+      
+      if (!pagination || pagination.pages <= 1) {
+        paginationEl.innerHTML = '';
+        return;
+      }
+      
+      let paginationHTML = '';
+      
+      // 이전 페이지
+      if (pagination.current > 1) {
+        paginationHTML += `
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadEnrollments(${pagination.current - 1})">이전</a>
+          </li>
+        `;
+      }
+      
+      // 페이지 번호들
+      for (let i = 1; i <= pagination.pages; i++) {
+        if (i === pagination.current) {
+          paginationHTML += `
+            <li class="page-item active">
+              <span class="page-link">${i}</span>
+            </li>
+          `;
+        } else {
+          paginationHTML += `
+            <li class="page-item">
+              <a class="page-link" href="#" onclick="loadEnrollments(${i})">${i}</a>
+            </li>
+          `;
+        }
+      }
+      
+      // 다음 페이지
+      if (pagination.current < pagination.pages) {
+        paginationHTML += `
+          <li class="page-item">
+            <a class="page-link" href="#" onclick="loadEnrollments(${pagination.current + 1})">다음</a>
+          </li>
+        `;
+      }
+      
+      paginationEl.innerHTML = paginationHTML;
+    }
+    
+    // 등록 상태 업데이트
+    async function updateEnrollmentStatus(enrollmentId, newStatus) {
+      try {
+        const statusText = getEnrollmentStatusText(newStatus);
+        
+        if (!confirm(`이 등록을 "${statusText}" 상태로 변경하시겠습니까?`)) {
+          return;
+        }
+        
+        const response = await fetch(`/admin/enrollments/${enrollmentId}/status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showToast(`등록 상태가 "${statusText}"로 변경되었습니다.`, 'success');
+          loadEnrollments(); // 목록 새로고침
+        } else {
+          throw new Error(result.message || '상태 변경에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('등록 상태 업데이트 오류:', error);
+        showToast('상태 변경에 실패했습니다.', 'error');
+      }
+    }
+    
+    // 등록 상세보기
+    async function viewEnrollmentDetail(enrollmentId) {
+      // 간단한 상세보기 (필요시 모달로 확장 가능)
+      showToast('등록 상세보기 기능은 추후 구현 예정입니다.', 'info');
+    }
+    
+    // 등록 삭제
+    async function deleteEnrollment(enrollmentId, studentName, programTitle) {
+      try {
+        if (!confirm(`정말로 "${studentName}"의 "${programTitle}" 등록을 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.`)) {
+          return;
+        }
+        
+        const response = await fetch(`/admin/enrollments/${enrollmentId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showToast('등록이 성공적으로 삭제되었습니다.', 'success');
+          loadEnrollments(); // 목록 새로고침
+        } else {
+          throw new Error(result.message || '삭제에 실패했습니다.');
+        }
+      } catch (error) {
+        console.error('등록 삭제 오류:', error);
+        showToast('삭제에 실패했습니다.', 'error');
+      }
+    }
+    
+    // 등록 상태 텍스트 변환
+    function getEnrollmentStatusText(status) {
+      const statusMap = {
+        'wishlist': '찜하기',
+        'pending': '대기 중',
+        'confirmed': '승인됨',
+        'in-progress': '진행 중',
+        'completed': '완료'
+      };
+      return statusMap[status] || status;
+    }
+    
+    // 등록 상태 배지 클래스
+    function getEnrollmentStatusBadgeClass(status) {
+      const classMap = {
+        'wishlist': 'bg-secondary',
+        'pending': 'bg-warning',
+        'confirmed': 'bg-success',
+        'in-progress': 'bg-info',
+        'completed': 'bg-primary'
+      };
+      return classMap[status] || 'bg-secondary';
+    }
+    
+    // 결제 상태 텍스트 변환
+    function getPaymentStatusText(status) {
+      const statusMap = {
+        'pending': '대기',
+        'partial': '부분결제',
+        'paid': '완료',
+        'refunded': '환불'
+      };
+      return statusMap[status] || status;
+    }
+    
+    // 결제 상태 배지 클래스
+    function getPaymentStatusBadgeClass(status) {
+      const classMap = {
+        'pending': 'bg-warning',
+        'partial': 'bg-info',
+        'paid': 'bg-success',
+        'refunded': 'bg-danger'
+      };
+      return classMap[status] || 'bg-secondary';
     }
 
     function showProgramModal(programId = null) {
       // 모달 초기화
       resetProgramModal();
+      
+      // 기존 숨겨진 URL 필드들 제거
+      const existingUrlInputs = document.querySelectorAll('input[name="imageUrls[]"]');
+      existingUrlInputs.forEach(input => input.remove());
       
       if (programId) {
         // 편집 모드
@@ -680,6 +1874,10 @@
       document.getElementById('originalPrice').value = '0';
       document.getElementById('discountedPrice').value = '0';
       document.getElementById('sortOrder').value = '0';
+      
+      // 프로그램 특징 초기화
+      loadFeatures([]);
+      
       calculateDiscountedPrice();
       
       console.log('🔄 모달 초기화 완료');
@@ -717,6 +1915,10 @@
 
     async function loadProgramForEdit(programId) {
       try {
+        // 기존 숨겨진 URL 필드들 제거
+        const existingUrlInputs = document.querySelectorAll('input[name="imageUrls[]"]');
+        existingUrlInputs.forEach(input => input.remove());
+        
         const response = await fetch(`/admin/programs/${programId}`, {
           headers: {
             'Accept': 'application/json'
@@ -755,8 +1957,9 @@
         if (program.location) {
           document.getElementById('locationName').value = program.location.name || '';
           document.getElementById('locationCity').value = program.location.city || '';
-          document.getElementById('locationState').value = program.location.state || '';
-          document.getElementById('locationAddress').value = program.location.address || '';
+          // 주/도와 주소를 합쳐서 주소 필드에 표시
+          const fullAddress = [program.location.address, program.location.state].filter(Boolean).join(', ');
+          document.getElementById('locationAddress').value = fullAddress || '';
         }
         
         // 연령 정보
@@ -769,6 +1972,9 @@
         if (program.activities && program.activities.length > 0) {
           document.getElementById('activities').value = program.activities.join(', ');
         }
+        
+        // 프로그램 특징 로드
+        loadFeatures(program.features || []);
         
         // 설정
         document.getElementById('featured').checked = program.featured || false;
@@ -816,13 +2022,34 @@
       const formData = new FormData(form);
       const programId = document.getElementById('programId').value;
       
+      // 프로그램 특징 수집 및 추가
+      const features = collectFeatures();
+      if (features.length > 0) {
+        formData.append('features', JSON.stringify(features));
+      }
+      
+      // 체크박스 값 명시적 처리
+      const isActiveCheckbox = document.getElementById('isActive');
+      const featuredCheckbox = document.getElementById('featured');
+      
+      // 기존 값 제거 후 명시적으로 추가
+      formData.delete('isActive');
+      formData.delete('featured');
+      
+      formData.append('isActive', isActiveCheckbox.checked ? 'true' : 'false');
+      formData.append('featured', featuredCheckbox.checked ? 'true' : 'false');
+      
       // 디버깅을 위한 FormData 내용 출력
       console.log('📝 폼 데이터 전송:', {
         programId,
         title: formData.get('title'),
         originalPrice: formData.get('originalPrice'),
         discountPercent: formData.get('discountPercent'),
-        capacity: formData.get('capacity')
+        capacity: formData.get('capacity'),
+        sortOrder: formData.get('sortOrder'),
+        isActive: formData.get('isActive'),
+        featured: formData.get('featured'),
+        features: features
       });
       
       // 로딩 상태 설정
@@ -864,9 +2091,15 @@
         console.log('📥 응답 데이터:', data);
         
         if (data.success) {
-          alert(data.message);
+          // 성공 토스트 메시지 표시
+          showToast(data.message, 'success');
+          
+          // 모달 닫기
           bootstrap.Modal.getInstance(document.getElementById('programModal')).hide();
-          loadPrograms(); // 프로그램 목록 새로고침
+          
+          // 프로그램 목록 새로고침
+          console.log('🔄 프로그램 목록 새로고침 중...');
+          loadPrograms();
         } else {
           throw new Error(data.message || '저장 중 오류가 발생했습니다.');
         }
@@ -883,7 +2116,7 @@
           errorMessage = error.message;
         }
         
-        alert(`오류 발생!\n\n${errorMessage}\n\n개발자 도구 콘솔을 확인해주세요.`);
+        showToast(errorMessage, 'error');
       } finally {
         // 로딩 상태 해제
         saveBtn.disabled = false;
@@ -904,19 +2137,24 @@
         const data = await response.json();
         
         if (data.success) {
-          alert(data.message);
-          loadPrograms(); // 프로그램 목록 새로고침
+          // 성공 토스트 메시지 표시
+          showToast(data.message, 'success');
+          
+          // 프로그램 목록 새로고침
+          console.log('🔄 프로그램 목록 새로고침 중...');
+          loadPrograms();
         } else {
           throw new Error(data.message || '삭제 중 오류가 발생했습니다.');
         }
         
       } catch (error) {
         console.error('프로그램 삭제 오류:', error);
-        alert(error.message || '프로그램 삭제 중 오류가 발생했습니다.');
+        showToast(error.message || '프로그램 삭제 중 오류가 발생했습니다.', 'error');
       }
     }
 
     async function loadPrograms(page = 1) {
+      console.log('🔄 loadPrograms 함수 시작:', { page, currentSearchTerm, currentCategory, currentStatus });
       currentPage = page;
       
       try {
@@ -928,20 +2166,31 @@
           status: currentStatus
         });
         
+        console.log('📡 API 요청 URL:', `/admin/programs?${params}`);
+        
         const response = await fetch(`/admin/programs?${params}`, {
           headers: {
             'Accept': 'application/json'
           }
         });
         
+        console.log('📡 API 응답 상태:', response.status, response.statusText);
+        
         if (!response.ok) throw new Error('프로그램 목록을 불러올 수 없습니다.');
         
         const data = await response.json();
+        console.log('📥 API 응답 데이터:', { 
+          programsCount: data.programs?.length || 0, 
+          pagination: data.pagination 
+        });
+        
         renderPrograms(data.programs);
         renderPagination(data.pagination);
         
+        console.log('✅ 프로그램 목록 렌더링 완료');
+        
       } catch (error) {
-        console.error('프로그램 목록 로드 오류:', error);
+        console.error('❌ 프로그램 목록 로드 오류:', error);
         document.getElementById('programsList').innerHTML = `
           <div class="alert alert-danger">
             <i class="fas fa-exclamation-triangle me-2"></i>
@@ -952,7 +2201,13 @@
     }
 
     function renderPrograms(programs) {
+      console.log('🎨 renderPrograms 함수 시작:', { programsCount: programs?.length || 0 });
       const container = document.getElementById('programsList');
+      
+      if (!container) {
+        console.error('❌ programsList 컨테이너를 찾을 수 없음');
+        return;
+      }
       
       if (!programs || programs.length === 0) {
         container.innerHTML = `
@@ -994,12 +2249,12 @@
                     <small class="text-muted">
                       <i class="fas fa-dollar-sign me-1"></i>
                       ${program.discountPercent > 0 ? `
-                        <span style="text-decoration: line-through; color: #6c757d;">$${program.originalPrice}</span>
-                        <span style="color: #28a745; font-weight: bold;">$${program.price}</span>
+                        <span style="text-decoration: line-through; color: #6c757d;">$${formatPrice(program.originalPrice)}</span>
+                        <span style="color: #28a745; font-weight: bold;">$${formatPrice(program.price)}</span>
                         <span class="badge bg-danger ms-1">${program.discountPercent}% OFF</span>
-                      ` : `$${program.price || program.originalPrice}`}
+                      ` : `$${formatPrice(program.price || program.originalPrice)}`}
                       <span class="ms-2">
-                        <i class="fas fa-users me-1"></i>정원 ${program.capacity}명
+                        <i class="fas fa-users me-1"></i>${program.capacity}
                       </span>
                     </small>
                   </div>
@@ -1025,6 +2280,7 @@
       `;
       
       container.innerHTML = html;
+      console.log('✅ renderPrograms 완료 - HTML이 컨테이너에 삽입됨');
     }
 
     function renderPagination(pagination) {
@@ -1070,6 +2326,16 @@
       return categories[category] || category;
     }
 
+    function formatPrice(price) {
+      // 숫자로 변환
+      const numPrice = parseFloat(price) || 0;
+      // 천단위 콤마와 소수점 둘째자리까지 표시
+      return numPrice.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
     function searchPrograms() {
       currentSearchTerm = document.getElementById('programSearch').value.trim();
       currentCategory = document.getElementById('categoryFilter').value;
@@ -1109,13 +2375,318 @@
       }
     });
 
+    // 웹 URL 이미지 추가 기능
+    document.getElementById('addImageUrlBtn').addEventListener('click', function() {
+      const urlInput = document.getElementById('imageUrl');
+      const imageUrl = urlInput.value.trim();
+      
+      if (!imageUrl) {
+        alert('이미지 URL을 입력해주세요.');
+        return;
+      }
+      
+      // URL 유효성 검사
+      try {
+        new URL(imageUrl);
+      } catch (e) {
+        alert('올바른 URL 형식을 입력해주세요.');
+        return;
+      }
+      
+      // 이미지 URL을 숨겨진 필드에 추가
+      addImageUrlToForm(imageUrl);
+      
+      // 미리보기 추가
+      addImageUrlPreview(imageUrl);
+      
+      // 입력 필드 초기화
+      urlInput.value = '';
+    });
+
+    // 이미지 URL을 폼에 추가하는 함수
+    function addImageUrlToForm(imageUrl) {
+      // 숨겨진 필드 생성 또는 기존 필드 찾기
+      let hiddenInputs = document.querySelectorAll('input[name="imageUrls[]"]');
+      if (hiddenInputs.length >= 5) {
+        alert('최대 5개의 이미지만 추가할 수 있습니다.');
+        return;
+      }
+      
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'imageUrls[]';
+      hiddenInput.value = imageUrl;
+      document.getElementById('programForm').appendChild(hiddenInput);
+    }
+
+    // 이미지 URL 미리보기 추가
+    function addImageUrlPreview(imageUrl) {
+      const previewContainer = document.getElementById('imagePreview');
+      let newImagePreviews = document.getElementById('newImagePreviews');
+      
+      if (!newImagePreviews) {
+        const existingContent = previewContainer.innerHTML;
+        previewContainer.innerHTML = existingContent + '<h6>새 이미지 미리보기:</h6><div class="row" id="newImagePreviews"></div>';
+        newImagePreviews = document.getElementById('newImagePreviews');
+      }
+      
+      const div = document.createElement('div');
+      div.className = 'col-md-3 mb-2';
+      div.innerHTML = `
+        <div class="card">
+          <img src="${imageUrl}" class="card-img-top" style="height: 150px; object-fit: cover;" 
+               onerror="this.src='/images/default-program.svg'; this.alt='이미지 로드 실패';">
+          <div class="card-body p-2">
+            <small class="text-muted">웹 URL</small>
+            <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-1" 
+                    onclick="removeImageUrlPreview(this, '${imageUrl}')">
+              <i class="fas fa-trash"></i> 제거
+            </button>
+          </div>
+        </div>
+      `;
+      newImagePreviews.appendChild(div);
+    }
+
+    // 이미지 URL 미리보기 제거
+    function removeImageUrlPreview(buttonElement, imageUrl) {
+      // DOM에서 제거
+      const imageCard = buttonElement.closest('.col-md-3');
+      if (imageCard) {
+        imageCard.remove();
+      }
+      
+      // 숨겨진 필드에서 제거
+      const hiddenInputs = document.querySelectorAll('input[name="imageUrls[]"]');
+      hiddenInputs.forEach(input => {
+        if (input.value === imageUrl) {
+          input.remove();
+        }
+      });
+    }
+
+    // 기존 이미지 삭제 함수
+    async function removeExistingImage(imageUrl, buttonElement) {
+      if (!confirm('이 이미지를 삭제하시겠습니까?')) {
+        return;
+      }
+      
+      try {
+        // 버튼 비활성화
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 삭제 중...';
+        
+        // 현재 편집 중인 프로그램 ID 가져오기
+        const programId = document.getElementById('programId').value;
+        if (!programId) {
+          throw new Error('프로그램 ID를 찾을 수 없습니다.');
+        }
+        
+        const response = await fetch(`/admin/programs/${programId}/images`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ imageUrl: imageUrl })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          // 이미지 카드 제거
+          const imageCard = buttonElement.closest('.col-md-3');
+          if (imageCard) {
+            imageCard.remove();
+          }
+          
+          // 이미지가 모두 삭제된 경우 메시지 표시
+          const existingImages = document.getElementById('existingImages');
+          if (existingImages && existingImages.children.length === 0) {
+            existingImages.innerHTML = '<div class="col-12"><p class="text-muted">등록된 이미지가 없습니다.</p></div>';
+          }
+          
+          showToast('이미지가 성공적으로 삭제되었습니다.', 'success');
+        } else {
+          throw new Error(data.message || '이미지 삭제에 실패했습니다.');
+        }
+        
+      } catch (error) {
+        console.error('이미지 삭제 오류:', error);
+        showToast(error.message || '이미지 삭제 중 오류가 발생했습니다.', 'error');
+        
+        // 버튼 복원
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = '<i class="fas fa-trash"></i> 삭제';
+      }
+    }
+
+    // 프로그램 특징 관리 함수들
+    function initializeFeatureManagement() {
+      // 특징 추가 버튼 클릭 이벤트
+      document.getElementById('addFeatureBtn').addEventListener('click', function() {
+        addFeatureInput();
+      });
+
+      // 동적으로 추가되는 버튼들에 대한 이벤트 위임
+      document.getElementById('featuresContainer').addEventListener('click', function(e) {
+        if (e.target.classList.contains('add-feature-btn') || e.target.parentElement.classList.contains('add-feature-btn')) {
+          addFeatureInput();
+        } else if (e.target.classList.contains('remove-feature-btn') || e.target.parentElement.classList.contains('remove-feature-btn')) {
+          removeFeatureInput(e.target.closest('.feature-input-group'));
+        }
+      });
+    }
+
+    function addFeatureInput() {
+      const container = document.getElementById('featuresContainer');
+      const newInputGroup = document.createElement('div');
+      newInputGroup.className = 'feature-input-group mb-2';
+      
+      newInputGroup.innerHTML = `
+        <div class="input-group">
+          <input type="text" class="form-control feature-input" placeholder="프로그램 특징을 입력하세요">
+          <button type="button" class="btn btn-outline-danger remove-feature-btn">
+            <i class="fas fa-minus"></i>
+          </button>
+        </div>
+      `;
+      
+      container.appendChild(newInputGroup);
+      
+      // 새로 추가된 입력 필드에 포커스
+      newInputGroup.querySelector('.feature-input').focus();
+    }
+
+    function removeFeatureInput(inputGroup) {
+      const container = document.getElementById('featuresContainer');
+      if (container.children.length > 1) {
+        inputGroup.remove();
+      }
+    }
+
+    function collectFeatures() {
+      const featureInputs = document.querySelectorAll('.feature-input');
+      const features = [];
+      featureInputs.forEach(input => {
+        if (input.value.trim()) {
+          features.push(input.value.trim());
+        }
+      });
+      return features;
+    }
+
+    function loadFeatures(features) {
+      const container = document.getElementById('featuresContainer');
+      container.innerHTML = '';
+      
+      if (!features || features.length === 0) {
+        // 기본 빈 입력 필드 추가
+        const defaultInputGroup = document.createElement('div');
+        defaultInputGroup.className = 'feature-input-group mb-2';
+        defaultInputGroup.innerHTML = `
+          <div class="input-group">
+            <input type="text" class="form-control feature-input" placeholder="프로그램 특징을 입력하세요">
+            <button type="button" class="btn btn-outline-secondary add-feature-btn">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+        `;
+        container.appendChild(defaultInputGroup);
+      } else {
+        features.forEach((feature, index) => {
+          const inputGroup = document.createElement('div');
+          inputGroup.className = 'feature-input-group mb-2';
+          inputGroup.innerHTML = `
+            <div class="input-group">
+              <input type="text" class="form-control feature-input" value="${feature}" placeholder="프로그램 특징을 입력하세요">
+              <button type="button" class="btn btn-outline-danger remove-feature-btn">
+                <i class="fas fa-minus"></i>
+              </button>
+            </div>
+          `;
+          container.appendChild(inputGroup);
+        });
+        
+        // 마지막에 빈 입력 필드 하나 추가
+        addFeatureInput();
+      }
+    }
+
     // 페이지 로드 시 프로그램 목록 로드
     document.addEventListener('DOMContentLoaded', function() {
+      // 특징 관리 초기화
+      initializeFeatureManagement();
+      
+      // 사용자 탭이 활성화될 때 목록 로드
+      document.getElementById('users-tab').addEventListener('shown.bs.tab', function() {
+        loadUsers();
+      });
+      
       // 프로그램 탭이 활성화될 때 목록 로드
       document.getElementById('programs-tab').addEventListener('shown.bs.tab', function() {
         loadPrograms();
       });
+      
+      // 등록 탭이 활성화될 때 목록 로드
+      document.getElementById('enrollments-tab').addEventListener('shown.bs.tab', function() {
+        loadEnrollments();
+      });
+      
+      // 페이지 로드 시 활성화된 탭에 따라 초기 데이터 로드
+      const activeTab = document.querySelector('#adminTabs .nav-link.active');
+      if (activeTab) {
+        if (activeTab.id === 'users-tab') {
+          loadUsers();
+        } else if (activeTab.id === 'programs-tab') {
+          loadPrograms();
+        } else if (activeTab.id === 'enrollments-tab') {
+          loadEnrollments();
+        }
+      }
 
+      // 사용자 검색 및 필터 이벤트 리스너
+      const userSearchInput = document.querySelector('#users input[type="text"]');
+      const userRoleSelect = document.querySelector('#users select:nth-of-type(1)');
+      const userStatusSelect = document.querySelector('#users select:nth-of-type(2)');
+      
+      if (userSearchInput) {
+        userSearchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            loadUsers(1, this.value, userRoleSelect.value, userStatusSelect.value);
+          }
+        });
+      }
+      
+      if (userRoleSelect) {
+        userRoleSelect.addEventListener('change', function() {
+          loadUsers(1, userSearchInput.value, this.value, userStatusSelect.value);
+        });
+      }
+      
+      if (userStatusSelect) {
+        userStatusSelect.addEventListener('change', function() {
+          loadUsers(1, userSearchInput.value, userRoleSelect.value, this.value);
+        });
+      }
+      
+      // 등록 검색 및 필터 이벤트 리스너
+      const enrollmentSearchInput = document.querySelector('#enrollments input[type="text"]');
+      const enrollmentStatusSelect = document.querySelector('#enrollments select');
+      
+      if (enrollmentSearchInput) {
+        enrollmentSearchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            loadEnrollments(1, this.value, enrollmentStatusSelect.value);
+          }
+        });
+      }
+      
+      if (enrollmentStatusSelect) {
+        enrollmentStatusSelect.addEventListener('change', function() {
+          loadEnrollments(1, enrollmentSearchInput.value, this.value);
+        });
+      }
+      
       // 검색 입력 시 엔터키로 검색
       document.getElementById('programSearch').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -1123,26 +2694,742 @@
         }
       });
 
-      // 통계 애니메이션
-      const counters = document.querySelectorAll('h4');
-      counters.forEach(counter => {
-        const target = parseInt(counter.textContent.replace(/[^0-9]/g, ''));
-        if (target > 0) {
-          let count = 0;
-          const increment = target / 50;
-          const timer = setInterval(() => {
-            count += increment;
-            if (count >= target) {
-              counter.textContent = counter.textContent.replace(/[0-9,]+/, target.toLocaleString());
-              clearInterval(timer);
-            } else {
-              counter.textContent = counter.textContent.replace(/[0-9,]+/, Math.floor(count).toLocaleString());
-            }
-          }, 20);
-        }
-      });
+      // 통계 데이터 로드
+      loadAdminStats();
     });
+
+    // 관리자 통계 데이터 로드
+    async function loadAdminStats() {
+      try {
+        console.log('📊 관리자 통계 로드 시작');
+        
+        // 인증 상태 확인
+        const authResponse = await fetch('/api/auth/status');
+        const authData = await authResponse.json();
+        console.log('🔐 인증 상태:', authData);
+        
+        if (!authData.isAuthenticated) {
+          console.error('❌ 인증되지 않은 사용자');
+          showToast('로그인이 필요합니다.', 'error');
+          return;
+        }
+        
+        const response = await fetch('/api/admin/dashboard/stats', {
+          credentials: 'include' // 쿠키 포함
+        });
+        
+        console.log('📡 응답 상태:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          const stats = data.stats;
+          console.log('📊 통계 데이터:', stats);
+          
+          // 통계 업데이트
+          updateStatCounter('totalUsers', stats.totalUsers);
+          updateStatCounter('activePrograms', stats.activePrograms);
+          updateStatCounter('totalEnrollments', stats.totalEnrollments);
+          updateStatCounter('totalRevenue', stats.totalRevenue); // 매출은 숫자만 표시
+          
+        } else {
+          console.error('❌ 통계 로드 실패:', data.message);
+          showToast('통계 데이터를 불러오는데 실패했습니다.', 'error');
+        }
+      } catch (error) {
+        console.error('❌ 통계 로드 오류:', error);
+        showToast('통계 데이터를 불러오는 중 오류가 발생했습니다.', 'error');
+      }
+    }
+
+    // 통계 카운터 애니메이션 업데이트
+    function updateStatCounter(elementId, targetValue) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      const currentValue = parseInt(element.textContent.replace(/[^0-9]/g, '')) || 0;
+      
+      if (targetValue > 0) {
+        let count = currentValue;
+        const increment = Math.max(1, Math.ceil((targetValue - currentValue) / 50));
+        const timer = setInterval(() => {
+          count += increment;
+          if (count >= targetValue) {
+            element.textContent = targetValue.toLocaleString();
+            clearInterval(timer);
+          } else {
+            element.textContent = count.toLocaleString();
+          }
+        }, 20);
+      } else {
+        element.textContent = '0';
+      }
+    }
+
+    // 리포트 다운로드 함수
+    async function downloadReport(type) {
+      try {
+        console.log('📊 리포트 다운로드 시작:', type);
+        
+        // 인증 상태 확인
+        const authResponse = await fetch('/api/auth/status');
+        const authData = await authResponse.json();
+        
+        if (!authData.isAuthenticated) {
+          console.error('❌ 인증되지 않은 사용자');
+          showToast('로그인이 필요합니다.', 'error');
+          return;
+        }
+        
+        showToast('리포트를 생성하고 있습니다...', 'info');
+        
+        // 리포트 다운로드 요청
+        const response = await fetch(`/api/admin/reports/${type}`, {
+          credentials: 'include'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // 파일 다운로드
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        
+        // 파일명 추출
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `${type}_report.xlsx`;
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = decodeURIComponent(filenameMatch[1]);
+          }
+        }
+        
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        showToast('리포트가 성공적으로 다운로드되었습니다.', 'success');
+        
+      } catch (error) {
+        console.error('❌ 리포트 다운로드 오류:', error);
+        showToast('리포트 다운로드에 실패했습니다.', 'error');
+      }
+    }
+
+    // Toast 메시지 표시 함수
+    function showToast(message, type = 'info') {
+      // 기존 토스트 제거
+      const existingToast = document.querySelector('.toast-custom');
+      if (existingToast) {
+        existingToast.remove();
+      }
+
+      // 토스트 컨테이너 생성
+      let toastContainer = document.querySelector('.toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+        document.body.appendChild(toastContainer);
+      }
+
+      // 토스트 아이콘과 색상 설정
+      const iconClass = type === 'success' ? 'fas fa-check-circle text-success' : 
+                       type === 'error' ? 'fas fa-exclamation-triangle text-danger' : 
+                       type === 'warning' ? 'fas fa-exclamation-triangle text-warning' : 
+                       'fas fa-info-circle text-info';
+
+      // 토스트 HTML 생성
+      const toastHtml = '<div class="toast align-items-center text-bg-light border-0 toast-custom" role="alert" aria-live="assertive" aria-atomic="true">' +
+        '<div class="d-flex">' +
+          '<div class="toast-body">' +
+            '<div class="d-flex align-items-center">' +
+              '<i class="' + iconClass + ' me-2 fs-5"></i>' +
+              '<div>' +
+                '<div class="fw-bold">' + message + '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>' +
+        '</div>' +
+      '</div>';
+
+      // 토스트 요소 생성 및 표시
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = toastHtml;
+      const toastElement = tempDiv.firstElementChild;
+      toastContainer.appendChild(toastElement);
+
+      // Bootstrap 토스트 인스턴스 생성 및 표시
+      const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: 3000  // 3초 후 자동 숨김
+      });
+      toast.show();
+
+      // 토스트가 숨겨진 후 DOM에서 제거
+      toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+      });
+    }
+
+    // Alert 함수 정의 (기존 호환성을 위해 유지)
+    function showAlert(type, message) {
+      // 기존 알림 제거
+      const existingAlert = document.querySelector('.alert-custom');
+      if (existingAlert) {
+        existingAlert.remove();
+      }
+
+      // 새 알림 생성
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} alert-dismissible fade show alert-custom`;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.right = '20px';
+      alertDiv.style.zIndex = '9999';
+      alertDiv.style.minWidth = '300px';
+      
+      const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+      
+      alertDiv.innerHTML = `
+        <i class="${icon} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      document.body.appendChild(alertDiv);
+      
+      // 3초 후 자동 제거
+      setTimeout(() => {
+        if (alertDiv.parentNode) {
+          alertDiv.remove();
+        }
+      }, 3000);
+    }
+
+    // 추천 게시글 관리 함수들
+    async function loadFeaturedPosts() {
+      try {
+        // 로딩 상태 표시
+        document.getElementById('currentFeaturedPosts').innerHTML = `
+          <div class="text-center py-3">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">로딩 중...</span>
+            </div>
+            <div class="mt-2 text-muted">추천 게시글을 불러오는 중...</div>
+          </div>
+        `;
+        
+        const response = await fetch('/api/admin/featured-posts?' + new Date().getTime()); // 캐시 방지
+        const data = await response.json();
+        
+        if (response.ok) {
+          displayFeaturedPosts(data.posts);
+          console.log('✅ 추천 게시글 목록 업데이트 완료:', data.posts.length + '개');
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('추천 게시글 로드 오류:', error);
+        document.getElementById('currentFeaturedPosts').innerHTML = 
+          '<div class="alert alert-danger">추천 게시글을 불러오는데 실패했습니다.</div>';
+      }
+    }
+
+    function displayFeaturedPosts(posts) {
+      const container = document.getElementById('currentFeaturedPosts');
+      
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-4 text-muted">
+            <i class="fas fa-star fa-2x mb-2"></i>
+            <p>현재 추천된 게시글이 없습니다.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="row g-3">';
+      posts.forEach(post => {
+        const categoryBadge = getCategoryBadge(post.category);
+        const excerpt = post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content;
+        
+        html += `
+          <div class="col-md-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <h6 class="card-title mb-0">${post.title}</h6>
+                  <button class="btn btn-sm btn-outline-danger" onclick="removeFeaturedPost('${post._id}', this)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="mb-2">
+                  ${categoryBadge}
+                  <small class="text-muted ms-2">
+                    <i class="fas fa-user me-1"></i>${post.author?.name || '익명'}
+                  </small>
+                </div>
+                <p class="card-text small text-muted">${excerpt}</p>
+                <small class="text-muted">
+                  <i class="fas fa-calendar me-1"></i>
+                  ${new Date(post.createdAt).toLocaleDateString('ko-KR')}
+                </small>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      
+      container.innerHTML = html;
+    }
+
+    async function searchPosts() {
+      const searchTerm = document.getElementById('postSearch').value;
+      const category = document.getElementById('postCategoryFilter').value;
+      const status = document.getElementById('postStatusFilter').value;
+      
+      const container = document.getElementById('postSearchResults');
+      container.innerHTML = `
+        <div class="text-center py-3">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">검색 중...</span>
+          </div>
+        </div>
+      `;
+
+      try {
+        const params = new URLSearchParams({
+          search: searchTerm,
+          category: category,
+          status: status
+        });
+        
+        const response = await fetch(`/api/admin/posts/search?${params}&_=${new Date().getTime()}`); // 캐시 방지
+        const data = await response.json();
+        
+        if (response.ok) {
+          displaySearchResults(data.posts);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (error) {
+        console.error('게시글 검색 오류:', error);
+        container.innerHTML = '<div class="alert alert-danger">게시글 검색에 실패했습니다.</div>';
+      }
+    }
+
+    function displaySearchResults(posts) {
+      const container = document.getElementById('postSearchResults');
+      
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-4 text-muted">
+            <i class="fas fa-search fa-2x mb-2"></i>
+            <p>검색 결과가 없습니다.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="table-responsive"><table class="table table-hover">';
+      html += `
+        <thead>
+          <tr>
+            <th>제목</th>
+            <th>카테고리</th>
+            <th>작성자</th>
+            <th>작성일</th>
+            <th>상태</th>
+            <th>작업</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+      
+      posts.forEach(post => {
+        const categoryBadge = getCategoryBadge(post.category);
+        const statusBadge = post.isFeatured 
+          ? '<span class="badge bg-success">추천됨</span>'
+          : '<span class="badge bg-secondary">일반</span>';
+        
+        html += `
+          <tr>
+            <td>
+              <div class="fw-bold">${post.title}</div>
+              <small class="text-muted">${post.content.substring(0, 50)}...</small>
+            </td>
+            <td>${categoryBadge}</td>
+            <td>${post.author?.name || '익명'}</td>
+            <td>${new Date(post.createdAt).toLocaleDateString('ko-KR')}</td>
+            <td>${statusBadge}</td>
+            <td>
+              ${post.isFeatured 
+                ? `<button class="btn btn-sm btn-outline-danger" onclick="removeFeaturedPost('${post._id}', this)">
+                     <i class="fas fa-star-slash me-1"></i>해제
+                   </button>`
+                : `<button class="btn btn-sm btn-outline-success" onclick="addFeaturedPost('${post._id}', this)">
+                     <i class="fas fa-star me-1"></i>추천
+                   </button>`
+              }
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
+
+    async function addFeaturedPost(postId, buttonElement) {
+      console.log('🌟 추천 게시글 설정 시작:', postId);
+      
+      // 버튼 비활성화
+      const button = buttonElement || event?.target?.closest('button');
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>처리 중...';
+      }
+      
+      try {
+        const response = await fetch(`/api/admin/posts/${postId}/feature`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('📡 API 응답:', response.status, response.ok);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ 성공:', data.message);
+          showAlert('success', '추천 게시글로 설정되었습니다.');
+          
+          // 새로고침
+          loadFeaturedPosts();
+          // 검색 결과가 표시되어 있다면 항상 새로고침
+          const searchResults = document.getElementById('postSearchResults');
+          if (searchResults && searchResults.innerHTML.includes('table')) {
+            searchPosts();
+          }
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '설정 실패');
+        }
+      } catch (error) {
+        console.error('❌ 오류:', error);
+        showAlert('danger', `실패: ${error.message}`);
+      }
+      
+      // 버튼 복원
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-star me-1"></i>추천';
+      }
+    }
+
+    async function removeFeaturedPost(postId, buttonElement) {
+      if (!confirm('이 게시글을 추천 목록에서 제거하시겠습니까?')) {
+        return;
+      }
+      
+      console.log('🚫 추천 게시글 제거 시작:', postId);
+      
+      // 버튼 비활성화
+      const button = buttonElement || event?.target?.closest('button');
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>처리 중...';
+      }
+      
+      try {
+        const response = await fetch(`/api/admin/posts/${postId}/feature`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('📡 API 응답:', response.status, response.ok);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ 성공:', data.message);
+          showAlert('success', '추천 게시글에서 제거되었습니다.');
+          
+          // 새로고침
+          loadFeaturedPosts();
+          // 검색 결과가 표시되어 있다면 항상 새로고침
+          const searchResults = document.getElementById('postSearchResults');
+          if (searchResults && searchResults.innerHTML.includes('table')) {
+            searchPosts();
+          }
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.message || '제거 실패');
+        }
+      } catch (error) {
+        console.error('❌ 오류:', error);
+        showAlert('danger', `실패: ${error.message}`);
+      }
+      
+      // 버튼 복원
+      if (button) {
+        button.disabled = false;
+        if (button.innerHTML.includes('해제')) {
+          button.innerHTML = '<i class="fas fa-star-slash me-1"></i>해제';
+        } else {
+          button.innerHTML = '<i class="fas fa-times"></i>';
+        }
+      }
+    }
+
+    function getCategoryBadge(category) {
+      const badges = {
+        'general': '<span class="badge bg-secondary">일반</span>',
+        'info': '<span class="badge bg-info">정보공유</span>',
+        'notice': '<span class="badge bg-warning">공지사항</span>',
+        'qna': '<span class="badge bg-primary">질문답변</span>'
+      };
+      return badges[category] || '<span class="badge bg-secondary">일반</span>';
+    }
+
+    // 추천 게시글 탭이 활성화될 때 데이터 로드
+    document.getElementById('featured-posts-tab').addEventListener('click', function() {
+      loadFeaturedPosts();
+    });
+
+    // 페이지 로드 시 추천 게시글 탭이 활성화되어 있으면 데이터 로드
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.getElementById('featured-posts-tab').classList.contains('active')) {
+        loadFeaturedPosts();
+      }
+    });
+
+    // ==================== 등급 관리 함수들 ====================
+    
+    // 등급 목록 로드
+    async function loadLevels() {
+      try {
+        const response = await fetch('/api/admin/levels');
+        const data = await response.json();
+        
+        if (data.success) {
+          displayLevels(data.users);
+        } else {
+          showAlert('등급 정보를 불러오는데 실패했습니다.', 'danger');
+        }
+      } catch (error) {
+        console.error('등급 로드 오류:', error);
+        showAlert('등급 정보를 불러오는 중 오류가 발생했습니다.', 'danger');
+      }
+    }
+
+    // 등급 목록 표시
+    function displayLevels(users) {
+      const tbody = document.getElementById('levelsTableBody');
+      
+      if (users.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="text-center py-4">
+              <i class="fas fa-users fa-3x text-muted mb-3"></i>
+              <p class="text-muted">등급 정보가 없습니다.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = users.map((user, index) => {
+        const level = user.communityLevel || { level: 1, experience: 0, title: '브론즈' };
+        const stats = user.activityStats || { postsCount: 0, commentsCount: 0, likesReceived: 0 };
+        
+        return `
+          <tr>
+            <td>
+              <span class="badge bg-primary">${index + 1}위</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                     style="width: 32px; height: 32px; font-size: 0.8rem;">
+                  ${user.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div class="fw-semibold">${user.name}</div>
+                  <small class="text-muted">${user.email}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge ${getLevelBadgeClass(level.level)}">
+                <i class="${getLevelIcon(level.level)} me-1"></i>
+                Lv.${level.level} ${level.title}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="fas fa-star text-warning me-1"></i>
+                <span class="fw-semibold">${level.experience}XP</span>
+              </div>
+            </td>
+            <td>
+              <div class="small">
+                <div>게시글: <span class="text-primary fw-semibold">${stats.postsCount}</span></div>
+                <div>댓글: <span class="text-success fw-semibold">${stats.commentsCount}</span></div>
+                <div>좋아요: <span class="text-danger fw-semibold">${stats.likesReceived}</span></div>
+              </div>
+            </td>
+            <td>
+              <small class="text-muted">
+                ${new Date(user.createdAt).toLocaleDateString('ko-KR')}
+              </small>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-warning" onclick="showLevelAdjustModal('${user._id}', '${user.name}', ${level.level}, ${level.experience}, '${level.title}')">
+                <i class="fas fa-edit me-1"></i>조정
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 등급 조정 모달 표시
+    function showLevelAdjustModal(userId, userName, currentLevel, currentExp, currentTitle) {
+      document.getElementById('adjustUserId').value = userId;
+      document.getElementById('adjustUserName').value = userName;
+      document.getElementById('currentLevel').innerHTML = `<i class="${getLevelIcon(currentLevel)} me-1"></i>Lv.${currentLevel} ${currentTitle}`;
+      document.getElementById('currentExp').value = `${currentExp}XP`;
+      document.getElementById('newExp').value = currentExp;
+      document.getElementById('adjustReason').value = '';
+      
+      const modal = new bootstrap.Modal(document.getElementById('levelAdjustModal'));
+      modal.show();
+    }
+
+    // 등급 조정 실행
+    async function adjustUserLevel() {
+      const userId = document.getElementById('adjustUserId').value;
+      const newExp = parseInt(document.getElementById('newExp').value);
+      const reason = document.getElementById('adjustReason').value;
+
+      if (!userId || newExp < 0) {
+        showAlert('올바른 경험치 값을 입력해주세요.', 'warning');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/levels/adjust', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userId,
+            experience: newExp,
+            reason: reason
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          showAlert(`등급이 성공적으로 조정되었습니다! ${data.user.name}님: ${data.user.oldLevel}레벨 → ${data.user.newLevel}레벨`, 'success');
+          
+          // 모달 닫기
+          const modal = bootstrap.Modal.getInstance(document.getElementById('levelAdjustModal'));
+          modal.hide();
+          
+          // 등급 목록 새로고침
+          loadLevels();
+        } else {
+          showAlert(data.message || '등급 조정에 실패했습니다.', 'danger');
+        }
+      } catch (error) {
+        console.error('등급 조정 오류:', error);
+        showAlert('등급 조정 중 오류가 발생했습니다.', 'danger');
+      }
+    }
+
+    // 등급 목록 새로고침
+    function refreshLevels() {
+      loadLevels();
+    }
+
+    // 등급 탭 클릭 시 데이터 로드
+    document.getElementById('levels-tab').addEventListener('click', function() {
+      loadLevels();
+    });
+
+        // 등급별 배지 색상 반환 함수
+        function getLevelBadgeClass(level) {
+          switch(level) {
+            case 1: return 'bg-secondary';      // 브론즈 - 회색
+            case 2: return 'level-2-silver';    // 실버 - 그라데이션 회색
+            case 3: return 'bg-warning text-dark'; // 골드 - 노란색
+            case 4: return 'level-4-platinum';  // 플래티넘 - 보라색 그라데이션
+            case 5: return 'level-5-diamond';   // 다이아몬드 - 무지개 그라데이션
+            default: return 'bg-secondary';
+          }
+        }
+
+        // 등급별 아이콘 반환 함수
+        function getLevelIcon(level) {
+          switch(level) {
+            case 1: return 'fas fa-medal';      // 브론즈 - 메달
+            case 2: return 'fas fa-medal';      // 실버 - 메달
+            case 3: return 'fas fa-medal';      // 골드 - 메달
+            case 4: return 'fas fa-gem';        // 플래티넘 - 보석
+            case 5: return 'fas fa-crown';      // 다이아몬드 - 왕관
+            default: return 'fas fa-medal';
+          }
+        }
   </script>
+
+  <style>
+    /* 등급별 배지 스타일 */
+    .level-2-silver {
+      background: linear-gradient(45deg, #c0c0c0, #e8e8e8) !important;
+      color: #333 !important;
+      border: 1px solid #b0b0b0 !important;
+    }
+
+    .level-4-platinum {
+      background: linear-gradient(45deg, #8e44ad, #9b59b6, #e74c3c) !important;
+      color: white !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+    }
+
+    .level-5-diamond {
+      background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57) !important;
+      background-size: 300% 300% !important;
+      animation: diamondShine 3s ease-in-out infinite !important;
+      color: white !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
+
+    @keyframes diamondShine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+  </style>
 </body>
-</html> 
 </html> 

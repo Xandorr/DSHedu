@@ -130,6 +130,18 @@
               <div class="form-text">유튜브 영상을 첨부하고 싶다면 링크를 입력하세요.</div>
             </div>
 
+            <!-- 비밀글 옵션 (Q&A 카테고리일 때만 표시) -->
+            <div class="mb-4" id="privateOption" style="display: none;">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isPrivate" name="isPrivate" 
+                       value="true" <%= locals.formData && formData.isPrivate ? 'checked' : '' %>>
+                <label class="form-check-label fw-bold" for="isPrivate">
+                  <i class="fas fa-lock me-2 text-warning"></i>비밀글
+                </label>
+                <div class="form-text">체크하면 작성자와 관리자만 볼 수 있습니다.</div>
+              </div>
+            </div>
+
             <!-- 버튼 -->
             <div class="d-flex justify-content-between align-items-center pt-4">
               <a href="/posts" class="btn btn-outline-secondary btn-lg">
@@ -245,7 +257,8 @@ function saveDraft() {
     content: document.getElementById('content').value,
     category: document.getElementById('category').value,
     tags: document.getElementById('tags').value,
-    youtubeUrl: document.getElementById('youtubeUrl').value
+    youtubeUrl: document.getElementById('youtubeUrl').value,
+    isPrivate: document.getElementById('isPrivate').checked
   };
   
   localStorage.setItem('postDraft', JSON.stringify(formData));
@@ -268,6 +281,19 @@ function saveDraft() {
   }, 3000);
 }
 
+// 카테고리 변경 시 비밀글 옵션 표시/숨김
+function togglePrivateOption() {
+  const category = document.getElementById('category').value;
+  const privateOption = document.getElementById('privateOption');
+  
+  if (category === 'qna') {
+    privateOption.style.display = 'block';
+  } else {
+    privateOption.style.display = 'none';
+    document.getElementById('isPrivate').checked = false; // 비밀글 체크 해제
+  }
+}
+
 // 임시저장된 내용 불러오기
 document.addEventListener('DOMContentLoaded', function() {
   const draft = localStorage.getItem('postDraft');
@@ -281,9 +307,23 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('category').value = data.category || 'general';
       document.getElementById('tags').value = data.tags || '';
       document.getElementById('youtubeUrl').value = data.youtubeUrl || '';
+      
+      // 비밀글 옵션 표시/숨김
+      togglePrivateOption();
+      
+      // 비밀글 체크 상태 복원
+      if (data.isPrivate) {
+        document.getElementById('isPrivate').checked = true;
+      }
     }
   }
   <% } %>
+  
+  // 초기 로드 시 비밀글 옵션 상태 설정
+  togglePrivateOption();
+  
+  // 카테고리 변경 이벤트 리스너
+  document.getElementById('category').addEventListener('change', togglePrivateOption);
 });
 
 // 폼 제출 시 임시저장 내용 삭제

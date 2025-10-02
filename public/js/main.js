@@ -1,6 +1,34 @@
+console.log('🔥 main.js 파일 로드 시작!');
+
+// ===== 찜하기 기능 (DOMContentLoaded 외부에서 즉시 실행) =====
+try {
+  console.log('🚀 찜하기 기능 초기화 시작 (즉시 실행)');
+  
+  // 이벤트 위임을 사용하여 동적으로 추가된 버튼도 처리
+  document.addEventListener('click', function(event) {
+    const wishlistBtn = event.target.closest('.wishlist-btn');
+    
+    if (wishlistBtn) {
+      console.log('❤️ 찜하기 버튼 클릭됨 (이벤트 위임)');
+      console.log('🔍 클릭된 버튼:', wishlistBtn);
+      console.log('🔍 프로그램 ID:', wishlistBtn.dataset.programId);
+      try {
+        handleWishlist(event);
+      } catch (error) {
+        console.error('❌ handleWishlist 실행 오류:', error);
+      }
+    }
+  });
+  
+  console.log('✅ 찜하기 이벤트 리스너 등록 완료');
+} catch (error) {
+  console.error('❌ 찜하기 기능 초기화 오류:', error);
+}
+
 // Wait for document to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
   "use strict";
+  console.log('📄 DOMContentLoaded 이벤트 발생!');
 
   // Loading screen
   const loadingScreen = document.createElement('div');
@@ -692,5 +720,261 @@ function translateModalContent(lang, trans) {
   const submitBtn = document.querySelector('#sharePhotoModal .btn-primary');
   if (submitBtn) {
     submitBtn.textContent = trans.sharePhoto;
+  }
+
+
+  // DOM이 완전히 로드된 후 찜 상태 확인
+  console.log('🔵 main.js DOMContentLoaded 이벤트 실행됨!');
+  
+  try {
+    console.log('🔵 현재 페이지 URL:', window.location?.href || 'URL 정보 없음');
+    console.log('🔵 현재 페이지 title:', document?.title || 'Title 정보 없음');
+  } catch (error) {
+    console.warn('🔵 페이지 정보 로드 오류:', error);
+  }
+  
+  // 즉시 실행
+  console.log('⏰ DOM 로드 확인 시작 - main.js (즉시 실행)');
+  console.log('🔍 initializeWishlistStatus 함수 호출 준비');
+  
+  // 함수 존재 여부 확인
+  if (typeof initializeWishlistStatus === 'function') {
+    console.log('✅ initializeWishlistStatus 함수 존재 확인');
+    initializeWishlistStatus();
+  } else {
+    console.error('❌ initializeWishlistStatus 함수를 찾을 수 없습니다');
+  }
+  
+  // 추가 보험용 setTimeout
+  setTimeout(() => {
+    console.log('⏰ DOM 로드 확인 시작 - main.js (1초 후 재시도)');
+    if (typeof initializeWishlistStatus === 'function') {
+      console.log('✅ 재시도 - initializeWishlistStatus 함수 존재 확인');
+      initializeWishlistStatus();
+    } else {
+      console.error('❌ 재시도 - initializeWishlistStatus 함수를 찾을 수 없습니다');
+    }
+  }, 1000);
+
+}
+
+// ===== 찜하기 관련 함수들 (전역 스코프) =====
+
+console.log('🔵 main.js 파일 로드됨! 전역 스코프에서 실행 중...');
+
+// 로그인 상태 확인
+async function checkLoginStatus() {
+  try {
+    const response = await fetch('/api/auth/status');
+    const data = await response.json();
+    return data.isAuthenticated;
+  } catch (error) {
+    return false;
+  }
+}
+
+// 모든 찜하기 버튼 상태 초기화
+async function initializeWishlistStatus() {
+  console.log('🚀 initializeWishlistStatus 함수 시작');
+  try {
+    const wishlistBtns = document.querySelectorAll('.wishlist-btn');
+    console.log('🔍 찜하기 버튼 개수:', wishlistBtns.length);
+    console.log('🔍 찾은 버튼들:', Array.from(wishlistBtns).map(btn => ({
+      element: btn,
+      programId: btn.dataset.programId,
+      className: btn.className
+    })));
+    
+    if (wishlistBtns.length === 0) {
+      console.log('❌ 찜하기 버튼이 없어서 종료');
+      return;
+    }
+
+    console.log('🔐 로그인 상태 확인 중...');
+    const isLoggedIn = await checkLoginStatus();
+    console.log('🔐 로그인 상태:', isLoggedIn);
+    
+    if (!isLoggedIn) {
+      console.log('👤 비로그인 상태 - 찜 상태 확인 건너뜀');
+      return;
+    }
+
+    console.log('📡 찜 목록 API 호출 시작...');
+    // 모든 찜 목록을 한 번에 가져오기
+    const response = await fetch('/api/wishlist/all');
+    console.log('📡 API 응답 상태:', response.status);
+    const data = await response.json();
+    console.log('📡 API 응답 데이터:', data);
+
+    if (data.success) {
+      const wishlistedPrograms = data.wishlistedPrograms || [];
+      console.log('💖 찜한 프로그램 목록:', wishlistedPrograms);
+
+      // 각 버튼의 상태 업데이트
+      wishlistBtns.forEach((btn, index) => {
+        const programId = btn.dataset.programId;
+        console.log(`🔍 버튼 ${index + 1} - 프로그램 ID: ${programId}`);
+        
+        if (programId && wishlistedPrograms.includes(programId)) {
+          const icon = btn.querySelector('i');
+          console.log(`🔍 버튼 ${index + 1} - 아이콘:`, icon);
+          if (icon) {
+            console.log(`🔍 버튼 ${index + 1} - 변경 전 클래스:`, icon.className);
+            icon.classList.remove('far');
+            icon.classList.add('fas');
+            icon.style.color = '#dc3545'; // 빨간색으로 변경
+            console.log(`❤️ 찜 상태로 업데이트: ${programId} - 변경 후 클래스:`, icon.className);
+          }
+          // 버튼 테두리도 빨간색으로 변경
+          btn.style.borderColor = '#dc3545';
+          btn.style.color = '#dc3545';
+        }
+      });
+    } else {
+      console.log('❌ API 응답이 실패:', data);
+    }
+  } catch (error) {
+    console.error('❌ 찜 상태 초기화 오류:', error);
+    console.error('❌ 오류 스택:', error.stack);
+  }
+  console.log('✅ initializeWishlistStatus 함수 종료');
+}
+
+// 개별 찜 상태 확인 (기존 함수 유지)
+async function checkWishlistStatus(btn) {
+  try {
+    const programId = btn.dataset.programId;
+    if (!programId) return;
+
+    const isLoggedIn = await checkLoginStatus();
+    if (!isLoggedIn) return;
+
+    const response = await fetch(`/api/wishlist/check/${programId}`);
+    const data = await response.json();
+
+    if (data.success && data.isWishlisted) {
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+      }
+    }
+  } catch (error) {
+    console.error('찜 상태 확인 오류:', error);
+  }
+}
+
+// 찜하기 처리 함수
+async function handleWishlist(event) {
+  console.log('❤️ 찜하기 버튼 클릭됨');
+  event.preventDefault();
+  
+  // 이벤트 위임을 위해 실제 버튼 요소 찾기
+  const button = event.target.closest('.wishlist-btn');
+  if (!button) return;
+  
+  const programId = button.dataset.programId;
+  const icon = button.querySelector('i');
+  const isWishlisted = icon.classList.contains('fas');
+  
+  console.log('📋 찜하기 정보:', { programId, isWishlisted });
+
+  // 로그인 확인
+  const isLoggedIn = await checkLoginStatus();
+  if (!isLoggedIn) {
+    showToast('로그인이 필요합니다.', 'warning');
+    // 현재 페이지 URL을 저장하고 로그인 페이지로 이동
+    const currentUrl = window.location.href;
+    localStorage.setItem('redirectAfterLogin', currentUrl);
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 1000);
+    return;
+  }
+
+  try {
+    // 버튼 비활성화
+    button.disabled = true;
+
+    const method = isWishlisted ? 'DELETE' : 'POST';
+    console.log('🔗 API 요청:', method, `/api/enrollments/wishlist/${programId}`);
+    
+    const response = await fetch(`/api/enrollments/wishlist/${programId}`, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    console.log('📡 응답 상태:', response.status, response.ok);
+    const data = await response.json();
+    console.log('📋 응답 데이터:', data);
+
+    if (data.success) {
+      // 아이콘 상태 변경
+      if (isWishlisted) {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        // 버튼과 아이콘 색상을 기본값으로 복원
+        icon.style.color = '';
+        button.style.borderColor = '';
+        button.style.color = '';
+        showToast('찜 목록에서 제거되었습니다.', 'success');
+      } else {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        // 버튼과 아이콘을 빨간색으로 변경
+        icon.style.color = '#dc3545';
+        button.style.borderColor = '#dc3545';
+        button.style.color = '#dc3545';
+        showToast('찜 목록에 추가되었습니다! 내 등록 현황에서 확인하세요.', 'success');
+        // 2초 후 등록 현황 페이지로 이동
+        setTimeout(() => {
+          window.location.href = '/dashboard/enrollments';
+        }, 2000);
+      }
+    } else {
+      showToast(data.message || '오류가 발생했습니다.', 'error');
+    }
+  } catch (error) {
+    console.error('찜하기 오류:', error);
+    showToast('네트워크 오류가 발생했습니다.', 'error');
+  } finally {
+    // 버튼 재활성화
+    button.disabled = false;
+  }
+}
+
+// 토스트 메시지 표시 함수
+function showToast(message, type = 'info') {
+  // 기존 토스트 제거
+  const existingToast = document.querySelector('.toast');
+  if (existingToast) {
+    existingToast.remove();
+  }
+
+  const toastClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-primary';
+  const toastHtml = `
+    <div class="toast position-fixed top-0 end-0 m-3" style="z-index: 9999;" role="alert">
+      <div class="toast-body ${toastClass} text-white">
+        ${message}
+      </div>
+    </div>
+  `;
+
+  document.body.insertAdjacentHTML('beforeend', toastHtml);
+  
+  // Bootstrap Toast 사용 (없으면 자동 제거)
+  try {
+    const toast = new bootstrap.Toast(document.querySelector('.toast'));
+    toast.show();
+  } catch (e) {
+    // Bootstrap Toast 없으면 수동으로 제거
+    setTimeout(() => {
+      const toastElement = document.querySelector('.toast');
+      if (toastElement) {
+        toastElement.remove();
+      }
+    }, 3000);
   }
 } 

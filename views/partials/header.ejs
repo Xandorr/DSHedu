@@ -34,7 +34,12 @@
           <% if (locals.user) { %>
             <li class="nav-item dropdown mx-2">
               <a class="nav-link dropdown-toggle nav-hover-effect" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-user-circle me-1"></i> <%= user.name %>
+                <% if (user.profilePhoto) { %>
+                  <img src="<%= user.profilePhoto %>" alt="프로필 사진" class="rounded-circle me-1" style="width: 24px; height: 24px; object-fit: cover;">
+                <% } else { %>
+                  <i class="fas fa-user-circle me-1"></i>
+                <% } %>
+                <%= user.name %>
               </a>
               <ul class="dropdown-menu" aria-labelledby="userDropdown">
                 <li><a class="dropdown-item" href="/dashboard" data-i18n="dashboard">대시보드</a></li>

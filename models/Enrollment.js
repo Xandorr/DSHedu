@@ -34,7 +34,7 @@ const EnrollmentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'cancelled', 'completed'],
+    enum: ['wishlist', 'pending', 'confirmed', 'in-progress', 'completed'],
     default: 'pending'
   },
   paymentStatus: {

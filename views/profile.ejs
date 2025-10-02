@@ -31,11 +31,21 @@
       <div class="col-md-3 mb-4">
         <div class="card shadow-sm border-0">
           <div class="card-body text-center">
-            <div class="mb-3">
-              <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
-                   style="width: 80px; height: 80px;">
-                <i class="fas fa-user fa-2x text-white"></i>
-              </div>
+            <div class="mb-3 position-relative">
+              <% if (user.profilePhoto) { %>
+                <img src="<%= user.profilePhoto %>" alt="프로필 사진" 
+                     class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
+              <% } else { %>
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center" 
+                     style="width: 80px; height: 80px;">
+                  <i class="fas fa-user fa-2x text-white"></i>
+                </div>
+              <% } %>
+              <button class="btn btn-sm btn-outline-primary position-absolute bottom-0 end-0 rounded-circle"
+                      style="width: 30px; height: 30px; transform: translate(25%, 25%);"
+                      onclick="document.getElementById('profilePhotoInput').click()">
+                <i class="fas fa-camera"></i>
+              </button>
             </div>
             <h5 class="card-title"><%= user.name %></h5>
             <p class="text-muted small"><%= user.email %></p>
@@ -80,7 +90,10 @@
             <h5 class="mb-0">기본 정보</h5>
           </div>
           <div class="card-body">
-            <form id="profileForm">
+            <form id="profileForm" enctype="multipart/form-data">
+              <!-- 숨겨진 프로필 사진 업로드 -->
+              <input type="file" id="profilePhotoInput" name="profilePhoto" accept="image/*" style="display: none;">
+              
               <div class="row">
                 <div class="col-md-6 mb-3">
                   <label for="name" class="form-label">이름</label>
@@ -95,28 +108,62 @@
               </div>
               
               <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
+                  <label for="role" class="form-label">역할</label>
+                  <select class="form-select" id="role" name="role" <%= user.role === 'admin' ? '' : 'readonly' %>>
+                    <option value="parent" <%= user.role === 'parent' ? 'selected' : '' %>>학부모</option>
+                    <option value="student" <%= user.role === 'student' ? 'selected' : '' %>>학생</option>
+                    <% if (user.role === 'admin') { %>
+                      <option value="admin" selected>관리자</option>
+                    <% } %>
+                  </select>
+                  <% if (user.role !== 'admin') { %>
+                    <div class="form-text">역할은 관리자만 변경할 수 있습니다.</div>
+                  <% } %>
+                </div>
+                <div class="col-md-4 mb-3">
                   <label for="phone" class="form-label">전화번호</label>
                   <input type="tel" class="form-control" id="phone" name="phone" 
                          value="<%= user.phone || '' %>" readonly>
                 </div>
-                <div class="col-md-6 mb-3">
+                <div class="col-md-4 mb-3">
                   <label for="birthDate" class="form-label">생년월일</label>
                   <input type="date" class="form-control" id="birthDate" name="birthDate" 
                          value="<%= user.birthDate ? user.birthDate.toISOString().split('T')[0] : '' %>" readonly>
                 </div>
               </div>
 
-              <div class="mb-3">
-                <label for="address" class="form-label">주소</label>
-                <input type="text" class="form-control" id="address" name="address" 
-                       value="<%= user.address || '' %>" readonly>
+              <!-- 주소 정보 -->
+              <div class="row">
+                <div class="col-md-8 mb-3">
+                  <label for="address" class="form-label">주소</label>
+                  <input type="text" class="form-control" id="address" name="address" 
+                         value="<%= user.address?.street || '' %>" readonly>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="zipCode" class="form-label">우편번호</label>
+                  <input type="text" class="form-control" id="zipCode" name="zipCode" 
+                         value="<%= user.address?.zipCode || '' %>" readonly>
+                </div>
               </div>
 
-              <div class="mb-3">
-                <label for="emergencyContact" class="form-label">비상연락처</label>
-                <input type="text" class="form-control" id="emergencyContact" name="emergencyContact" 
-                       value="<%= user.emergencyContact || '' %>" readonly>
+              <!-- 비상연락처 정보 -->
+              <div class="row">
+                <div class="col-md-4 mb-3">
+                  <label for="emergencyContactName" class="form-label">비상연락처 이름</label>
+                  <input type="text" class="form-control" id="emergencyContactName" name="emergencyContactName" 
+                         value="<%= user.emergencyContact?.name || '' %>" readonly>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="emergencyContactPhone" class="form-label">비상연락처 전화번호</label>
+                  <input type="tel" class="form-control" id="emergencyContactPhone" name="emergencyContactPhone" 
+                         value="<%= user.emergencyContact?.phone || '' %>" readonly>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="emergencyContactRelationship" class="form-label">관계</label>
+                  <input type="text" class="form-control" id="emergencyContactRelationship" name="emergencyContactRelationship" 
+                         value="<%= user.emergencyContact?.relationship || '' %>" readonly>
+                </div>
               </div>
 
               <div class="d-none" id="saveButtons">
@@ -170,7 +217,8 @@
               <div class="col-md-6">
                 <h6>이메일 알림</h6>
                 <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                  <input class="form-check-input" type="checkbox" id="emailNotifications" name="emailNotifications" 
+                         <%= user.preferences?.emailNotifications !== false ? 'checked' : '' %> disabled>
                   <label class="form-check-label" for="emailNotifications">
                     이메일 알림 받기
                   </label>
@@ -178,13 +226,87 @@
               </div>
               <div class="col-md-6">
                 <h6>언어 설정</h6>
-                <select class="form-select">
-                  <option value="ko">한국어</option>
-                  <option value="en">English</option>
+                <select class="form-select" id="language" name="language" disabled>
+                  <option value="ko" <%= user.preferences?.language === 'ko' ? 'selected' : '' %>>한국어</option>
+                  <option value="en" <%= user.preferences?.language === 'en' ? 'selected' : '' %>>English</option>
                 </select>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 회원 탈퇴 -->
+        <div class="card shadow-sm border-0 mt-4 border-danger">
+          <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>회원 탈퇴</h5>
+          </div>
+          <div class="card-body">
+            <div class="alert alert-warning" role="alert">
+              <h6 class="alert-heading"><i class="fas fa-warning me-2"></i>주의사항</h6>
+              <p class="mb-2">회원 탈퇴 시 다음 정보가 <strong>영구적으로 삭제</strong>됩니다:</p>
+              <ul class="mb-2">
+                <li>개인정보 및 프로필</li>
+                <li>작성한 게시글 및 댓글</li>
+                <li>프로그램 등록 내역</li>
+                <li>찜한 프로그램 목록</li>
+                <li>모든 활동 기록</li>
+              </ul>
+              <p class="mb-0"><strong>이 작업은 되돌릴 수 없습니다.</strong></p>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-danger mb-1">정말로 탈퇴하시겠습니까?</h6>
+                <small class="text-muted">탈퇴 후에는 모든 데이터를 복구할 수 없습니다.</small>
+              </div>
+              <button type="button" class="btn btn-outline-danger" onclick="showDeleteAccountModal()">
+                <i class="fas fa-user-times me-2"></i>회원 탈퇴
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 회원 탈퇴 확인 모달 -->
+  <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteAccountModalLabel">
+            <i class="fas fa-exclamation-triangle me-2"></i>회원 탈퇴 확인
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger" role="alert">
+            <h6 class="alert-heading"><i class="fas fa-warning me-2"></i>최종 확인</h6>
+            <p class="mb-2">정말로 회원 탈퇴를 진행하시겠습니까?</p>
+            <p class="mb-0">이 작업은 <strong>되돌릴 수 없으며</strong>, 모든 데이터가 영구적으로 삭제됩니다.</p>
+          </div>
+          
+                    <div class="mb-3">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmCheckbox">
+                        <label class="form-check-label" for="confirmCheckbox">
+                          <strong>모든 데이터가 영구적으로 삭제되며 복구할 수 없음을 이해합니다.</strong>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="deleteConfirmPassword" class="form-label">현재 비밀번호를 입력해주세요:</label>
+                      <input type="password" class="form-control" id="deleteConfirmPassword" placeholder="현재 비밀번호">
+                    </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>취소
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDeleteAccount()" disabled>
+            <i class="fas fa-user-times me-2"></i>회원 탈퇴
+          </button>
         </div>
       </div>
     </div>
@@ -219,11 +341,35 @@
 
   <script>
     let isEditMode = false;
+    
+    // 사용자 정보 (EJS에서 전달)
+    const userInfo = {
+      isSocialUser: <%= (user.googleId || user.kakaoId || user.naverId) ? 'true' : 'false' %>,
+      hasPassword: <%= user.password ? 'true' : 'false' %>
+    };
+
+    // 전화번호 포맷팅 함수
+    function formatPhoneNumber(input) {
+      let value = input.value.replace(/\D/g, ''); // 숫자만 추출
+      
+      if (value.length >= 11) {
+        // 010-1234-5678 형식
+        value = value.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+      } else if (value.length >= 7) {
+        // 010-123-4567 형식
+        value = value.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+      } else if (value.length >= 3) {
+        // 010-123 형식
+        value = value.replace(/(\d{3})(\d{0,4})/, '$1-$2');
+      }
+      
+      input.value = value;
+    }
 
     function toggleEditMode() {
       isEditMode = !isEditMode;
       const form = document.getElementById('profileForm');
-      const inputs = form.querySelectorAll('input[readonly]');
+      const inputs = form.querySelectorAll('input[readonly], select[disabled], input[disabled]');
       const editButton = document.getElementById('editButtonText');
       const saveButtons = document.getElementById('saveButtons');
 
@@ -231,9 +377,15 @@
         inputs.forEach(input => {
           if (input.id !== 'email') { // 이메일은 수정 불가
             input.removeAttribute('readonly');
+            input.removeAttribute('disabled');
             input.classList.add('border-primary');
           }
         });
+        // 이메일 알림 토글 활성화
+        const emailNotificationsToggle = document.getElementById('emailNotifications');
+        if (emailNotificationsToggle) {
+          emailNotificationsToggle.removeAttribute('disabled');
+        }
         editButton.textContent = '취소';
         saveButtons.classList.remove('d-none');
       } else {
@@ -244,55 +396,120 @@
     function cancelEdit() {
       isEditMode = false;
       const form = document.getElementById('profileForm');
-      const inputs = form.querySelectorAll('input');
+      const inputs = form.querySelectorAll('input, select');
       const editButton = document.getElementById('editButtonText');
       const saveButtons = document.getElementById('saveButtons');
 
       inputs.forEach(input => {
         if (input.id !== 'email') {
-          input.setAttribute('readonly', true);
+          if (input.type === 'checkbox' || input.tagName === 'SELECT') {
+            input.setAttribute('disabled', true);
+          } else {
+            input.setAttribute('readonly', true);
+          }
           input.classList.remove('border-primary');
         }
       });
+      // 이메일 알림 토글 비활성화
+      const emailNotificationsToggle = document.getElementById('emailNotifications');
+      if (emailNotificationsToggle) {
+        emailNotificationsToggle.setAttribute('disabled', true);
+      }
       editButton.textContent = '편집';
       saveButtons.classList.add('d-none');
       
-      // 폼 리셋
-      form.reset();
+      // 페이지 새로고침으로 원래 값 복원
       location.reload();
     }
 
-    // 프로필 업데이트 처리
-    document.getElementById('profileForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const formData = new FormData(this);
-      const updateData = {};
-      
-      for (let [key, value] of formData.entries()) {
-        updateData[key] = value;
-      }
+    // 프로필 사진 변경 처리
+    document.getElementById('profilePhotoInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // 파일 크기 체크 (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('프로필 사진은 5MB 이하여야 합니다.');
+          return;
+        }
+        
+        // 파일 타입 체크
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+          alert('이미지 파일만 업로드 가능합니다.');
+          return;
+        }
 
-      // AJAX 요청 (실제 구현에서는 백엔드 API 연결)
+        // 미리보기 업데이트
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imgElement = document.querySelector('.card-body img');
+          if (imgElement) {
+            imgElement.src = e.target.result;
+          } else {
+            // 기본 아이콘을 이미지로 교체
+            const iconDiv = document.querySelector('.bg-primary.rounded-circle');
+            if (iconDiv) {
+              iconDiv.outerHTML = `<img src="${e.target.result}" alt="프로필 사진" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">`;
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+
+        // 자동으로 업로드
+        uploadProfilePhoto(file);
+      }
+    });
+
+    function uploadProfilePhoto(file) {
+      const formData = new FormData();
+      formData.append('profilePhoto', file);
+
       fetch('/api/profile/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
+        method: 'PUT',
+        body: formData
       })
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          alert('프로필이 성공적으로 업데이트되었습니다.');
-          location.reload();
+          showToast('프로필 사진이 성공적으로 업데이트되었습니다.', 'success');
         } else {
-          alert('프로필 업데이트에 실패했습니다.');
+          showToast('프로필 사진 업데이트에 실패했습니다.', 'error');
         }
       })
       .catch(error => {
         console.error('Error:', error);
-        alert('오류가 발생했습니다.');
+        showToast('오류가 발생했습니다.', 'error');
+      });
+    }
+
+    // 프로필 정보 업데이트 처리
+    document.getElementById('profileForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(this);
+      
+      // 이메일 알림 체크박스 상태 명시적으로 추가
+      const emailNotificationsCheckbox = document.getElementById('emailNotifications');
+      if (emailNotificationsCheckbox) {
+        formData.set('emailNotifications', emailNotificationsCheckbox.checked ? 'true' : 'false');
+      }
+      
+      fetch('/api/profile/update', {
+        method: 'PUT',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('프로필이 성공적으로 업데이트되었습니다.', 'success');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          showToast(data.message || '프로필 업데이트에 실패했습니다.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('오류가 발생했습니다.', 'error');
       });
     });
 
@@ -300,16 +517,206 @@
     document.getElementById('passwordForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
+      const currentPassword = document.getElementById('currentPassword').value;
       const newPassword = document.getElementById('newPassword').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       
       if (newPassword !== confirmPassword) {
-        alert('새 비밀번호가 일치하지 않습니다.');
+        showToast('새 비밀번호가 일치하지 않습니다.', 'error');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        showToast('새 비밀번호는 6자 이상이어야 합니다.', 'error');
         return;
       }
       
-      // AJAX 요청 (실제 구현에서는 백엔드 API 연결)
-      alert('비밀번호 변경 기능은 추후 구현될 예정입니다.');
+      fetch('/api/profile/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('비밀번호가 성공적으로 변경되었습니다.', 'success');
+          document.getElementById('passwordForm').reset();
+        } else {
+          showToast(data.message || '비밀번호 변경에 실패했습니다.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      });
+    });
+
+    // Toast 메시지 표시 함수
+    function showToast(message, type = 'info') {
+      // 기존 toast 제거
+      const existingToast = document.querySelector('.toast-custom');
+      if (existingToast) {
+        existingToast.remove();
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast-custom position-fixed top-0 end-0 m-3 p-3 rounded ${type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info'} text-white`;
+      toast.style.zIndex = '9999';
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+
+    // 회원 탈퇴 모달 표시
+    function showDeleteAccountModal() {
+      const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+      modal.show();
+      
+      // 모달이 표시된 후 폼 초기화 및 검증
+      setTimeout(() => {
+        resetDeleteForm();
+        checkDeleteForm();
+      }, 100);
+    }
+
+    // 회원 탈퇴 폼 초기화
+    function resetDeleteForm() {
+      const confirmCheckbox = document.getElementById('confirmCheckbox');
+      const confirmPasswordInput = document.getElementById('deleteConfirmPassword');
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      
+      if (confirmCheckbox) confirmCheckbox.checked = false;
+      if (confirmPasswordInput) {
+        confirmPasswordInput.value = '';
+        // 소셜 로그인 사용자가 아닌 경우에만 비밀번호 필드 표시
+        if (!userInfo.isSocialUser) {
+          confirmPasswordInput.style.display = 'block';
+          confirmPasswordInput.parentElement.querySelector('label').style.display = 'block';
+        }
+      }
+      if (confirmDeleteBtn) confirmDeleteBtn.disabled = true;
+    }
+
+    // 회원 탈퇴 폼 검증 함수
+    function checkDeleteForm() {
+      const confirmCheckbox = document.getElementById('confirmCheckbox');
+      const confirmPasswordInput = document.getElementById('deleteConfirmPassword');
+      const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+      
+      if (!confirmCheckbox || !confirmPasswordInput || !confirmDeleteBtn) {
+        return;
+      }
+      
+      const checkboxValid = confirmCheckbox.checked;
+      
+      // 소셜 로그인 사용자는 비밀번호 검증 건너뛰기
+      const passwordValid = userInfo.isSocialUser ? true : confirmPasswordInput.value.length > 0;
+      const isValid = checkboxValid && passwordValid;
+      
+      confirmDeleteBtn.disabled = !isValid;
+      
+      // 소셜 로그인 사용자의 경우 비밀번호 입력 필드 숨기기
+      if (userInfo.isSocialUser) {
+        confirmPasswordInput.style.display = 'none';
+        confirmPasswordInput.parentElement.querySelector('label').style.display = 'none';
+      }
+      
+      // 디버깅을 위한 로그
+      console.log('회원 탈퇴 폼 검증:', {
+        isSocialUser: userInfo.isSocialUser,
+        checkboxChecked: checkboxValid,
+        passwordLength: confirmPasswordInput.value.length,
+        passwordValid: passwordValid,
+        isValid: isValid,
+        buttonDisabled: confirmDeleteBtn.disabled
+      });
+    }
+
+    // 회원 탈퇴 확인
+    function confirmDeleteAccount() {
+      const confirmCheckbox = document.getElementById('confirmCheckbox');
+      const confirmPassword = document.getElementById('deleteConfirmPassword').value;
+      
+      if (!confirmCheckbox.checked) {
+        showToast('데이터 삭제에 대한 동의를 체크해주세요.', 'error');
+        return;
+      }
+      
+      // 소셜 로그인 사용자가 아닌 경우에만 비밀번호 검증
+      if (!userInfo.isSocialUser && !confirmPassword) {
+        showToast('현재 비밀번호를 입력해주세요.', 'error');
+        return;
+      }
+      
+      // 최종 확인 팝업
+      if (!confirm('⚠️ 최종 확인\n\n정말로 회원 탈퇴를 진행하시겠습니까?\n\n이 작업은 되돌릴 수 없으며, 다음 데이터가 영구적으로 삭제됩니다:\n• 개인정보 및 프로필\n• 작성한 게시글 및 댓글\n• 프로그램 등록 내역\n• 찜한 프로그램 목록\n• 모든 활동 기록\n\n정말로 탈퇴하시겠습니까?')) {
+        return;
+      }
+      
+      // 탈퇴 요청
+      fetch('/api/profile/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          password: confirmPassword
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('회원 탈퇴가 완료되었습니다. 이용해주셔서 감사합니다.', 'success');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 2000);
+        } else {
+          showToast(data.message || '회원 탈퇴에 실패했습니다.', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('오류가 발생했습니다.', 'error');
+      });
+    }
+
+    // 페이지 로드 시 전화번호 포맷팅 이벤트 리스너 추가
+    document.addEventListener('DOMContentLoaded', function() {
+      const phoneInput = document.getElementById('phone');
+      const emergencyPhoneInput = document.getElementById('emergencyContactPhone');
+      
+      if (phoneInput) {
+        phoneInput.addEventListener('input', function() {
+          formatPhoneNumber(this);
+        });
+      }
+      
+      if (emergencyPhoneInput) {
+        emergencyPhoneInput.addEventListener('input', function() {
+          formatPhoneNumber(this);
+        });
+      }
+      
+      // 회원 탈퇴 모달 이벤트 리스너 설정
+      const confirmCheckbox = document.getElementById('confirmCheckbox');
+      const confirmPasswordInput = document.getElementById('deleteConfirmPassword');
+      
+      if (confirmCheckbox) {
+        confirmCheckbox.addEventListener('change', checkDeleteForm);
+      }
+      
+      if (confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', checkDeleteForm);
+      }
     });
   </script>
 </body>

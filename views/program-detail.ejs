@@ -116,7 +116,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: url('<%= program.image %>') center/cover;
+      background: url('<%= (program.photos && program.photos.length > 0) ? program.photos[0] : (program.image || "/images/default-program.svg") %>') center/cover;
       opacity: 0.1;
       z-index: 0;
     }
@@ -479,13 +479,13 @@
               <div class="price-tag">
                 <% if (program.discountPercent && program.discountPercent > 0) { %>
                   <div class="d-flex align-items-center justify-content-center mb-2">
-                    <span class="text-white text-decoration-line-through me-2 opacity-70">$<%= program.originalPrice.toLocaleString() %></span>
+                    <span class="text-white text-decoration-line-through me-2 opacity-70">$<%= program.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
                     <span class="badge bg-warning text-dark fw-bold"><%= program.discountPercent %>% OFF</span>
                   </div>
-                  <h3 class="fw-bold mb-0">$<%= program.discountedPrice.toLocaleString() %></h3>
+                  <h3 class="fw-bold mb-0">$<%= program.discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></h3>
                   <p class="mb-0 opacity-80">할인된 프로그램 비용</p>
                 <% } else { %>
-                  <h3 class="fw-bold mb-0">$<%= (program.price || program.originalPrice).toLocaleString() %></h3>
+                  <h3 class="fw-bold mb-0">$<%= (program.price || program.originalPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></h3>
                   <p class="mb-0 opacity-80">프로그램 비용</p>
                 <% } %>
               </div>
@@ -506,7 +506,7 @@
           <div class="col-lg-8 main-content-col">
             <!-- Program Image -->
             <div class="program-image-section mb-5" data-aos="fade-up">
-              <img src="<%= program.image %>" alt="<%= program.title %>" class="img-fluid">
+              <img src="<%= (program.photos && program.photos.length > 0) ? program.photos[0] : (program.image || "/images/default-program.svg") %>" alt="<%= program.title %>" class="img-fluid">
               <div class="program-badge">
                 <span class="badge <%= getBadgeClass(program.badge) %> fs-6 px-3 py-2"><%= program.badge %></span>
               </div>
@@ -566,12 +566,12 @@
                       <h5 class="mb-1 fw-bold">프로그램 비용</h5>
                       <% if (program.discountPercent && program.discountPercent > 0) { %>
                         <div class="d-flex align-items-center">
-                          <span class="text-muted text-decoration-line-through me-2 small">$<%= program.originalPrice.toLocaleString() %></span>
+                          <span class="text-muted text-decoration-line-through me-2 small">$<%= program.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
                           <span class="badge bg-danger text-white small me-2"><%= program.discountPercent %>% OFF</span>
                         </div>
-                        <p class="text-primary fw-bold mb-0 fs-5">$<%= program.discountedPrice.toLocaleString() %></p>
+                        <p class="text-primary fw-bold mb-0 fs-5">$<%= program.discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
                       <% } else { %>
-                        <p class="text-primary fw-bold mb-0 fs-5">$<%= (program.price || program.originalPrice).toLocaleString() %></p>
+                        <p class="text-primary fw-bold mb-0 fs-5">$<%= (program.price || program.originalPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></p>
                       <% } %>
                     </div>
                   </div>
@@ -646,12 +646,12 @@
                     <div class="text-end">
                       <% if (program.discountPercent && program.discountPercent > 0) { %>
                         <div class="d-flex align-items-center justify-content-end mb-1">
-                          <span class="text-muted text-decoration-line-through me-2 small">$<%= program.originalPrice.toLocaleString() %></span>
+                          <span class="text-muted text-decoration-line-through me-2 small">$<%= program.originalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
                           <span class="badge bg-danger text-white small"><%= program.discountPercent %>% OFF</span>
                         </div>
-                        <span class="fw-bold text-primary">$<%= program.discountedPrice.toLocaleString() %></span>
+                        <span class="fw-bold text-primary">$<%= program.discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
                       <% } else { %>
-                        <span class="fw-bold text-primary">$<%= (program.price || program.originalPrice).toLocaleString() %></span>
+                        <span class="fw-bold text-primary">$<%= (program.price || program.originalPrice).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %></span>
                       <% } %>
                     </div>
                   </div>
@@ -662,10 +662,10 @@
                 <div class="text-center">
                   <p class="small text-muted mb-2">이 프로그램이 마음에 드시나요?</p>
                   <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary btn-sm flex-fill">
-                      <i class="fas fa-heart me-1"></i>찜하기
+                    <button class="btn btn-outline-primary btn-sm flex-fill wishlist-btn" data-program-id="<%= program._id %>">
+                      <i class="far fa-heart me-1"></i>찜하기
                     </button>
-                    <button class="btn btn-outline-primary btn-sm flex-fill">
+                    <button class="btn btn-outline-primary btn-sm flex-fill share-btn" data-program-id="<%= program._id %>" data-program-title="<%= program.title %>">
                       <i class="fas fa-share me-1"></i>공유하기
                     </button>
                   </div>
@@ -772,6 +772,410 @@
         // 초기 위치 설정
         updateSidebarPosition();
       }
+    });
+
+    // 찜하기 및 공유하기 기능
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🔵 프로그램 상세 - DOMContentLoaded 이벤트 실행됨!');
+      console.log('🔵 프로그램 상세 - 현재 페이지 URL:', window.location.href);
+      
+      // 찜하기 버튼 이벤트 (이벤트 위임 사용)
+      document.addEventListener('click', function(event) {
+        if (event.target.closest('.wishlist-btn')) {
+          console.log('❤️ 프로그램 상세 - 찜하기 버튼 클릭됨 (이벤트 위임)');
+          handleWishlist(event);
+        }
+      });
+
+      // 찜하기 버튼 초기 상태 확인
+      console.log('🔵 프로그램 상세 - 찜하기 버튼 상태 확인 함수 호출 예약');
+      setTimeout(() => {
+        console.log('🔵 프로그램 상세 - setTimeout 실행됨, 함수 호출');
+        initializeWishlistStatusForDetail();
+      }, 500);
+
+      // 공유하기 버튼 이벤트
+      const shareBtn = document.querySelector('.share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', handleShare);
+      }
+
+      // 로그인 상태 확인
+      function checkLoginStatus() {
+        return fetch('/api/auth/status')
+          .then(response => response.json())
+          .then(data => data.isAuthenticated)
+          .catch(() => false);
+      }
+
+      // 프로그램 상세페이지용 찜 상태 초기화
+      async function initializeWishlistStatusForDetail() {
+        console.log('🚀 프로그램 상세 - initializeWishlistStatusForDetail 시작');
+        try {
+          const wishlistBtn = document.querySelector('.wishlist-btn');
+          console.log('🔍 프로그램 상세 - 찜하기 버튼:', wishlistBtn);
+          
+          if (!wishlistBtn) {
+            console.log('❌ 프로그램 상세 - 찜하기 버튼이 없어서 종료');
+            return;
+          }
+
+          const programId = wishlistBtn.dataset.programId;
+          console.log('🔍 프로그램 상세 - 프로그램 ID:', programId);
+          
+          if (!programId) {
+            console.log('❌ 프로그램 상세 - 프로그램 ID가 없어서 종료');
+            return;
+          }
+
+          console.log('🔐 프로그램 상세 - 로그인 상태 확인 중...');
+          const isLoggedIn = await checkLoginStatus();
+          console.log('🔐 프로그램 상세 - 로그인 상태:', isLoggedIn);
+          
+          if (!isLoggedIn) {
+            console.log('👤 프로그램 상세 - 비로그인 상태, 찜 상태 확인 건너뜀');
+            return;
+          }
+
+          console.log('📡 프로그램 상세 - 찜 상태 API 호출 시작...');
+          // 개별 프로그램 찜 상태 확인
+          const response = await fetch(`/api/wishlist/check/${programId}`);
+          console.log('📡 프로그램 상세 - API 응답 상태:', response.status);
+          const data = await response.json();
+          console.log('📡 프로그램 상세 - API 응답 데이터:', data);
+
+          if (data.success && data.isWishlisted) {
+            const icon = wishlistBtn.querySelector('i');
+            console.log('🔍 프로그램 상세 - 아이콘:', icon);
+            if (icon) {
+              console.log('🔍 프로그램 상세 - 변경 전 클래스:', icon.className);
+              icon.classList.remove('far');
+              icon.classList.add('fas');
+              console.log(`❤️ 프로그램 상세 - 찜 상태로 업데이트: ${programId} - 변경 후 클래스:`, icon.className);
+            }
+          } else {
+            console.log('💔 프로그램 상세 - 찜하지 않은 상태 또는 API 실패');
+          }
+        } catch (error) {
+          console.error('❌ 프로그램 상세 - 찜 상태 초기화 오류:', error);
+          console.error('❌ 프로그램 상세 - 오류 스택:', error.stack);
+        }
+        console.log('✅ 프로그램 상세 - initializeWishlistStatusForDetail 종료');
+      }
+
+      // 찜 상태 확인 (기존 함수 유지)
+      async function checkWishlistStatus(btn) {
+        try {
+          const programId = btn.dataset.programId;
+          if (!programId) return;
+
+          const isLoggedIn = await checkLoginStatus();
+          if (!isLoggedIn) return;
+
+          const response = await fetch(`/api/wishlist/check/${programId}`);
+          const data = await response.json();
+
+          if (data.success && data.isWishlisted) {
+            const icon = btn.querySelector('i');
+            if (icon) {
+              icon.classList.remove('far');
+              icon.classList.add('fas');
+            }
+          }
+        } catch (error) {
+          console.error('찜 상태 확인 오류:', error);
+        }
+      }
+
+      // 찜하기 처리
+      async function handleWishlist(event) {
+        console.log('❤️ 프로그램 상세 - 찜하기 버튼 클릭됨');
+        event.preventDefault();
+        
+        // 이벤트 위임을 위해 실제 버튼 요소 찾기
+        const button = event.target.closest('.wishlist-btn');
+        if (!button) {
+          console.error('❌ 버튼 요소를 찾을 수 없습니다.');
+          return;
+        }
+        
+        const programId = button.dataset.programId;
+        const icon = button.querySelector('i');
+        const isWishlisted = icon.classList.contains('fas');
+        
+        console.log('📋 프로그램 상세 - 찜하기 정보:', { programId, isWishlisted });
+
+        // 로그인 확인
+        const isLoggedIn = await checkLoginStatus();
+        if (!isLoggedIn) {
+          showToast('로그인이 필요합니다.', 'warning');
+          // 현재 페이지 URL을 저장하고 로그인 페이지로 이동
+          const currentUrl = window.location.href;
+          localStorage.setItem('redirectAfterLogin', currentUrl);
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1000);
+          return;
+        }
+
+        try {
+          // 버튼 비활성화
+          button.disabled = true;
+
+          const method = isWishlisted ? 'DELETE' : 'POST';
+          console.log('🔗 API 요청:', method, `/api/enrollments/wishlist/${programId}`);
+          
+          const response = await fetch(`/api/enrollments/wishlist/${programId}`, {
+            method: method,
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          console.log('📡 응답 상태:', response.status, response.ok);
+          const data = await response.json();
+          console.log('📋 응답 데이터:', data);
+
+          if (data.success) {
+            // 아이콘 상태 변경
+            if (isWishlisted) {
+              icon.classList.remove('fas');
+              icon.classList.add('far');
+              // 버튼과 아이콘 색상을 기본값으로 복원
+              icon.style.color = '';
+              button.style.borderColor = '';
+              button.style.color = '';
+              // 텍스트를 "찜하기"로 변경
+              const textNode = button.childNodes[button.childNodes.length - 1];
+              if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                textNode.textContent = '찜하기';
+              }
+              showToast('찜 목록에서 제거되었습니다.', 'success');
+            } else {
+              icon.classList.remove('far');
+              icon.classList.add('fas');
+              // 버튼과 아이콘을 빨간색으로 변경
+              icon.style.color = '#dc3545';
+              button.style.borderColor = '#dc3545';
+              button.style.color = '#dc3545';
+              // 텍스트를 "찜하기 해제"로 변경
+              const textNode = button.childNodes[button.childNodes.length - 1];
+              if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                textNode.textContent = '찜하기 해제';
+              }
+              showToast('찜 목록에 추가되었습니다! 내 등록 현황에서 확인하세요.', 'success');
+              // 2초 후 등록 현황 페이지로 이동
+              setTimeout(() => {
+                window.location.href = '/dashboard/enrollments';
+              }, 2000);
+            }
+          } else {
+            showToast(data.message || '오류가 발생했습니다.', 'error');
+          }
+        } catch (error) {
+          console.error('찜하기 오류:', error);
+          showToast('네트워크 오류가 발생했습니다.', 'error');
+        } finally {
+          // 버튼 재활성화
+          button.disabled = false;
+        }
+      }
+
+      // 공유하기 처리
+      function handleShare(event) {
+        const programId = event.currentTarget.dataset.programId;
+        const programTitle = event.currentTarget.dataset.programTitle;
+        const currentUrl = window.location.href;
+
+        // Web Share API 지원 확인
+        if (navigator.share) {
+          navigator.share({
+            title: programTitle,
+            text: `${programTitle} - DSH 에듀케이션 프로그램을 확인해보세요!`,
+            url: currentUrl
+          }).then(() => {
+            showToast('성공적으로 공유되었습니다.', 'success');
+          }).catch((error) => {
+            console.log('공유 취소:', error);
+          });
+        } else {
+          // 공유 모달 표시
+          showShareModal(programTitle, currentUrl);
+        }
+      }
+
+      // 공유 모달 표시
+      function showShareModal(title, url) {
+        const modalHtml = `
+          <div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">프로그램 공유하기</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <p class="mb-3">${title}</p>
+                  <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="shareToKakao('${title}', '${url}')">
+                      <i class="fas fa-comment me-2"></i>카카오톡으로 공유
+                    </button>
+                    <button class="btn btn-outline-success" onclick="shareToLine('${title}', '${url}')">
+                      <i class="fab fa-line me-2"></i>라인으로 공유
+                    </button>
+                    <button class="btn btn-outline-info" onclick="copyToClipboard('${url}')">
+                      <i class="fas fa-copy me-2"></i>링크 복사
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 기존 모달 제거
+        const existingModal = document.getElementById('shareModal');
+        if (existingModal) {
+          existingModal.remove();
+        }
+
+        // 새 모달 추가
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+        modal.show();
+      }
+
+      // 클립보드 복사
+      window.copyToClipboard = function(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('링크가 복사되었습니다.', 'success');
+          bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+        }).catch(() => {
+          showToast('복사에 실패했습니다.', 'error');
+        });
+      };
+
+      // 카카오톡 공유
+      window.shareToKakao = function(title, url) {
+        const kakaoUrl = `https://story.kakao.com/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+        window.open(kakaoUrl, '_blank');
+        bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+      };
+
+      // 라인 공유
+      window.shareToLine = function(title, url) {
+        const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+        window.open(lineUrl, '_blank');
+        bootstrap.Modal.getInstance(document.getElementById('shareModal')).hide();
+      };
+
+      // 토스트 메시지 표시
+      function showToast(message, type = 'info') {
+        // 기존 토스트 제거
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+          existingToast.remove();
+        }
+
+        const toastClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning' : 'bg-primary';
+        const toastHtml = `
+          <div class="toast position-fixed top-0 end-0 m-3" style="z-index: 9999;" role="alert">
+            <div class="toast-body ${toastClass} text-white">
+              ${message}
+            </div>
+          </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        const toast = new bootstrap.Toast(document.querySelector('.toast'));
+        toast.show();
+
+        // 토스트 자동 제거
+        setTimeout(() => {
+          const toastElement = document.querySelector('.toast');
+          if (toastElement) {
+            toastElement.remove();
+          }
+        }, 3000);
+      }
+
+      // 프로그램 상세페이지용 찜 상태 초기화 (직접 실행)
+      console.log('📖 프로그램 상세 - 찜하기 상태 초기화 시작 (직접 실행)');
+      
+      // 즉시 실행 함수
+      (async function initDetailPageWishlist() {
+        try {
+          console.log('📖 프로그램 상세 - 찜하기 버튼 검색 시작');
+          
+          // 버튼이 로드될 때까지 기다림
+          let attempts = 0;
+          const maxAttempts = 10;
+          
+          const waitForButton = async () => {
+            attempts++;
+            const wishlistBtn = document.querySelector('.wishlist-btn');
+            console.log(`📖 시도 ${attempts}/${maxAttempts} - 찜하기 버튼:`, wishlistBtn);
+            
+            if (wishlistBtn) {
+              const programId = wishlistBtn.dataset.programId;
+              console.log('📖 프로그램 ID:', programId);
+              
+              if (!programId) {
+                console.log('📖 프로그램 ID가 없음');
+                return;
+              }
+              
+              // 로그인 상태 확인
+              const response = await fetch('/api/auth/status');
+              const authData = await response.json();
+              console.log('📖 로그인 상태:', authData.isAuthenticated);
+              
+              if (!authData.isAuthenticated) {
+                console.log('📖 비로그인 상태 - 찜 상태 확인 건너뜀');
+                return;
+              }
+              
+              // 개별 프로그램 찜 상태 확인
+              const wishlistResponse = await fetch(`/api/wishlist/check/${programId}`);
+              const wishlistData = await wishlistResponse.json();
+              console.log('📖 찜 상태 API 응답:', wishlistData);
+              
+              if (wishlistData.success && wishlistData.isWishlisted) {
+                const icon = wishlistBtn.querySelector('i');
+                if (icon) {
+                  console.log('📖 변경 전 클래스:', icon.className);
+                  icon.classList.remove('far');
+                  icon.classList.add('fas');
+                  icon.style.color = '#dc3545'; // 빨간색으로 변경
+                  console.log('❤️ 프로그램 상세 - 찜 상태로 변경됨 (빨간색)');
+                }
+                // 버튼 테두리도 빨간색으로 변경
+                wishlistBtn.style.borderColor = '#dc3545';
+                wishlistBtn.style.color = '#dc3545';
+                // 텍스트를 "찜하기 해제"로 변경
+                const textNode = wishlistBtn.childNodes[wishlistBtn.childNodes.length - 1];
+                if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                  textNode.textContent = '찜하기 해제';
+                }
+              }
+              
+              console.log('✅ 프로그램 상세 찜하기 상태 초기화 완료');
+            } else if (attempts < maxAttempts) {
+              console.log('📖 버튼 대기 중... 500ms 후 재시도');
+              setTimeout(waitForButton, 500);
+            } else {
+              console.log('📖 최대 시도 횟수 초과 - 찜하기 버튼을 찾을 수 없음');
+            }
+          };
+          
+          // 즉시 시작하고, 추가로 1초 후에도 시도
+          waitForButton();
+          setTimeout(waitForButton, 1000);
+          
+        } catch (error) {
+          console.error('📖 프로그램 상세 찜하기 초기화 오류:', error);
+        }
+      })();
     });
   </script>
 </body>

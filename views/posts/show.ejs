@@ -3,8 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>커뮤니티 글 | DSH에듀</title>
-  <meta name="description" content="DSH에듀 커뮤니티 게시글">
+  <title><%= post.title %> | DSH에듀 커뮤니티</title>
+  <meta name="description" content="<%= post.content.length > 160 ? post.content.substring(0, 160) + '...' : post.content %>">
+  <meta name="keywords" content="DSH에듀, 커뮤니티, <%= post.category === 'general' ? '자유게시판' : post.category === 'info' ? '정보공유' : post.category === 'notice' ? '공지사항' : 'Q&A' %>, <%= post.tags ? post.tags.join(', ') : '' %>">
+  
+  <!-- Open Graph 메타 태그 (페이스북, 카카오톡 등) -->
+  <meta property="og:title" content="<%= post.title %> | DSH에듀 커뮤니티">
+  <meta property="og:description" content="<%= post.content.length > 160 ? post.content.substring(0, 160) + '...' : post.content %>">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="<%= req.protocol %>://<%= req.get('host') %>/posts/<%= post._id %>">
+  <meta property="og:site_name" content="DSH에듀">
+  <% if (post.images && post.images.length > 0) { %>
+    <meta property="og:image" content="<%= req.protocol %>://<%= req.get('host') %><%= post.images[0] %>">
+  <% } else { %>
+    <meta property="og:image" content="<%= req.protocol %>://<%= req.get('host') %>/images/logo.png">
+  <% } %>
+  <meta property="og:locale" content="ko_KR">
+  
+  <!-- 트위터 카드 메타 태그 -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= post.title %> | DSH에듀 커뮤니티">
+  <meta name="twitter:description" content="<%= post.content.length > 160 ? post.content.substring(0, 160) + '...' : post.content %>">
+  <% if (post.images && post.images.length > 0) { %>
+    <meta name="twitter:image" content="<%= req.protocol %>://<%= req.get('host') %><%= post.images[0] %>">
+  <% } else { %>
+    <meta name="twitter:image" content="<%= req.protocol %>://<%= req.get('host') %>/images/logo.png">
+  <% } %>
+  
+  <!-- 기타 SEO 메타 태그 -->
+  <meta name="author" content="<%= post.author.name %>">
+  <meta name="robots" content="index, follow">
+  <meta name="googlebot" content="index, follow">
+  <link rel="canonical" href="<%= req.protocol %>://<%= req.get('host') %>/posts/<%= post._id %>">
+  
+  <!-- 구조화된 데이터 (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "<%= post.title %>",
+    "description": "<%= post.content.length > 160 ? post.content.substring(0, 160) + '...' : post.content %>",
+    "author": {
+      "@type": "Person",
+      "name": "<%= post.author.name %>"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "DSH에듀",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "<%= req.protocol %>://<%= req.get('host') %>/images/logo.png"
+      }
+    },
+    "datePublished": "<%= new Date(post.createdAt).toISOString() %>",
+    "dateModified": "<%= new Date(post.updatedAt || post.createdAt).toISOString() %>",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "<%= req.protocol %>://<%= req.get('host') %>/posts/<%= post._id %>"
+    },
+    "articleSection": "<%= post.category === 'general' ? '자유게시판' : post.category === 'info' ? '정보공유' : post.category === 'notice' ? '공지사항' : 'Q&A' %>",
+    <% if (post.images && post.images.length > 0) { %>
+    "image": [
+      <% post.images.forEach((image, index) => { %>
+        "<%= req.protocol %>://<%= req.get('host') %><%= image %>"<%= index < post.images.length - 1 ? ',' : '' %>
+      <% }) %>
+    ],
+    <% } %>
+    "interactionStatistic": {
+      "@type": "InteractionCounter",
+      "interactionType": "https://schema.org/ReadAction",
+      "userInteractionCount": <%= post.views %>
+    }
+  }
+  </script>
   
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -55,7 +126,7 @@
               </small>
             </div>
             
-            <% if (user && (post.author._id.toString() === user._id.toString() || user.role === 'admin')) { %>
+            <% if (user && post.author && post.author._id && (post.author._id.toString() === user._id.toString() || user.role === 'admin')) { %>
               <div class="dropdown" style="position: relative; z-index: 1050;">
                 <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
                         data-bs-toggle="dropdown">
@@ -75,20 +146,51 @@
           </div>
 
           <!-- 제목 -->
-          <h1 class="h2 mb-3"><%= post.title %></h1>
+          <h1 class="h2 mb-3">
+            <%= post.title %>
+            <% if (post.isPrivate) { %>
+              <i class="fas fa-lock text-warning ms-2" title="비밀글"></i>
+            <% } %>
+          </h1>
 
           <!-- 작성자 정보 -->
           <div class="d-flex align-items-center mb-4">
-            <div class="avatar-circle me-3">
-              <i class="fas fa-user"></i>
-            </div>
+            <% if (post.author.profilePhoto) { %>
+              <img src="<%= post.author.profilePhoto %>" alt="프로필 사진" 
+                   class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+            <% } else { %>
+              <div class="avatar-circle me-3">
+                <i class="fas fa-user"></i>
+              </div>
+            <% } %>
             <div>
-              <h6 class="mb-0"><%= post.author.name %></h6>
+        <h6 class="mb-1">
+          <%= post.author.name %>
+        </h6>
+        <% if (post.author.role === 'admin') { %>
+          <div class="mb-2">
+            <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">
+              <i class="fas fa-crown me-1"></i>관리자
+            </span>
+          </div>
+        <% } else if (post.author.communityLevel && post.author.communityLevel.level) { %>
+          <div class="mb-2">
+            <span class="badge <%= post.author.communityLevel.level === 1 ? 'bg-secondary' : post.author.communityLevel.level === 2 ? 'level-2-silver' : post.author.communityLevel.level === 3 ? 'bg-warning text-dark' : post.author.communityLevel.level === 4 ? 'level-4-platinum' : 'level-5-diamond' %>" style="font-size: 0.7rem;">
+              <i class="<%= post.author.communityLevel.level === 1 ? 'fas fa-medal' : post.author.communityLevel.level === 2 ? 'fas fa-medal' : post.author.communityLevel.level === 3 ? 'fas fa-medal' : post.author.communityLevel.level === 4 ? 'fas fa-gem' : 'fas fa-crown' %> me-1"></i>
+              <%= post.author.communityLevel.title %>
+            </span>
+          </div>
+        <% } %>
               <small class="text-muted">
                 <% if (post.author.role === 'admin') { %>
-                  <i class="fas fa-crown text-warning me-1"></i>관리자
+                  <i class="fas fa-user me-1"></i>관리자
                 <% } else { %>
-                  회원
+                  <i class="fas fa-user me-1"></i>회원
+                <% } %>
+                <% if (post.author.communityLevel && post.author.communityLevel.experience) { %>
+                  <span class="ms-2">
+                    <i class="fas fa-star text-warning me-1"></i><%= post.author.communityLevel.experience %>XP
+                  </span>
                 <% } %>
               </small>
             </div>
@@ -173,9 +275,14 @@
           <% if (user) { %>
             <form id="commentForm" class="mb-4">
               <div class="d-flex gap-3">
-                <div class="avatar-circle flex-shrink-0">
-                  <i class="fas fa-user"></i>
-                </div>
+                <% if (user.profilePhoto) { %>
+                  <img src="<%= user.profilePhoto %>" alt="프로필 사진" 
+                       class="rounded-circle flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover;">
+                <% } else { %>
+                  <div class="avatar-circle flex-shrink-0">
+                    <i class="fas fa-user"></i>
+                  </div>
+                <% } %>
                 <div class="flex-grow-1">
                   <textarea class="form-control" id="commentContent" rows="3" 
                             placeholder="댓글을 작성해보세요..." maxlength="1000"></textarea>
@@ -201,15 +308,31 @@
               <% comments.forEach(comment => { %>
                 <div class="comment-item border-bottom py-3" data-comment-id="<%= comment._id %>">
                   <div class="d-flex gap-3">
-                    <div class="avatar-circle flex-shrink-0">
-                      <i class="fas fa-user"></i>
-                    </div>
+                    <% if (comment.author.profilePhoto) { %>
+                      <img src="<%= comment.author.profilePhoto %>" alt="프로필 사진" 
+                           class="rounded-circle flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover;">
+                    <% } else { %>
+                      <div class="avatar-circle flex-shrink-0">
+                        <i class="fas fa-user"></i>
+                      </div>
+                    <% } %>
                     <div class="flex-grow-1">
                       <div class="d-flex justify-content-between align-items-start mb-2">
                         <div>
                           <strong><%= comment.author.name %></strong>
                           <% if (comment.author.role === 'admin') { %>
-                            <span class="badge bg-warning text-dark ms-1">관리자</span>
+                            <div class="mt-1">
+                              <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">
+                                <i class="fas fa-crown me-1"></i>관리자
+                              </span>
+                            </div>
+                          <% } else if (comment.author.communityLevel && comment.author.communityLevel.level) { %>
+                            <div class="mt-1">
+                              <span class="badge <%= comment.author.communityLevel.level === 1 ? 'bg-secondary' : comment.author.communityLevel.level === 2 ? 'level-2-silver' : comment.author.communityLevel.level === 3 ? 'bg-warning text-dark' : comment.author.communityLevel.level === 4 ? 'level-4-platinum' : 'level-5-diamond' %>" style="font-size: 0.6rem;">
+                                <i class="<%= comment.author.communityLevel.level === 1 ? 'fas fa-medal' : comment.author.communityLevel.level === 2 ? 'fas fa-medal' : comment.author.communityLevel.level === 3 ? 'fas fa-medal' : comment.author.communityLevel.level === 4 ? 'fas fa-gem' : 'fas fa-crown' %> me-1"></i>
+                                <%= comment.author.communityLevel.title %>
+                              </span>
+                            </div>
                           <% } %>
                           <small class="text-muted ms-2">
                             <%= new Date(comment.createdAt).toLocaleDateString('ko-KR', {
@@ -263,26 +386,137 @@
             <h6 class="mb-0">작성자 정보</h6>
           </div>
           <div class="card-body text-center">
-            <div class="avatar-circle mx-auto mb-3" style="width: 60px; height: 60px; font-size: 24px;">
-              <i class="fas fa-user"></i>
-            </div>
-            <h6><%= post.author.name %></h6>
-            <p class="text-muted small mb-0">
+            <% if (post.author.profilePhoto) { %>
+              <img src="<%= post.author.profilePhoto %>" alt="프로필 사진" 
+                   class="rounded-circle mx-auto mb-3" style="width: 60px; height: 60px; object-fit: cover;">
+            <% } else { %>
+              <div class="avatar-circle mx-auto mb-3" style="width: 60px; height: 60px; font-size: 24px;">
+                <i class="fas fa-user"></i>
+              </div>
+            <% } %>
+        <h6 class="mb-2">
+          <%= post.author.name %>
+        </h6>
+        <% if (post.author.role === 'admin') { %>
+          <div class="mb-3">
+            <span class="badge bg-warning text-dark" style="font-size: 0.7rem;">
+              <i class="fas fa-crown me-1"></i>관리자
+            </span>
+          </div>
+        <% } else if (post.author.communityLevel && post.author.communityLevel.level) { %>
+          <div class="mb-3">
+            <span class="badge <%= post.author.communityLevel.level === 1 ? 'bg-secondary' : post.author.communityLevel.level === 2 ? 'level-2-silver' : post.author.communityLevel.level === 3 ? 'bg-warning text-dark' : post.author.communityLevel.level === 4 ? 'level-4-platinum' : 'level-5-diamond' %>" style="font-size: 0.7rem;">
+              <i class="<%= post.author.communityLevel.level === 1 ? 'fas fa-medal' : post.author.communityLevel.level === 2 ? 'fas fa-medal' : post.author.communityLevel.level === 3 ? 'fas fa-medal' : post.author.communityLevel.level === 4 ? 'fas fa-gem' : 'fas fa-crown' %> me-1"></i>
+              <%= post.author.communityLevel.title %>
+            </span>
+          </div>
+        <% } %>
+            <p class="text-muted small mb-2">
               <%= new Date(post.author.createdAt).toLocaleDateString('ko-KR', {year: 'numeric', month: 'long'}) %> 가입
             </p>
+            <% if (post.author.communityLevel && post.author.communityLevel.experience) { %>
+              <div class="mb-2">
+                <small class="text-muted">경험치: <%= post.author.communityLevel.experience %>XP</small>
+                <div class="progress mt-1" style="height: 6px;">
+                  <div class="progress-bar bg-warning" role="progressbar" 
+                       style="width: <%= post.author.getLevelProgress ? post.author.getLevelProgress().progress : 0 %>%"></div>
+                </div>
+              </div>
+            <% } %>
+            <% if (post.author.activityStats) { %>
+              <div class="row text-center">
+                <div class="col-4">
+                  <small class="text-muted d-block">게시글</small>
+                  <strong class="text-primary"><%= post.author.activityStats.postsCount || 0 %></strong>
+                </div>
+                <div class="col-4">
+                  <small class="text-muted d-block">댓글</small>
+                  <strong class="text-success"><%= post.author.activityStats.commentsCount || 0 %></strong>
+                </div>
+                <div class="col-4">
+                  <small class="text-muted d-block">좋아요</small>
+                  <strong class="text-danger"><%= post.author.activityStats.likesReceived || 0 %></strong>
+                </div>
+              </div>
+            <% } %>
           </div>
         </div>
 
         <!-- 최근 게시글 -->
         <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white">
-            <h6 class="mb-0">최근 게시글</h6>
+          <div class="card-header bg-white border-0 pb-0">
+            <h6 class="mb-0 d-flex align-items-center">
+              <i class="fas fa-clock me-2 text-primary"></i>최근 게시글
+            </h6>
           </div>
-          <div class="card-body">
-            <div class="text-center text-muted small">
-              <i class="fas fa-clock"></i>
-              <p class="mb-0">곧 업데이트될 예정입니다</p>
-            </div>
+          <div class="card-body pt-3">
+            <% if (recentPosts && recentPosts.length > 0) { %>
+              <div class="recent-posts-list">
+                <% recentPosts.forEach((recentPost, index) => { %>
+                  <div class="recent-post-item <%= index < recentPosts.length - 1 ? 'mb-3 pb-3 border-bottom' : '' %>">
+                    <div class="d-flex align-items-start gap-3">
+                      <!-- 카테고리 배지 -->
+                      <div class="category-badge-container">
+                        <span class="category-badge 
+                          <%= recentPost.category === 'notice' ? 'badge-notice' : 
+                              recentPost.category === 'info' ? 'badge-info' :
+                              recentPost.category === 'qna' ? 'badge-qna' : 'badge-general' %>">
+                          <%= recentPost.category === 'general' ? '자유' :
+                              recentPost.category === 'info' ? '정보' :
+                              recentPost.category === 'notice' ? '공지' :
+                              recentPost.category === 'qna' ? 'Q&A' : recentPost.category %>
+                        </span>
+                      </div>
+                      
+                      <!-- 게시글 정보 -->
+                      <div class="post-info flex-grow-1">
+                        <div class="post-title-container mb-2">
+                          <h6 class="post-title mb-0">
+                            <a href="/posts/<%= recentPost._id %>" class="text-decoration-none text-dark">
+                              <%= recentPost.title.length > 30 ? recentPost.title.substring(0, 30) + '...' : recentPost.title %>
+                              <% if (recentPost.isPrivate) { %>
+                                <i class="fas fa-lock text-warning ms-1" title="비밀글"></i>
+                              <% } %>
+                            </a>
+                          </h6>
+                        </div>
+                        
+                        <div class="post-meta d-flex justify-content-between align-items-center">
+                          <div class="author-info d-flex align-items-center">
+                            <i class="fas fa-user-circle me-1 text-muted"></i>
+                            <small class="text-muted"><%= recentPost.author.name %></small>
+                          </div>
+                          <div class="date-info">
+                            <small class="text-muted">
+                              <%= new Date(recentPost.createdAt).toLocaleDateString('ko-KR', {
+                                month: 'short',
+                                day: 'numeric'
+                              }) %>
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+              
+              <div class="text-center mt-4">
+                <a href="/posts" class="btn btn-outline-primary btn-sm px-4">
+                  <i class="fas fa-list me-2"></i>전체 게시글 보기
+                </a>
+              </div>
+            <% } else { %>
+              <div class="empty-state text-center py-4">
+                <div class="empty-icon mb-3">
+                  <i class="fas fa-newspaper fa-3x text-muted opacity-50"></i>
+                </div>
+                <p class="text-muted mb-3">최근 게시글이 없습니다</p>
+                <a href="/posts" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-plus me-2"></i>첫 게시글 작성하기
+                </a>
+              </div>
+            <% } %>
           </div>
         </div>
       </div>
@@ -341,11 +575,137 @@
   .youtube-container {
     margin: 1rem 0;
   }
+  
+  /* 최근 게시글 스타일 */
+  .recent-posts-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .recent-post-item {
+    transition: all 0.2s ease;
+  }
+  
+  .recent-post-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 8px;
+    margin: -8px;
+  }
+  
+  .category-badge-container {
+    flex-shrink: 0;
+    width: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 2px;
+  }
+  
+  .category-badge {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 50px;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  
+  .badge-notice {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+  }
+  
+  .badge-info {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    color: white;
+  }
+  
+  .badge-qna {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+  }
+  
+  .badge-general {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+  }
+  
+  .post-info {
+    min-width: 0;
+  }
+  
+  .post-title {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+  
+  .post-title a {
+    transition: color 0.2s ease;
+  }
+  
+  .post-title a:hover {
+    color: #0d6efd !important;
+  }
+  
+  .post-meta {
+    font-size: 0.8rem;
+  }
+  
+  .author-info {
+    color: #6c757d;
+  }
+  
+  .date-info {
+    color: #6c757d;
+  }
+  
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-icon {
+    opacity: 0.3;
+  }
+
+  /* 등급별 배지 스타일 */
+  .level-2-silver {
+    background: linear-gradient(45deg, #c0c0c0, #e8e8e8) !important;
+    color: #333 !important;
+    border: 1px solid #b0b0b0 !important;
+  }
+
+  .level-4-platinum {
+    background: linear-gradient(45deg, #8e44ad, #9b59b6, #e74c3c) !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2) !important;
+  }
+
+  .level-5-diamond {
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57) !important;
+    background-size: 300% 300% !important;
+    animation: diamondShine 3s ease-in-out infinite !important;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  }
+
+  @keyframes diamondShine {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
 </style>
 
 <script>
 // 좋아요 상태 초기화
-let isLiked = <%= user && post.likes.includes(user._id) ? 'true' : 'false' %>;
+let isLiked = false;
+<% if (user && post.isLiked) { %>
+isLiked = true;
+<% } %>
 updateLikeButton();
 
 // 좋아요 토글

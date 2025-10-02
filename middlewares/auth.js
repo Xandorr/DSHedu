@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
 // Protect routes
 exports.protect = async (req, res, next) => {
@@ -123,57 +124,44 @@ exports.requireAuth = async (req, res, next) => {
 
 // Require authentication for JSON responses
 exports.requireAuthJson = async (req, res, next) => {
-  let token;
+  console.log('🔍 requireAuthJson 미들웨어 디버깅:');
+  console.log('  req.user:', req.user ? `${req.user.name} (${req.user.email})` : 'undefined');
+  console.log('  req.isAuthenticated():', req.isAuthenticated ? req.isAuthenticated() : 'method not available');
+  console.log('  req.session exists:', !!req.session);
+  console.log('  req.session.passport:', req.session && req.session.passport ? req.session.passport : 'undefined');
 
-  // Check if user is already authenticated via passport
-  if (req.user) {
+  // First check if user is already authenticated via passport
+  if (req.user && req.isAuthenticated && req.isAuthenticated()) {
+    console.log('✅ 사용자 인증됨 (passport):', req.user.name);
     return next();
   }
 
-  // Check session
+  // Check passport session directly
+  if (req.session && req.session.passport && req.session.passport.user) {
+    try {
+      console.log('🔍 passport 세션에서 사용자 ID 발견:', req.session.passport.user);
+      const User = require('../models/User');
+      const user = await User.findById(req.session.passport.user);
+      if (user) {
+        console.log('✅ 사용자 인증됨 (passport session):', user.name);
+        req.user = user;
+        return next();
+      }
+    } catch (error) {
+      console.log('❌ passport 세션 사용자 조회 실패:', error.message);
+    }
+  }
+
+  // Check regular session
   if (req.session && req.session.user) {
+    console.log('✅ 사용자 인증됨 (session):', req.session.user.name);
     req.user = req.session.user;
     return next();
   }
 
-  // Check if token exists in authorization header
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  } else if (req.cookies && req.cookies.token) {
-    // Or check if token exists in cookies
-    token = req.cookies.token;
-  }
-
-  // If no token, return unauthorized
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Authentication required'
-    });
-  }
-
-  try {
-    // Verify token (if JWT is being used)
-    if (process.env.JWT_SECRET) {
-      const jwt = require('jsonwebtoken');
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-      // Add user to req object
-      req.user = await User.findById(decoded.id).select('-password');
-      next();
-    } else {
-      return res.status(401).json({
-        success: false,
-        message: 'JWT not configured'
-      });
-    }
-  } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid token'
-    });
-  }
+  console.log('❌ 인증 실패 - 401 응답');
+  return res.status(401).json({
+    success: false,
+    message: 'Authentication required'
+  });
 }; 

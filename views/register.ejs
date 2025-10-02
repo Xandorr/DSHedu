@@ -22,22 +22,18 @@
   <!-- Main Content -->
   <main>
     <!-- Register Section -->
-    <section class="register-section position-relative py-5">
-      <div class="register-bg position-absolute w-100 h-100">
-        <div class="gradient-overlay"></div>
-      </div>
-      
-      <div class="container position-relative">
+    <section class="register-section py-5">
+      <div class="container">
         <div class="row justify-content-center align-items-center min-vh-100">
-          <div class="col-lg-6 col-md-8">
+          <div class="col-lg-5 col-md-7">
             <div class="register-card bg-white rounded-5 shadow-lg p-5 mx-auto">
               <!-- Logo & Brand -->
               <div class="text-center mb-4">
                 <div class="brand-logo mb-3">
                   <h2 class="fw-bold text-primary mb-0">DSH<span class="text-secondary">에듀</span></h2>
                 </div>
-                <h4 class="fw-semi-bold mb-2">Join Our Community</h4>
-                <p class="text-muted mb-0">새로운 학습 여정을 시작하세요</p>
+                <h4 class="fw-semi-bold mb-2">Dreams Start Here</h4>
+                <p class="text-muted mb-0">새로운 계정을 만들어 서비스를 이용하세요</p>
               </div>
 
               <!-- Register Form -->
@@ -64,6 +60,16 @@
                   <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="name@example.com" required>
                   <label for="email"><i class="fas fa-envelope me-2"></i>이메일 주소</label>
                   <div class="invalid-feedback">올바른 이메일 주소를 입력해주세요.</div>
+                </div>
+
+                <div class="form-floating mb-3">
+                  <select class="form-select form-select-lg" id="role" name="role" required>
+                    <option value="">역할을 선택하세요</option>
+                    <option value="parent">학부모</option>
+                    <option value="student">학생</option>
+                  </select>
+                  <label for="role"><i class="fas fa-user-tag me-2"></i>역할</label>
+                  <div class="invalid-feedback">역할을 선택해주세요.</div>
                 </div>
 
                 <div class="row">
@@ -132,8 +138,8 @@
                 <span class="divider-text bg-white px-3 text-muted">또는</span>
               </div>
 
-              <!-- Social Register -->
-              <div class="social-register">
+              <!-- Social Login -->
+              <div class="social-login">
                 <div class="d-grid gap-3">
                   <a href="/auth/kakao" class="btn btn-outline-warning btn-lg rounded-pill social-btn">
                     <div class="d-flex align-items-center">
@@ -238,40 +244,14 @@
   <style>
     .register-section {
       min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-
-    .register-bg {
-      top: 0;
-      left: 0;
-      background: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
-    }
-
-    .gradient-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(79, 172, 254, 0.85) 0%, rgba(0, 242, 254, 0.75) 100%);
+      background: #ffffff;
     }
 
     .register-card {
-      max-width: 600px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      animation: fadeInUp 0.8s ease-out;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      max-width: 480px;
+      border: 1px solid #e9ecef;
+      background: #ffffff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .brand-logo h2 {
@@ -284,7 +264,6 @@
       border-radius: 12px;
       padding: 1.625rem 0.75rem 0.625rem;
       height: auto;
-      transition: all 0.3s ease;
     }
 
     .form-floating > .form-control:focus {
@@ -299,39 +278,14 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      background: #007bff;
       border: none;
       font-size: 1.1rem;
       letter-spacing: 0.5px;
-      transition: all 0.3s ease;
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
-    }
-
-    .terms-section {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 1.5rem;
-      border: 1px solid #e9ecef;
-    }
-
-    .terms-detail {
-      border-left: 3px solid #4facfe;
-      padding-left: 1rem !important;
-      margin-left: 0.5rem;
-    }
-
-    .form-check-input {
-      border-radius: 4px;
-      border: 2px solid #dee2e6;
-    }
-
-    .form-check-input:checked {
-      background-color: #4facfe;
-      border-color: #4facfe;
+      background: #0056b3;
     }
 
     .divider-container {
@@ -354,18 +308,16 @@
     .social-btn {
       padding: 0.875rem 1.5rem;
       border-width: 2px;
-      transition: all 0.3s ease;
       font-size: 1rem;
-      position: relative;
     }
 
     .social-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      opacity: 0.9;
     }
 
     .social-btn .d-flex {
-      padding-left: 20px;
+      justify-content: center;
+      position: relative;
     }
 
     .btn-outline-warning:hover {
@@ -386,19 +338,19 @@
       color: white;
     }
 
-    /* Social Icons */
+    /* Social Login Icons */
     .social-icon {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       width: 28px;
       height: 28px;
+      position: absolute;
+      left: 20px;
       border-radius: 50%;
       font-weight: 700;
       font-size: 1.1rem;
       color: white;
-      position: absolute;
-      left: 20px;
     }
 
     .kakao-icon {
@@ -435,51 +387,22 @@
       font-weight: 600;
     }
 
-    .modal-content {
-      border-radius: 15px;
-      border: none;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .modal-header {
-      border-bottom: 1px solid #e9ecef;
+    .terms-section {
+      background: #f8f9fa;
+      border-radius: 12px;
       padding: 1.5rem;
+      border: 1px solid #e9ecef;
     }
 
-    .modal-body {
-      padding: 1.5rem;
-      max-height: 400px;
-      overflow-y: auto;
+    /* 입력 필드 텍스트 크기 조정 */
+    #name, #email, #phone, #role {
+      font-size: 0.85rem;
+    }
+    
+    #role option {
+      font-size: 0.85rem;
     }
 
-    .terms-content h6,
-    .privacy-content h6 {
-      color: #4facfe;
-      font-weight: 600;
-      margin-top: 1.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .terms-content h6:first-child,
-    .privacy-content h6:first-child {
-      margin-top: 0;
-    }
-
-    @media (max-width: 768px) {
-      .register-card {
-        margin: 1rem;
-        padding: 2rem 1.5rem;
-      }
-      
-      .brand-logo h2 {
-        font-size: 2rem;
-      }
-
-      .terms-detail {
-        padding-left: 0.5rem !important;
-        margin-left: 0.25rem;
-      }
-    }
   </style>
 
   <script>
@@ -530,6 +453,24 @@
 
       password.addEventListener('change', validatePassword);
       confirmPassword.addEventListener('keyup', validatePassword);
+
+      // Role selection debugging
+      const roleSelect = document.getElementById('role');
+      if (roleSelect) {
+        roleSelect.addEventListener('change', function() {
+          console.log('역할 선택됨:', this.value);
+        });
+      }
+
+      // Form submission debugging
+      const form = document.querySelector('.register-form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          const roleValue = document.getElementById('role').value;
+          console.log('폼 제출 시 역할 값:', roleValue);
+          console.log('폼 데이터:', new FormData(this));
+        });
+      }
 
       // Terms agreement handling
       const termsAll = document.getElementById('termsAll');

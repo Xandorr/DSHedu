@@ -316,6 +316,15 @@ exports.createProgramAdmin = async (req, res) => {
       });
     }
     
+    // 웹 URL 이미지 처리
+    if (req.body.imageUrls && Array.isArray(req.body.imageUrls)) {
+      req.body.imageUrls.forEach(url => {
+        if (url && url.trim()) {
+          photos.push(url.trim());
+        }
+      });
+    }
+    
     // 할인 계산
     const originalPrice = parseFloat(req.body.originalPrice) || 0;
     const discountPercent = parseFloat(req.body.discountPercent) || 0;
@@ -329,9 +338,9 @@ exports.createProgramAdmin = async (req, res) => {
       category: req.body.category,
       location: {
         name: req.body.locationName,
-        address: req.body.locationAddress,
+        address: req.body.locationAddress, // 주/도와 주소가 합쳐진 전체 주소
         city: req.body.locationCity,
-        state: req.body.locationState,
+        state: '', // 더 이상 사용하지 않음
         country: req.body.locationCountry || 'USA'
       },
       ageRange: {
@@ -346,10 +355,12 @@ exports.createProgramAdmin = async (req, res) => {
       price: finalPrice,
       currency: req.body.currency || 'USD',
       capacity: parseInt(req.body.capacity),
+      sortOrder: parseInt(req.body.sortOrder) || 0,
       activities: req.body.activities ? req.body.activities.split(',').map(a => a.trim()) : [],
+      features: req.body.features ? JSON.parse(req.body.features) : [],
       photos: photos,
       featured: req.body.featured === 'on' || req.body.featured === 'true',
-      isActive: req.body.isActive !== 'false'
+      isActive: req.body.isActive === 'true'
     };
     
     // 강사 정보 처리
@@ -389,6 +400,7 @@ exports.updateProgramAdmin = async (req, res) => {
       title: req.body.title,
       originalPrice: req.body.originalPrice,
       discountPercent: req.body.discountPercent,
+      sortOrder: req.body.sortOrder,
       files: req.files ? req.files.length : 0,
       method: req.body._method || req.method
     });
@@ -414,11 +426,23 @@ exports.updateProgramAdmin = async (req, res) => {
       });
     }
     
-    // 새로운 이미지 파일 처리
+    // 새로운 이미지 파일 처리 (기존 이미지 유지 + 새 파일 추가)
     let photos = program.photos || [];
     if (req.files && req.files.length > 0) {
       const newPhotos = req.files.map(file => `/uploads/programs/${file.filename}`);
       photos = [...photos, ...newPhotos];
+    }
+    
+    // 웹 URL 이미지 처리 (새로 추가된 URL만)
+    if (req.body.imageUrls && Array.isArray(req.body.imageUrls)) {
+      req.body.imageUrls.forEach(url => {
+        if (url && url.trim()) {
+          // 중복 체크: 이미 존재하는 URL인지 확인
+          if (!photos.includes(url.trim())) {
+            photos.push(url.trim());
+          }
+        }
+      });
     }
     
     // 할인 계산
@@ -433,6 +457,13 @@ exports.updateProgramAdmin = async (req, res) => {
       discountedPrice,
       finalPrice
     });
+    
+    console.log('🔍 isActive 필드 디버깅:', {
+      'req.body.isActive': req.body.isActive,
+      'typeof req.body.isActive': typeof req.body.isActive,
+      'req.body.isActive === "true"': req.body.isActive === 'true',
+      '최종 isActive 값': req.body.isActive === 'true'
+    });
 
     // 프로그램 데이터 업데이트
     const updateData = {
@@ -441,9 +472,9 @@ exports.updateProgramAdmin = async (req, res) => {
       category: req.body.category,
       location: {
         name: req.body.locationName,
-        address: req.body.locationAddress,
+        address: req.body.locationAddress, // 주/도와 주소가 합쳐진 전체 주소
         city: req.body.locationCity,
-        state: req.body.locationState,
+        state: '', // 더 이상 사용하지 않음
         country: req.body.locationCountry || 'USA'
       },
       ageRange: {
@@ -458,10 +489,12 @@ exports.updateProgramAdmin = async (req, res) => {
       price: finalPrice,
       currency: req.body.currency || 'USD',
       capacity: parseInt(req.body.capacity),
+      sortOrder: parseInt(req.body.sortOrder) || 0,
       activities: req.body.activities ? req.body.activities.split(',').map(a => a.trim()) : [],
+      features: req.body.features ? JSON.parse(req.body.features) : [],
       photos: photos,
       featured: req.body.featured === 'on' || req.body.featured === 'true',
-      isActive: req.body.isActive !== 'false'
+      isActive: req.body.isActive === 'true'
     };
     
     // 강사 정보 처리
@@ -479,7 +512,11 @@ exports.updateProgramAdmin = async (req, res) => {
       { new: true, runValidators: true }
     );
     
-    console.log('✅ 프로그램 수정 완료:', updatedProgram.title);
+    console.log('✅ 프로그램 수정 완료:', {
+      title: updatedProgram.title,
+      isActive: updatedProgram.isActive,
+      'isActive 타입': typeof updatedProgram.isActive
+    });
     
     res.json({
       success: true,
@@ -518,12 +555,22 @@ exports.deleteProgramAdmin = async (req, res) => {
       });
     }
     
-    // 프로그램 이미지 파일 삭제
+    // 프로그램 이미지 파일 삭제 (로컬 파일만)
     if (program.photos && program.photos.length > 0) {
       program.photos.forEach(photo => {
-        const filePath = path.join(__dirname, '..', 'public', photo);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        // 로컬 파일인 경우만 파일 시스템에서 삭제
+        if (photo.startsWith('/uploads/')) {
+          const filePath = path.join(__dirname, '..', 'public', photo);
+          if (fs.existsSync(filePath)) {
+            try {
+              fs.unlinkSync(filePath);
+              console.log('✅ 로컬 이미지 파일 삭제:', filePath);
+            } catch (fileError) {
+              console.warn('⚠️ 로컬 파일 삭제 실패:', fileError.message);
+            }
+          }
+        } else {
+          console.log('🌐 웹 URL 이미지 (파일 시스템에서 제거하지 않음):', photo);
         }
       });
     }
@@ -542,6 +589,82 @@ exports.deleteProgramAdmin = async (req, res) => {
     res.status(500).json({
       success: false,
       message: '프로그램 삭제 중 오류가 발생했습니다.',
+      error: error.message
+    });
+  }
+};
+
+// 프로그램 이미지 삭제 (관리자용)
+exports.deleteProgramImage = async (req, res) => {
+  try {
+    console.log('🗑️ 프로그램 이미지 삭제 요청:', req.params.id);
+    console.log('📷 삭제할 이미지 URL:', req.body.imageUrl);
+    
+    // 관리자 권한 확인
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: '관리자 권한이 필요합니다.'
+      });
+    }
+    
+    const program = await Program.findById(req.params.id);
+    if (!program) {
+      return res.status(404).json({
+        success: false,
+        message: '프로그램을 찾을 수 없습니다.'
+      });
+    }
+    
+    const imageUrl = req.body.imageUrl;
+    if (!imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: '삭제할 이미지 URL이 필요합니다.'
+      });
+    }
+    
+    // 이미지가 프로그램의 photos 배열에 있는지 확인
+    const imageIndex = program.photos.indexOf(imageUrl);
+    if (imageIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: '해당 이미지를 찾을 수 없습니다.'
+      });
+    }
+    
+    // 파일 시스템에서 이미지 파일 삭제 (로컬 파일인 경우만)
+    if (imageUrl.startsWith('/uploads/')) {
+      const filePath = path.join(__dirname, '..', 'public', imageUrl);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          console.log('✅ 파일 시스템에서 이미지 삭제 완료:', filePath);
+        } catch (fileError) {
+          console.warn('⚠️ 파일 삭제 실패 (계속 진행):', fileError.message);
+        }
+      }
+    } else {
+      console.log('🌐 웹 URL 이미지 삭제 (파일 시스템에서 제거하지 않음):', imageUrl);
+    }
+    
+    // 데이터베이스에서 이미지 URL 제거
+    program.photos.splice(imageIndex, 1);
+    await program.save();
+    
+    console.log('✅ 데이터베이스에서 이미지 URL 제거 완료');
+    
+    res.json({
+      success: true,
+      message: '이미지가 성공적으로 삭제되었습니다.',
+      remainingImages: program.photos.length
+    });
+    
+  } catch (error) {
+    console.error('❌ 이미지 삭제 오류:', error);
+    res.status(500).json({
+      success: false,
+      message: '이미지 삭제 중 오류가 발생했습니다.',
       error: error.message
     });
   }

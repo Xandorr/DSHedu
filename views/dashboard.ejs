@@ -32,7 +32,12 @@
         <div class="bg-primary text-white rounded p-4 mb-4">
           <div class="d-flex align-items-center">
             <div class="me-3">
-              <i class="fas fa-tachometer-alt fa-3x"></i>
+              <% if (user.profilePhoto) { %>
+                <img src="<%= user.profilePhoto %>" alt="프로필 사진" 
+                     class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+              <% } else { %>
+                <i class="fas fa-tachometer-alt fa-3x"></i>
+              <% } %>
             </div>
             <div>
               <h1 class="mb-0" data-i18n="welcomeBack">환영합니다!</h1>

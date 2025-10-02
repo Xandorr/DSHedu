@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# 사이트맵 위치
+Sitemap: https://yourdomain.com/sitemap.xml
+
+# RSS 피드
+Allow: /rss.xml
+
+# 크롤링 금지 경로
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /my-enrollments/
+Disallow: /uploads/profiles/
+Disallow: /api/
+
+# 크롤링 허용 경로
+Allow: /posts/
+Allow: /programs/
+Allow: /about
+Allow: /contact
+Allow: /images/
+Allow: /css/
+Allow: /js/
