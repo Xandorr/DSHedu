@@ -981,20 +981,45 @@ app.get('/programs/:id', async (req, res) => {
   try {
     const programId = req.params.id;
     console.log('📖 프로그램 상세 페이지 접속, 사용자:', req.user ? req.user.name : '비회원');
+    console.log('🔍 찾는 프로그램 ID:', programId);
     
-    // MongoDB에서 프로그램 찾기
-    const program = await Program.findById(programId);
+    // MongoDB에서 프로그램 찾기 - 여러 방법 시도
+    let program = await Program.findById(programId);
     
     if (!program) {
-      console.log('❌ 프로그램을 찾을 수 없음:', programId);
+      console.log('❌ findById로 찾을 수 없음, 다른 방법 시도');
+      // ObjectId로 변환해서 시도
+      try {
+        const objectId = new mongoose.Types.ObjectId(programId);
+        program = await Program.findById(objectId);
+      } catch (objectIdError) {
+        console.log('❌ ObjectId 변환 실패:', objectIdError.message);
+      }
+    }
+    
+    if (!program) {
+      console.log('❌ ObjectId로도 찾을 수 없음, findOne 시도');
+      program = await Program.findOne({ _id: programId });
+    }
+    
+    if (!program) {
+      console.log('❌ 모든 방법으로 찾을 수 없음:', programId);
+      
+      // 사용 가능한 프로그램 목록 표시
+      const availablePrograms = await Program.find({ isActive: true }).limit(5);
+      console.log('📋 사용 가능한 프로그램들:');
+      availablePrograms.forEach(p => {
+        console.log(`   - ${p.title} (ID: ${p._id})`);
+      });
+      
       return res.status(404).render('error', { 
         title: '프로그램을 찾을 수 없습니다',
-        message: '요청하신 프로그램을 찾을 수 없습니다.',
+        message: '요청하신 프로그램을 찾을 수 없습니다. 프로그램 목록에서 다른 프로그램을 확인해보세요.',
         user: req.user
       });
     }
     
-    console.log('📊 프로그램 상세 로드:', {
+    console.log('✅ 프로그램 찾음:', {
       id: program._id,
       title: program.title,
       price: program.price
@@ -1009,22 +1034,9 @@ app.get('/programs/:id', async (req, res) => {
   } catch (error) {
     console.error('❌ 프로그램 상세 페이지 로드 오류:', error);
     
-    // 에러 시 정적 데이터 사용 (fallback)
-    const programId = req.params.id;
-    const program = getProgramById(programId);
-    
-    if (!program) {
-      return res.status(404).render('error', { 
-        title: '프로그램을 찾을 수 없습니다',
-        message: '요청하신 프로그램을 찾을 수 없습니다.',
-        user: req.user
-      });
-    }
-    
-    res.render('program-detail', { 
-      title: program.title,
-      description: program.description,
-      program: program,
+    return res.status(500).render('error', { 
+      title: '서버 오류',
+      message: '프로그램을 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
       user: req.user
     });
   }

@@ -43,25 +43,26 @@ const programSchema = new mongoose.Schema({
 
 const Program = mongoose.model('Program', programSchema);
 
-async function checkPrograms() {
+async function debugProgram3() {
   try {
     console.log('🔗 MongoDB 연결 중...');
     
-    const programs = await Program.find({});
-    console.log(`📊 총 프로그램 수: ${programs.length}`);
-    
-    if (programs.length > 0) {
-      console.log('\n📋 프로그램 목록:');
-      programs.forEach((program, index) => {
-        console.log(`${index + 1}. ${program.title} (ID: ${program._id})`);
-        console.log(`   - 활성화: ${program.isActive}`);
-        console.log(`   - 카테고리: ${program.category}`);
-        console.log(`   - 가격: $${program.price || program.originalPrice}`);
-        console.log(`   - 이미지: ${program.photos ? program.photos.length : 0}개`);
-        console.log('');
-      });
-    } else {
-      console.log('❌ 프로그램이 없습니다.');
+    // 첫 번째 프로그램의 실제 ID 확인
+    const firstProgram = await Program.findOne({});
+    if (firstProgram) {
+      console.log('📊 첫 번째 프로그램 정보:');
+      console.log('   - 제목:', firstProgram.title);
+      console.log('   - ID:', firstProgram._id);
+      console.log('   - ID 타입:', typeof firstProgram._id);
+      console.log('   - ID 문자열:', firstProgram._id.toString());
+      
+      // 이 ID로 다시 찾기
+      const foundProgram = await Program.findById(firstProgram._id);
+      console.log('🔍 같은 ID로 다시 찾기:', foundProgram ? '성공' : '실패');
+      
+      // 문자열로 찾기
+      const foundByString = await Program.findById(firstProgram._id.toString());
+      console.log('🔍 문자열 ID로 찾기:', foundByString ? '성공' : '실패');
     }
     
   } catch (error) {
@@ -72,4 +73,4 @@ async function checkPrograms() {
   }
 }
 
-checkPrograms();
+debugProgram3();
