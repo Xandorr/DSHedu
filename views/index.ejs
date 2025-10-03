@@ -791,6 +791,18 @@
         border: 2px solid rgba(24, 45, 100, 0.1) !important;
         backdrop-filter: blur(10px) !important;
         -webkit-backdrop-filter: blur(10px) !important;
+        opacity: 1 !important; /* 항상 활성화 */
+        pointer-events: auto !important; /* 항상 클릭 가능 */
+        cursor: pointer !important;
+      }
+      
+      /* 비활성화 상태 강제 해제 */
+      .swiper-button-disabled {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        cursor: pointer !important;
+        color: #182D64 !important;
+        background: rgba(255, 255, 255, 0.95) !important;
       }
       
       .swiper-button-next:after,
@@ -878,7 +890,7 @@
         const programSwiper = new Swiper('.program-swiper', {
           slidesPerView: 1,
           spaceBetween: 30,
-          loop: false,
+          loop: true, // 무한 루프 활성화
           initialSlide: 0,
           speed: 600,
           allowTouchMove: true,
