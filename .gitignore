@@ -83,3 +83,4 @@ Thumbs.db
 *.tar.gz
 *.zip
 *.rar
+.env
