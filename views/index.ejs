@@ -795,9 +795,33 @@
       
       .swiper-button-next:after,
       .swiper-button-prev:after {
-        font-size: 1.4rem !important;
-        font-weight: 600 !important;
-        text-shadow: none !important;
+        content: '' !important;
+        display: none !important;
+      }
+      
+      /* 커스텀 화살표 아이콘 */
+      .swiper-button-next::before {
+        content: '\f054' !important;
+        font-family: 'Font Awesome 6 Free' !important;
+        font-weight: 900 !important;
+        font-size: 1.2rem !important;
+        color: inherit !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+      }
+      
+      .swiper-button-prev::before {
+        content: '\f053' !important;
+        font-family: 'Font Awesome 6 Free' !important;
+        font-weight: 900 !important;
+        font-size: 1.2rem !important;
+        color: inherit !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
       }
       
       .swiper-button-next:hover,
