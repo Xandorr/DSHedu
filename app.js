@@ -989,7 +989,7 @@ app.get('/programs/:id', async (req, res) => {
       console.log('❌ 프로그램을 찾을 수 없음:', programId);
       return res.status(404).render('error', { 
         title: '프로그램을 찾을 수 없습니다',
-        description: '요청하신 프로그램을 찾을 수 없습니다.',
+        message: '요청하신 프로그램을 찾을 수 없습니다.',
         user: req.user
       });
     }
@@ -1016,7 +1016,7 @@ app.get('/programs/:id', async (req, res) => {
     if (!program) {
       return res.status(404).render('error', { 
         title: '프로그램을 찾을 수 없습니다',
-        description: '요청하신 프로그램을 찾을 수 없습니다.',
+        message: '요청하신 프로그램을 찾을 수 없습니다.',
         user: req.user
       });
     }
