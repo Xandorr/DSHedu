@@ -1104,12 +1104,19 @@ app.post('/api/contact', async (req, res) => {
 
 
 // MongoDB 연결
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dsh_edu', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log('MongoDB 연결 성공'))
-.catch(err => console.error('MongoDB 연결 실패:', err));
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => console.log('MongoDB 연결 성공'))
+  .catch(err => {
+    console.error('MongoDB 연결 실패:', err);
+    console.log('⚠️ MongoDB 없이 서버 시작');
+  });
+} else {
+  console.log('⚠️ MONGODB_URI 환경변수가 설정되지 않음 - MongoDB 없이 서버 시작');
+}
 
 // User 모델은 models/User.js에서 import됨
 
