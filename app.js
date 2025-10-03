@@ -56,6 +56,7 @@ app.use(methodOverride('_method'));
 
 // Set view engine
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 // CSP 헤더 완전 제거 미들웨어 (최강 버전)
 app.use((req, res, next) => {
@@ -336,16 +337,22 @@ app.get('/', async (req, res) => {
   } catch (error) {
     console.error('❌ 메인 페이지 로드 오류:', error);
     
-    // 에러 시 정적 데이터 사용 (fallback)
-    const featuredPrograms = getFeaturedPrograms();
-    res.render('index', { 
-      title: 'US Summer & Winter Camps for Korean Students',
-      description: 'Discover enriching camp programs for Korean students in the United States',
-      featuredPrograms: featuredPrograms,
-      programs: programs,
-      featuredPosts: [],
-      user: req.user
-    });
+    // MongoDB 연결 실패 시 기본 데이터로 렌더링
+    try {
+      const featuredPrograms = getFeaturedPrograms();
+      res.render('index', { 
+        title: 'US Summer & Winter Camps for Korean Students',
+        description: 'Discover enriching camp programs for Korean students in the United States',
+        featuredPrograms: featuredPrograms,
+        programs: featuredPrograms,
+        featuredPosts: [],
+        user: req.user,
+        req: req
+      });
+    } catch (renderError) {
+      console.error('❌ 렌더링 실패:', renderError);
+      res.status(500).send('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    }
   }
 });
 
@@ -1107,7 +1114,15 @@ app.post('/api/contact', async (req, res) => {
 if (process.env.MONGODB_URI) {
   mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000, // 30초로 증가
+    socketTimeoutMS: 45000, // 45초로 증가
+    bufferMaxEntries: 0, // 버퍼링 비활성화
+    bufferCommands: false, // 명령 버퍼링 비활성화
+    maxPoolSize: 10, // 연결 풀 크기 제한
+    minPoolSize: 1, // 최소 연결 풀 크기
+    maxIdleTimeMS: 30000, // 유휴 연결 타임아웃
+    connectTimeoutMS: 30000 // 연결 타임아웃
   })
   .then(() => console.log('MongoDB 연결 성공'))
   .catch(err => {
