@@ -91,20 +91,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 세션 설정 (라우트보다 먼저!)
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'dsh_edu_secret',
-  resave: false,
-  saveUninitialized: false, // 보안을 위해 false로 변경
+  secret: process.env.SESSION_SECRET || 'dsh_edu_secret_key_2024',
+  resave: true, // Vercel 서버리스 환경을 위해 true로 변경
+  saveUninitialized: true, // Vercel 서버리스 환경을 위해 true로 변경
   store: process.env.MONGODB_URI ? MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
     touchAfter: 24 * 3600, // 24시간마다 터치
-    ttl: 24 * 60 * 60 // 24시간 TTL
+    ttl: 7 * 24 * 60 * 60 // 7일 TTL로 연장
   }) : undefined, // MongoDB가 없으면 메모리 저장소 사용
   cookie: { 
-    secure: process.env.NODE_ENV === 'production', // production에서는 true
-    maxAge: 24 * 60 * 60 * 1000, // 24시간
-    httpOnly: true,
-    sameSite: 'lax', // CSRF 보호
-    domain: process.env.NODE_ENV === 'production' ? '.dshedu.net' : undefined // production에서만 도메인 설정
+    secure: false, // Vercel에서도 false로 설정 (프록시 때문)
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7일로 연장
+    httpOnly: false, // JavaScript에서 접근 가능하도록
+    sameSite: 'none' // CORS 문제 해결
   },
   name: 'dshedu.session' // 세션 쿠키명 명시
 }));
@@ -113,6 +112,20 @@ app.use(session({
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
+
+// 세션 디버깅 미들웨어
+app.use((req, res, next) => {
+  if (req.path.includes('/login') || req.path.includes('/auth')) {
+    console.log('🔍 세션 디버깅:', {
+      path: req.path,
+      sessionID: req.sessionID,
+      user: req.user ? req.user.email : '없음',
+      isAuthenticated: req.isAuthenticated(),
+      session: req.session ? '존재' : '없음'
+    });
+  }
+  next();
+});
 
 // Passport 직렬화/역직렬화
 passport.serializeUser((user, done) => {
@@ -1461,8 +1474,17 @@ app.post('/auth/login', (req, res, next) => {
       console.log('✅ 로그인 성공:', user.name, user.email);
       console.log('✅ 세션 생성됨, ID:', req.session.id);
       console.log('✅ req.user 설정됨:', !!req.user);
+      console.log('✅ 세션 저장 확인:', req.session.save ? '가능' : '불가능');
       
-      return res.redirect('/login?loginSuccess=true');
+      // 세션을 명시적으로 저장
+      req.session.save((err) => {
+        if (err) {
+          console.log('❌ 세션 저장 오류:', err);
+          return next(err);
+        }
+        console.log('✅ 세션 저장 완료');
+        return res.redirect('/?loginSuccess=true');
+      });
     });
   })(req, res, next);
 });
