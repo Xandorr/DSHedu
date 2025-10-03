@@ -781,25 +781,46 @@
       
       .swiper-button-next,
       .swiper-button-prev {
-        color: #182D64;
-        background: rgba(255, 255, 255, 0.9);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
+        color: #182D64 !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 50% !important;
+        box-shadow: 0 4px 20px rgba(24, 45, 100, 0.15) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border: 2px solid rgba(24, 45, 100, 0.1) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
       }
       
       .swiper-button-next:after,
       .swiper-button-prev:after {
-        font-size: 1.2rem;
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+        text-shadow: none !important;
       }
       
       .swiper-button-next:hover,
       .swiper-button-prev:hover {
-        background: #fff;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        transform: scale(1.05);
+        background: #182D64 !important;
+        color: white !important;
+        box-shadow: 0 8px 25px rgba(24, 45, 100, 0.3) !important;
+        transform: scale(1.1) !important;
+        border-color: #182D64 !important;
+      }
+      
+      .swiper-button-next:active,
+      .swiper-button-prev:active {
+        transform: scale(0.95) !important;
+      }
+      
+      /* 버튼 위치 조정 */
+      .swiper-button-next {
+        right: 10px !important;
+      }
+      
+      .swiper-button-prev {
+        left: 10px !important;
       }
       
       .swiper-pagination-bullet {
@@ -843,7 +864,10 @@
             clickable: true,
             dynamicBullets: true,
           },
-          navigation: false, // 기본 네비게이션 비활성화
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
           breakpoints: {
             576: {
               slidesPerView: 1,
@@ -860,50 +884,9 @@
           }
         });
 
-        // 완전 커스텀 네비게이션
-        const nextButton = document.querySelector('.swiper-button-next');
-        const prevButton = document.querySelector('.swiper-button-prev');
-        
-        // 다음 버튼
-        nextButton.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          const current = programSwiper.activeIndex;
-          const total = programSwiper.slides.length;
-          
-          console.log('Next: current =', current, 'total =', total);
-          
-          if (current >= total - 1) {
-            // 마지막 슬라이드면 첫 번째로
-            programSwiper.slideTo(0, 600);
-            console.log('Going to first slide');
-          } else {
-            // 다음 슬라이드로
-            programSwiper.slideTo(current + 1, 600);
-            console.log('Going to slide', current + 1);
-          }
-        });
-        
-        // 이전 버튼
-        prevButton.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          const current = programSwiper.activeIndex;
-          const total = programSwiper.slides.length;
-          
-          console.log('Prev: current =', current, 'total =', total);
-          
-          if (current <= 0) {
-            // 첫 번째 슬라이드면 마지막으로
-            programSwiper.slideTo(total - 1, 600);
-            console.log('Going to last slide', total - 1);
-          } else {
-            // 이전 슬라이드로
-            programSwiper.slideTo(current - 1, 600);
-            console.log('Going to slide', current - 1);
-          }
+        // Swiper 네비게이션 이벤트 리스너 (선택사항)
+        programSwiper.on('slideChange', function () {
+          console.log('Slide changed to:', this.activeIndex);
         });
 
         // Testimonial Swiper 초기화
