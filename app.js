@@ -1115,14 +1115,12 @@ if (process.env.MONGODB_URI) {
   mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 30000, // 30초로 증가
-    socketTimeoutMS: 45000, // 45초로 증가
-    bufferMaxEntries: 0, // 버퍼링 비활성화
-    bufferCommands: false, // 명령 버퍼링 비활성화
-    maxPoolSize: 10, // 연결 풀 크기 제한
-    minPoolSize: 1, // 최소 연결 풀 크기
-    maxIdleTimeMS: 30000, // 유휴 연결 타임아웃
-    connectTimeoutMS: 30000 // 연결 타임아웃
+    serverSelectionTimeoutMS: 30000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
+    minPoolSize: 1,
+    maxIdleTimeMS: 30000,
+    connectTimeoutMS: 30000
   })
   .then(() => console.log('MongoDB 연결 성공'))
   .catch(err => {
@@ -1759,9 +1757,9 @@ app.get('/auth/google/callback', passport.authenticate('google', {
 }));
 
 
-// Start server without MongoDB
+// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} (MongoDB connection disabled)`);
+  console.log(`Server running on port ${PORT}`);
 });
 
 module.exports = app; 
