@@ -13,6 +13,7 @@ const NaverStrategy = require('passport-naver').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const XLSX = require('xlsx');
@@ -92,11 +93,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dsh_edu_secret',
   resave: false,
-  saveUninitialized: true, // passport 권장 설정
+  saveUninitialized: false, // 보안을 위해 false로 변경
+  store: process.env.MONGODB_URI ? MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    touchAfter: 24 * 3600, // 24시간마다 터치
+    ttl: 24 * 60 * 60 // 24시간 TTL
+  }) : undefined, // MongoDB가 없으면 메모리 저장소 사용
   cookie: { 
-    secure: false, // development에서는 false
+    secure: process.env.NODE_ENV === 'production', // production에서는 true
     maxAge: 24 * 60 * 60 * 1000, // 24시간
-    httpOnly: true
+    httpOnly: true,
+    sameSite: 'lax', // CSRF 보호
+    domain: process.env.NODE_ENV === 'production' ? '.dshedu.net' : undefined // production에서만 도메인 설정
   },
   name: 'dshedu.session' // 세션 쿠키명 명시
 }));
@@ -108,7 +116,7 @@ app.use(passport.session());
 
 // Passport 직렬화/역직렬화
 passport.serializeUser((user, done) => {
-  done(null, user.id);
+  done(null, user._id);
 });
 
 passport.deserializeUser(async (id, done) => {
