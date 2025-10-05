@@ -39,16 +39,14 @@ const programSchema = new mongoose.Schema({
 
 const Program = mongoose.model('Program', programSchema);
 
-// 프로그램별 이미지 URL 매핑
-const programImageMapping = {
-  '유소년 풋볼 캠프': 'https://res.cloudinary.com/dnry0kzyv/image/upload/v1758942044/Gemini_Generated_Image_knjrdjknjrdjknjr_ffwtrn.png',
-  'Play-well LEGO Full Day Session': 'https://res.cloudinary.com/dnry0kzyv/image/upload/v1759118759/Gemini_Generated_Image_30uak430uak430ua_ekqjyy.png',
-  'Y Break Camp': 'https://res.cloudinary.com/dnry0kzyv/image/upload/v1759199116/Gemini_Generated_Image_47a7f347a7f347a7_gln8xw.png',
-  'Montessori School Camp': 'https://res.cloudinary.com/dnry0kzyv/image/upload/v1758942402/Gemini_Generated_Image_izj74vizj74vizj7_mfgyjs.png',
-  'Advanced Mathematics': 'https://res.cloudinary.com/dnry0kzyv/image/upload/v1759119811/Gemini_Generated_Image_ic4b0cic4b0cic4b_hg8xjn.png'
+// 나머지 프로그램별 이미지 URL 매핑
+const remainingProgramImageMapping = {
+  'iDTech STEM 캠프': 'https://res.cloudinary.com/dnry0kzyv/image/upload/v1758853468/Gemini_Generated_Image_rqcolerqcolerqco_bd4f9i.png',
+  'iDTech STEM 캠프 Academies': 'https://images.unsplash.com/photo-1614935151651-0bea6508db6b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
+  '애틀란타 대학 캠퍼스 & 시티 투어': 'https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80'
 };
 
-async function updateProgramImages() {
+async function updateRemainingImages() {
   try {
     console.log('🔗 MongoDB 연결 중...');
     await mongoose.connect(MONGODB_URI);
@@ -61,7 +59,7 @@ async function updateProgramImages() {
     let updatedCount = 0;
     
     for (const program of programs) {
-      const newImageUrl = programImageMapping[program.title];
+      const newImageUrl = remainingProgramImageMapping[program.title];
       
       if (newImageUrl) {
         console.log(`🔄 업데이트 중: ${program.title}`);
@@ -84,7 +82,7 @@ async function updateProgramImages() {
     console.log(`📊 총 ${updatedCount}개 프로그램 이미지 업데이트됨`);
     
     // 업데이트된 프로그램들 확인
-    console.log('\n📋 업데이트된 프로그램 목록:');
+    console.log('\n📋 최종 프로그램 이미지 목록:');
     const updatedPrograms = await Program.find({});
     updatedPrograms.forEach((program, index) => {
       console.log(`${index + 1}. ${program.title}`);
@@ -99,4 +97,4 @@ async function updateProgramImages() {
   }
 }
 
-updateProgramImages();
+updateRemainingImages();
