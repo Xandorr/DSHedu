@@ -49,6 +49,9 @@ const { programs, getFeaturedPrograms, getProgramsByCategory, getProgramById } =
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust proxy - Vercel, Heroku 등 프록시 환경에서 필요
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -1454,6 +1457,50 @@ const isAuthenticated = (req, res, next) => {
 };
 
 // 인증 라우트
+// 🔧 임시 관리자 비밀번호 재설정 API (프로덕션 환경 전용, 사용 후 삭제 필요)
+app.get('/api/admin/reset-password-production', async (req, res) => {
+  try {
+    // 보안 키 확인
+    const secretKey = req.query.secret;
+    if (secretKey !== 'DSH2024_RESET_ADMIN_PASSWORD') {
+      return res.status(403).json({ success: false, message: '접근 권한이 없습니다.' });
+    }
+
+    const adminEmail = 'admin@dshedu.net';
+    const newPassword = 'admin123';
+
+    // 관리자 계정 찾기
+    const admin = await User.findOne({ email: adminEmail });
+    
+    if (!admin) {
+      return res.status(404).json({ 
+        success: false, 
+        message: '관리자 계정을 찾을 수 없습니다.' 
+      });
+    }
+
+    // 비밀번호 재설정
+    admin.password = newPassword;
+    await admin.save();
+
+    console.log('✅ 프로덕션 관리자 비밀번호 재설정 완료');
+
+    res.json({
+      success: true,
+      message: '관리자 비밀번호가 성공적으로 재설정되었습니다.',
+      email: adminEmail,
+      note: '⚠️ 이 API 엔드포인트를 즉시 삭제하세요!'
+    });
+  } catch (error) {
+    console.error('❌ 비밀번호 재설정 오류:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '오류가 발생했습니다.', 
+      error: error.message 
+    });
+  }
+});
+
 app.get('/login', (req, res) => {
   res.render('login', { 
     title: '로그인', 
