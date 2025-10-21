@@ -92,18 +92,18 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 세션 설정 (라우트보다 먼저!)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dsh_edu_secret_key_2024',
-  resave: true, // Vercel 서버리스 환경을 위해 true로 변경
-  saveUninitialized: true, // Vercel 서버리스 환경을 위해 true로 변경
+  resave: false, // 세션이 수정되지 않으면 저장하지 않음
+  saveUninitialized: false, // 초기화되지 않은 세션은 저장하지 않음
   store: process.env.MONGODB_URI ? MongoStore.create({
     mongoUrl: process.env.MONGODB_URI,
     touchAfter: 24 * 3600, // 24시간마다 터치
-    ttl: 7 * 24 * 60 * 60 // 7일 TTL로 연장
+    ttl: 7 * 24 * 60 * 60 // 7일 TTL
   }) : undefined, // MongoDB가 없으면 메모리 저장소 사용
   cookie: { 
-    secure: false, // Vercel에서도 false로 설정 (프록시 때문)
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7일로 연장
-    httpOnly: false, // JavaScript에서 접근 가능하도록
-    sameSite: 'none' // CORS 문제 해결
+    secure: process.env.NODE_ENV === 'production', // 프로덕션에서만 secure
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+    httpOnly: true, // XSS 공격 방지
+    sameSite: 'lax' // CSRF 공격 방지
   },
   name: 'dshedu.session' // 세션 쿠키명 명시
 }));
@@ -1486,16 +1486,24 @@ app.post('/auth/login', (req, res, next) => {
       console.log('✅ 로그인 성공:', user.name, user.email);
       console.log('✅ 세션 생성됨, ID:', req.session.id);
       console.log('✅ req.user 설정됨:', !!req.user);
-      console.log('✅ 세션 저장 확인:', req.session.save ? '가능' : '불가능');
+      console.log('✅ 사용자 역할:', user.role);
       
-      // 세션을 명시적으로 저장
+      // 세션을 명시적으로 저장하고 역할에 따라 리다이렉트
       req.session.save((err) => {
         if (err) {
           console.log('❌ 세션 저장 오류:', err);
           return next(err);
         }
         console.log('✅ 세션 저장 완료');
-        return res.redirect('/?loginSuccess=true');
+        
+        // 관리자는 관리자 패널로, 일반 사용자는 대시보드로
+        if (user.role === 'admin') {
+          console.log('✅ 관리자 로그인 - /admin으로 리다이렉트');
+          return res.redirect('/admin');
+        } else {
+          console.log('✅ 일반 사용자 로그인 - /dashboard로 리다이렉트');
+          return res.redirect('/dashboard');
+        }
       });
     });
   })(req, res, next);
